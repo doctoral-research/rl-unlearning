@@ -1,0 +1,39 @@
+defaults:
+  - env: cartpole
+  - agent: ppo
+  - unlearn: trajectory_selective
+  - logging: tensorboard
+  - _self_
+
+# Experiment settings
+seed: 42
+# Use name and algorithm directly - they're set by env and agent configs
+experiment_name: ${name}_${algorithm}_${now:%Y%m%d_%H%M%S}
+device: auto  # auto, cpu, cuda
+
+# Training
+training:
+  total_timesteps: 500_000
+  eval_frequency: 10_000
+  save_frequency: 50_000
+  num_eval_episodes: 10
+  checkpoint_dir: experiments/checkpoints/${experiment_name}
+
+# Unlearning
+unlearning:
+  enabled: false
+  start_timestep: 500_000
+  frequency: 10_000
+
+# Logging
+output_dir: experiments/outputs/${experiment_name}
+log_dir: experiments/logs/${experiment_name}
+save_video: false
+
+# Hydra settings
+hydra:
+  run:
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+  sweep:
+    dir: multirun/${now:%Y-%m-%d}/${now:%H-%M-%S}
+    subdir: ${hydra.job.num}

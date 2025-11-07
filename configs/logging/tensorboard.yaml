@@ -1,0 +1,31 @@
+# @package _global_
+backend: tensorboard
+log_frequency: 100  # Steps between logs
+
+tensorboard:
+  enabled: true
+  log_dir: experiments/logs
+
+# Metrics to track
+metrics:
+  - episode_reward
+  - episode_length
+  - policy_loss
+  - value_loss
+  - entropy
+  - learning_rate
+  - explained_variance
+
+# Unlearning metrics
+unlearning_metrics:
+  - forget_effectiveness
+  - retain_stability
+  - selectivity
+  - aufc
+  - privacy_auc
+
+# Video recording
+video:
+  enabled: false
+  frequency: 50000  # Episodes between recordings
+  length: 1  # Number of episodes per recording

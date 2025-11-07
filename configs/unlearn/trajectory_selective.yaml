@@ -1,0 +1,31 @@
+# @package _global_
+method: trajectory_selective
+unlearn_name: trajectory_selective
+
+# Core parameters
+forget_strength: 0.5  # Learning rate multiplier for forget signal
+loss_decomposition: true  # Separate forget/retain loss components
+
+# Trajectory selection
+target_selection:
+  method: similarity  # similarity, state_based, action_based, reward_based
+  threshold: 0.8
+  num_trajectories: 10
+
+# Negative learning
+negative_learning:
+  enabled: true
+  weight: 1.0
+  gradient_reversal: true  # Reverse gradients for forget data
+
+# Loss balancing
+loss_weights:
+  forget: 1.0
+  retain: 1.0
+  regularization: 0.01
+
+# Buffer management
+replay_buffer:
+  forget_buffer_size: 10000
+  retain_buffer_size: 50000
+  sampling_ratio: 0.2  # Ratio of forget to retain samples

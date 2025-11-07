@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  rl-unlearning:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rl-unlearning:latest
+    container_name: rl-unlearning
+    volumes:
+      - .:/workspace
+      - ./experiments:/workspace/experiments
+      - ./outputs:/workspace/outputs
+    environment:
+      - PYTHONUNBUFFERED=1
+      - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
+      - WANDB_API_KEY=${WANDB_API_KEY:-}
+    ipc: host
+    shm_size: 8gb
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    command: /bin/bash
+
+  tensorboard:
+    image: tensorflow/tensorflow:latest
+    container_name: rl-unlearning-tensorboard
+    ports:
+      - "6006:6006"
+    volumes:
+      - ./experiments/logs:/logs
+    command: tensorboard --logdir=/logs --host=0.0.0.0 --port=6006
+
+  jupyter:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: rl-unlearning:latest
+    container_name: rl-unlearning-jupyter
+    ports:
+      - "8888:8888"
+    volumes:
+      - .:/workspace
+      - ./experiments:/workspace/experiments
+    command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
+    environment:
+      - JUPYTER_ENABLE_LAB=yes

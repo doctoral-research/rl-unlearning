@@ -1,0 +1,219 @@
+"""
+Training script for RL agents
+"""
+import sys
+from pathlib import Path
+
+# Add src directory to path
+sys.path.insert(0, str(Path(__file__).parent))
+
+import hydra
+from omegaconf import DictConfig, OmegaConf
+import gymnasium as gym
+import numpy as np
+import torch
+from tqdm import tqdm
+
+from agents import PPOAgent
+from utils import set_seed, get_device, create_directories, setup_logger, save_checkpoint
+from utils.buffers import TrajectoryBuffer
+
+
+@hydra.main(version_base=None, config_path="../configs", config_name="config")
+def train(cfg: DictConfig):
+    """Main training function."""
+    
+    # Setup
+    set_seed(cfg.seed)
+    device = get_device(cfg.device)
+    create_directories(OmegaConf.to_container(cfg, resolve=True))
+    
+    logger = setup_logger(
+        "train",
+        log_file=f"{cfg.log_dir}/train.log"
+    )
+    
+    logger.info(f"Configuration:\n{OmegaConf.to_yaml(cfg)}")
+    logger.info(f"Device: {device}")
+    
+    # Create environment
+    env = gym.make(cfg.env_id)
+    
+    # Create agent
+    agent = PPOAgent(
+        observation_dim=cfg.observation_dim,
+        action_dim=cfg.action_dim,
+        action_type=cfg.action_type,
+        hidden_dims=cfg.network.hidden_dims,
+        activation=cfg.network.activation,
+        learning_rate=cfg.learning_rate,
+        gamma=cfg.gamma,
+        gae_lambda=cfg.gae_lambda,
+        clip_epsilon=cfg.clip_epsilon,
+        clip_value=cfg.clip_value,
+        value_coef=cfg.value_coef,
+        entropy_coef=cfg.entropy_coef,
+        max_grad_norm=cfg.max_grad_norm,
+        n_epochs=cfg.n_epochs,
+        batch_size=cfg.batch_size,
+        device=str(device),
+    )
+    
+    # Trajectory buffer for saving experiences
+    trajectory_buffer = TrajectoryBuffer(capacity=1000)
+    
+    # Training loop
+    logger.info("Starting training...")
+    
+    global_step = 0
+    episode_count = 0
+    episode_rewards = []
+    episode_lengths = []
+    
+    # Rollout buffer
+    rollout_buffer = {
+        "observations": [],
+        "actions": [],
+        "rewards": [],
+        "dones": [],
+        "log_probs": [],
+        "values": [],
+    }
+    
+    obs, _ = env.reset(seed=cfg.seed)
+    episode_reward = 0
+    episode_length = 0
+    current_trajectory = {"observations": [], "actions": [], "rewards": [], "dones": []}
+    
+    pbar = tqdm(total=cfg.training.total_timesteps, desc="Training")
+    
+    while global_step < cfg.training.total_timesteps:
+        # Collect n_steps of experience
+        for _ in range(cfg.n_steps):
+            action, info = agent.select_action(obs, deterministic=False)
+            
+            rollout_buffer["observations"].append(obs)
+            rollout_buffer["actions"].append(action)
+            rollout_buffer["log_probs"].append(info["log_prob"])
+            rollout_buffer["values"].append(info["value"])
+            
+            current_trajectory["observations"].append(obs.copy())
+            current_trajectory["actions"].append(action.copy() if isinstance(action, np.ndarray) else action)
+            
+            # Step environment
+            next_obs, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
+            
+            rollout_buffer["rewards"].append(reward)
+            rollout_buffer["dones"].append(done)
+            
+            current_trajectory["rewards"].append(reward)
+            current_trajectory["dones"].append(done)
+            
+            episode_reward += reward
+            episode_length += 1
+            global_step += 1
+            
+            obs = next_obs
+            
+            if done:
+                episode_rewards.append(episode_reward)
+                episode_lengths.append(episode_length)
+                episode_count += 1
+                
+                # Save trajectory
+                trajectory_buffer.add_trajectory(current_trajectory.copy())
+                
+                # Reset
+                obs, _ = env.reset()
+                episode_reward = 0
+                episode_length = 0
+                current_trajectory = {"observations": [], "actions": [], "rewards": [], "dones": []}
+                
+                # Log episode stats
+                if episode_count % 10 == 0:
+                    mean_reward = np.mean(episode_rewards[-10:])
+                    mean_length = np.mean(episode_lengths[-10:])
+                    logger.info(
+                        f"Episode {episode_count} | "
+                        f"Step {global_step} | "
+                        f"Mean Reward: {mean_reward:.2f} | "
+                        f"Mean Length: {mean_length:.2f}"
+                    )
+        
+        # Compute advantages
+        next_value = agent.network.get_value(
+            torch.FloatTensor(obs).unsqueeze(0).to(device)
+        ).item()
+        
+        advantages, returns = agent.compute_gae(
+            torch.FloatTensor(rollout_buffer["rewards"]),
+            torch.FloatTensor(rollout_buffer["values"]),
+            torch.FloatTensor(rollout_buffer["dones"]),
+            next_value,
+        )
+        
+        rollout_buffer["advantages"] = advantages.numpy()
+        rollout_buffer["returns"] = returns.numpy()
+        
+        # Update policy
+        update_metrics = agent.update(rollout_buffer)
+        
+        # Clear rollout buffer
+        for key in rollout_buffer:
+            rollout_buffer[key] = []
+        
+        # Evaluation
+        if global_step % cfg.training.eval_frequency == 0:
+            eval_rewards = []
+            for _ in range(cfg.training.num_eval_episodes):
+                eval_obs, _ = env.reset()
+                eval_reward = 0
+                eval_done = False
+                
+                while not eval_done:
+                    eval_action, _ = agent.select_action(eval_obs, deterministic=True)
+                    eval_obs, eval_r, eval_terminated, eval_truncated, _ = env.step(eval_action)
+                    eval_reward += eval_r
+                    eval_done = eval_terminated or eval_truncated
+                
+                eval_rewards.append(eval_reward)
+            
+            mean_eval_reward = np.mean(eval_rewards)
+            logger.info(f"Eval at step {global_step}: Mean Reward = {mean_eval_reward:.2f}")
+        
+        # Save checkpoint
+        if global_step % cfg.training.save_frequency == 0:
+            checkpoint_path = f"{cfg.training.checkpoint_dir}/checkpoint_{global_step}.pt"
+            Path(cfg.training.checkpoint_dir).mkdir(parents=True, exist_ok=True)
+            save_checkpoint(
+                agent,
+                agent.optimizer,
+                global_step,
+                {"mean_reward": np.mean(episode_rewards[-100:]) if episode_rewards else 0.0},
+                checkpoint_path,
+            )
+            logger.info(f"Saved checkpoint to {checkpoint_path}")
+        
+        pbar.update(cfg.n_steps)
+    
+    pbar.close()
+    
+    # Save final model
+    final_path = f"{cfg.training.checkpoint_dir}/final_model.pt"
+    agent.save(final_path)
+    logger.info(f"Training completed. Final model saved to {final_path}")
+    
+    # Save trajectories
+    import pickle
+    traj_path = f"{cfg.output_dir}/trajectories.pkl"
+    Path(cfg.output_dir).mkdir(parents=True, exist_ok=True)
+    with open(traj_path, "wb") as f:
+        pickle.dump(trajectory_buffer.get_all(), f)
+    logger.info(f"Saved {len(trajectory_buffer)} trajectories to {traj_path}")
+    
+    env.close()
+
+
+if __name__ == "__main__":
+    train()

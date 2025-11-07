@@ -1,0 +1,32 @@
+# @package _global_
+method: strategy_inversion
+unlearn_name: strategy_inversion
+
+# Core parameters
+num_seeds: 100  # Number of seed optimizations
+num_iterations: 50  # Optimization iterations per seed
+learning_rate: 0.01
+
+# Policy-guided search
+search:
+  method: gradient_based  # gradient_based, random, evolutionary
+  temperature: 1.0
+  noise_scale: 0.1
+
+# Synthetic state generation
+generation:
+  sample_around_policy: true
+  diversity_weight: 0.1
+  coverage_threshold: 0.7
+
+# Target region identification
+target_region:
+  method: policy_gradient  # policy_gradient, value_based
+  region_size: 1000
+  expansion_factor: 1.5
+
+# Negative signal application
+negative_signal:
+  strength: 0.8
+  apply_to_neighbors: true
+  neighbor_radius: 0.1
