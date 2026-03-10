@@ -1,0 +1,5 @@
+# @package _global_
+env_id: Acrobot-v1
+observation_dim: 6
+action_dim: 3
+action_type: discrete

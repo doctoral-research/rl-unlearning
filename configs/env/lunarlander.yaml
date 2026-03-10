@@ -1,0 +1,5 @@
+# @package _global_
+env_id: LunarLander-v3
+observation_dim: 8
+action_dim: 4
+action_type: discrete

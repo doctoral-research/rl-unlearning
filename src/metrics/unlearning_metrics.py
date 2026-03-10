@@ -129,7 +129,7 @@ class UnlearningMetrics:
         
         try:
             privacy_auc = 1.0 - roc_auc_score(true_members, membership_inference_scores)
-        except:
+        except (ValueError, TypeError):
             privacy_auc = 0.5  # Random guessing
         
         return privacy_auc

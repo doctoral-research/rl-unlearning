@@ -113,7 +113,7 @@ def unlearn(cfg: DictConfig):
         logger.info(f"Generated {len(forget_states)} forget states")
         
     elif cfg.method == "retain_protection":
-        retain_protection = RetainProtection(
+        RetainProtection(
             agent=agent,
             metaplasticity_enabled=cfg.metaplasticity.enabled,
             mask_type=cfg.metaplasticity.mask_type,
@@ -188,7 +188,7 @@ def unlearn(cfg: DictConfig):
             }
             
             # 2. Apply unlearning method
-            loss_info = unlearning_method.unlearn_step(forget_batch, retain_batch=None)
+            unlearning_method.unlearn_step(forget_batch, retain_batch=None)
         
         if step % 100 == 0:
             # Evaluate

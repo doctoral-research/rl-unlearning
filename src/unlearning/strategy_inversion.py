@@ -63,10 +63,10 @@ class StrategyInversion:
     def _sample_state(self) -> np.ndarray:
         """Sample random state from observation space."""
         if isinstance(self.observation_space, gym.spaces.Box):
-            return np.random.uniform(
-                self.observation_space.low,
-                self.observation_space.high,
-            )
+            # Clip infinite bounds to large finite values for sampling
+            low = np.clip(self.observation_space.low, -1e6, 1e6)
+            high = np.clip(self.observation_space.high, -1e6, 1e6)
+            return np.random.uniform(low, high)
         else:
             raise NotImplementedError(f"Observation space {type(self.observation_space)} not supported")
     

@@ -1,0 +1,38 @@
+{
+    "name": "RL-Unlearning Development",
+    "build": {
+        "dockerfile": "../docker/Dockerfile",
+        "context": "../"
+    },
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "ms-python.vscode-pylance",
+                "ms-toolsai.jupyter",
+                "ms-toolsai.tensorboard",
+                "ms-azuretools.vscode-docker",
+                "github.copilot",
+                "github.copilot-chat",
+                "github.vscode-github-actions",
+                "charliermarsh.ruff"
+            ],
+            "settings": {
+                "python.defaultInterpreterPath": "/opt/venv/bin/python",
+                "python.analysis.typeCheckingMode": "basic",
+                "editor.formatOnSave": true,
+                "[python]": {
+                    "editor.defaultFormatter": "charliermarsh.ruff"
+                }
+            }
+        }
+    },
+    "workspaceFolder": "/app",
+    "forwardPorts": [8888, 6006],
+    "runArgs": [
+        "--gpus", "all",
+        "--env-file", "${localWorkspaceFolder}/.env"
+    ],
+    "postCreateCommand": "echo 'RL-Unlearning dev container ready'",
+    "remoteUser": "root"
+}

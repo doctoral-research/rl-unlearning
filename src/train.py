@@ -157,7 +157,7 @@ def train(cfg: DictConfig):
         rollout_buffer["returns"] = returns.numpy()
         
         # Update policy
-        update_metrics = agent.update(rollout_buffer)
+        agent.update(rollout_buffer)
         
         # Clear rollout buffer
         for key in rollout_buffer:

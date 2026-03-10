@@ -4,7 +4,7 @@ services:
   rl-unlearning:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/Dockerfile
     image: rl-unlearning:latest
     container_name: rl-unlearning
     volumes:

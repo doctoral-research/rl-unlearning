@@ -23,7 +23,6 @@ wheels/
 # Virtual environments
 venv/
 ENV/
-env/
 .venv
 
 # Jupyter
@@ -36,6 +35,12 @@ env/
 *.swp
 *.swo
 *~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
 
 # Experiments
 experiments/
@@ -64,6 +69,9 @@ Thumbs.db
 
 # Docker
 .dockerignore
+
+# Environment
+.env
 
 # Temporary
 tmp/
