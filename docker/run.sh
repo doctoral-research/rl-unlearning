@@ -29,8 +29,11 @@ DOCKER_ARGS=(
     -v "$PROJECT_DIR/src:/app/src"
     -v "$PROJECT_DIR/configs:/app/configs"
     -v "$PROJECT_DIR/experiments:/app/experiments"
-    --env-file "$PROJECT_DIR/.env" 2>/dev/null || true
 )
+
+if [ -f "$PROJECT_DIR/.env" ]; then
+    DOCKER_ARGS+=(--env-file "$PROJECT_DIR/.env")
+fi
 
 if [ "$GPU" = true ]; then
     FULL_TAG="${TAG}-gpu"

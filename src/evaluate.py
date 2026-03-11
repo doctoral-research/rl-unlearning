@@ -8,7 +8,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 
 import hydra
-from omegaconf import DictConfig
+from omegaconf import DictConfig, OmegaConf
 import gymnasium as gym
 import numpy as np
 import pandas as pd
@@ -21,6 +21,23 @@ from metrics import UnlearningMetrics, evaluate_trajectory_similarity
 from utils import set_seed, get_device, setup_logger
 
 
+def init_wandb(cfg: DictConfig):
+    """Initialize WandB if configured."""
+    if cfg.get("backend") == "wandb" and cfg.get("wandb", {}).get("enabled", False):
+        import wandb
+        run = wandb.init(
+            project=cfg.wandb.get("project", "rl-unlearning"),
+            entity=cfg.wandb.get("entity", None),
+            group=cfg.wandb.get("group", None),
+            job_type="evaluate",
+            tags=list(cfg.wandb.get("tags", [])),
+            mode=cfg.wandb.get("mode", "online"),
+            config=OmegaConf.to_container(cfg, resolve=True),
+        )
+        return run
+    return None
+
+
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
 def evaluate(cfg: DictConfig):
     """Evaluate and compare baseline vs unlearned models."""
@@ -30,6 +47,11 @@ def evaluate(cfg: DictConfig):
     device = get_device(cfg.device)
     
     logger = setup_logger("evaluate", log_file=f"{cfg.log_dir}/evaluate.log")
+    
+    # Initialize WandB
+    wandb_run = init_wandb(cfg)
+    if wandb_run:
+        logger.info(f"WandB run: {wandb_run.url}")
     
     # Create environment
     env = gym.make(cfg.env_id)
@@ -141,6 +163,10 @@ def evaluate(cfg: DictConfig):
         logger.info("\n=== Unlearning Metrics ===")
         for metric, value in metrics.items():
             logger.info(f"{metric}: {value:.4f}")
+        
+        if wandb_run:
+            import wandb
+            wandb.log({f"eval/{k}": v for k, v in metrics.items()})
     
     # Print comparison
     logger.info("\n=== Performance Comparison ===")
@@ -151,6 +177,18 @@ def evaluate(cfg: DictConfig):
     if results["baseline"]["forget_scores"] and results["unlearned"]["forget_scores"]:
         logger.info(f"Baseline Forget Score: {np.mean(results['baseline']['forget_scores']):.4f}")
         logger.info(f"Unlearned Forget Score: {np.mean(results['unlearned']['forget_scores']):.4f}")
+    
+    # Log summary to WandB
+    if wandb_run:
+        import wandb
+        summary = {
+            "eval/baseline_return_mean": np.mean(results["baseline"]["returns"]),
+            "eval/baseline_return_std": np.std(results["baseline"]["returns"]),
+        }
+        if unlearned_agent:
+            summary["eval/unlearned_return_mean"] = np.mean(results["unlearned"]["returns"])
+            summary["eval/unlearned_return_std"] = np.std(results["unlearned"]["returns"])
+        wandb.log(summary)
     
     # Save results
     results_df = pd.DataFrame({
@@ -190,6 +228,11 @@ def evaluate(cfg: DictConfig):
         logger.info(f"Saved plot to {plot_path}")
     
     env.close()
+    
+    if wandb_run:
+        import wandb
+        wandb.finish()
+        logger.info("WandB run finished.")
 
 
 if __name__ == "__main__":

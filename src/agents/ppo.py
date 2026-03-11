@@ -105,9 +105,9 @@ class PPOAgent:
     
     def update(self, rollout_buffer: Dict) -> Dict[str, float]:
         """Update policy using PPO."""
-        observations = torch.FloatTensor(rollout_buffer["observations"]).to(self.device)
-        actions = torch.FloatTensor(rollout_buffer["actions"]).to(self.device)
-        old_log_probs = torch.FloatTensor(rollout_buffer["log_probs"]).to(self.device)
+        observations = torch.FloatTensor(np.array(rollout_buffer["observations"])).to(self.device)
+        actions = torch.FloatTensor(np.array(rollout_buffer["actions"])).to(self.device)
+        old_log_probs = torch.FloatTensor(np.array(rollout_buffer["log_probs"])).to(self.device)
         advantages = torch.FloatTensor(rollout_buffer["advantages"]).to(self.device)
         returns = torch.FloatTensor(rollout_buffer["returns"]).to(self.device)
         

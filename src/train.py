@@ -19,6 +19,25 @@ from utils import set_seed, get_device, create_directories, setup_logger, save_c
 from utils.buffers import TrajectoryBuffer
 
 
+def init_wandb(cfg: DictConfig):
+    """Initialize WandB if configured."""
+    if cfg.get("backend") == "wandb" and cfg.get("wandb", {}).get("enabled", False):
+        import wandb
+        run = wandb.init(
+            project=cfg.wandb.get("project", "rl-unlearning"),
+            entity=cfg.wandb.get("entity", None),
+            group=cfg.wandb.get("group", None),
+            job_type=cfg.wandb.get("job_type", "train"),
+            tags=list(cfg.wandb.get("tags", [])),
+            notes=cfg.wandb.get("notes", None),
+            mode=cfg.wandb.get("mode", "online"),
+            save_code=cfg.wandb.get("save_code", True),
+            config=OmegaConf.to_container(cfg, resolve=True),
+        )
+        return run
+    return None
+
+
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
 def train(cfg: DictConfig):
     """Main training function."""
@@ -35,6 +54,11 @@ def train(cfg: DictConfig):
     
     logger.info(f"Configuration:\n{OmegaConf.to_yaml(cfg)}")
     logger.info(f"Device: {device}")
+    
+    # Initialize WandB
+    wandb_run = init_wandb(cfg)
+    if wandb_run:
+        logger.info(f"WandB run: {wandb_run.url}")
     
     # Create environment
     env = gym.make(cfg.env_id)
@@ -131,9 +155,17 @@ def train(cfg: DictConfig):
                 current_trajectory = {"observations": [], "actions": [], "rewards": [], "dones": []}
                 
                 # Log episode stats
-                if episode_count % 10 == 0:
-                    mean_reward = np.mean(episode_rewards[-10:])
-                    mean_length = np.mean(episode_lengths[-10:])
+                log_freq = cfg.get("log_frequency", 10)
+                if wandb_run:
+                    import wandb
+                    wandb.log({
+                        "episode/reward": episode_rewards[-1],
+                        "episode/length": episode_lengths[-1],
+                        "episode/count": episode_count,
+                    }, step=global_step)
+                if episode_count % log_freq == 0:
+                    mean_reward = np.mean(episode_rewards[-log_freq:])
+                    mean_length = np.mean(episode_lengths[-log_freq:])
                     logger.info(
                         f"Episode {episode_count} | "
                         f"Step {global_step} | "
@@ -157,7 +189,15 @@ def train(cfg: DictConfig):
         rollout_buffer["returns"] = returns.numpy()
         
         # Update policy
-        agent.update(rollout_buffer)
+        update_info = agent.update(rollout_buffer)
+        
+        if wandb_run:
+            import wandb
+            wandb.log({
+                "train/policy_loss": update_info["policy_loss"],
+                "train/value_loss": update_info["value_loss"],
+                "train/entropy": update_info["entropy"],
+            }, step=global_step)
         
         # Clear rollout buffer
         for key in rollout_buffer:
@@ -181,6 +221,13 @@ def train(cfg: DictConfig):
             
             mean_eval_reward = np.mean(eval_rewards)
             logger.info(f"Eval at step {global_step}: Mean Reward = {mean_eval_reward:.2f}")
+            
+            if wandb_run:
+                import wandb
+                wandb.log({
+                    "eval/mean_reward": mean_eval_reward,
+                    "eval/std_reward": np.std(eval_rewards),
+                }, step=global_step)
         
         # Save checkpoint
         if global_step % cfg.training.save_frequency == 0:
@@ -213,6 +260,11 @@ def train(cfg: DictConfig):
     logger.info(f"Saved {len(trajectory_buffer)} trajectories to {traj_path}")
     
     env.close()
+    
+    if wandb_run:
+        import wandb
+        wandb.finish()
+        logger.info("WandB run finished.")
 
 
 if __name__ == "__main__":

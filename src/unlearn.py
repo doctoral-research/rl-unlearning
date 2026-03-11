@@ -21,6 +21,23 @@ from metrics import UnlearningMetrics, evaluate_trajectory_similarity
 from utils import set_seed, get_device, setup_logger
 
 
+def init_wandb(cfg: DictConfig):
+    """Initialize WandB if configured."""
+    if cfg.get("backend") == "wandb" and cfg.get("wandb", {}).get("enabled", False):
+        import wandb
+        run = wandb.init(
+            project=cfg.wandb.get("project", "rl-unlearning"),
+            entity=cfg.wandb.get("entity", None),
+            group=cfg.wandb.get("group", None),
+            job_type="unlearn",
+            tags=list(cfg.wandb.get("tags", [])),
+            mode=cfg.wandb.get("mode", "online"),
+            config=OmegaConf.to_container(cfg, resolve=True),
+        )
+        return run
+    return None
+
+
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
 def unlearn(cfg: DictConfig):
     """Main unlearning function."""
@@ -36,6 +53,11 @@ def unlearn(cfg: DictConfig):
     
     logger.info(f"Configuration:\n{OmegaConf.to_yaml(cfg)}")
     logger.info(f"Unlearning method: {cfg.method}")
+    
+    # Initialize WandB
+    wandb_run = init_wandb(cfg)
+    if wandb_run:
+        logger.info(f"WandB run: {wandb_run.url}")
     
     # Load trained agent
     checkpoint_path = f"{cfg.training.checkpoint_dir}/final_model.pt"
@@ -229,6 +251,12 @@ def unlearn(cfg: DictConfig):
                     f"Retain Stab: {metrics['retain_stability_index']:.3f} | "
                     f"Selectivity: {metrics['selectivity']:.3f}"
                 )
+                
+                if wandb_run:
+                    import wandb
+                    wandb.log({
+                        f"unlearn/{k}": v for k, v in metrics.items()
+                    }, step=step)
     
     # Final evaluation
     logger.info("Final evaluation...")
@@ -254,6 +282,11 @@ def unlearn(cfg: DictConfig):
     logger.info(f"Saved unlearned model to {unlearned_path}")
     
     env.close()
+    
+    if wandb_run:
+        import wandb
+        wandb.finish()
+        logger.info("WandB run finished.")
 
 
 if __name__ == "__main__":
