@@ -2,12 +2,19 @@
 method: retain_protection
 unlearn_name: retain_protection
 
+# Unlearning optimizer (separate from training optimizer)
+# Higher LR than others — masks protect important params so we can push harder
+unlearn_lr: 1e-4
+retain_stability_threshold: 0.7  # Same threshold as others for fair comparison
+num_unlearn_steps: 500
+eval_frequency: 25
+
 # Metaplasticity masks
 metaplasticity:
   enabled: true
   mask_type: importance  # importance, gradient, activation
-  update_frequency: 1000
-  threshold: 0.5
+  update_frequency: 250  # Update masks frequently for adaptive protection
+  threshold: 0.7  # Protect only the top 30% most important params
   consolidation_strength: 0.9
 
 # Selective distillation
@@ -15,7 +22,7 @@ distillation:
   enabled: true
   teacher_update_frequency: 5000  # Timesteps between teacher updates
   temperature: 2.0
-  alpha: 0.5  # Weight of distillation loss
+  alpha: 0.2  # Low distillation weight — let forgetting proceed, masks do the protection
   only_retain_states: true
 
 # Elastic weight consolidation (EWC)

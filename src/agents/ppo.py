@@ -59,7 +59,7 @@ class PPOAgent:
         
     def select_action(self, observation: np.ndarray, deterministic: bool = False) -> Tuple[np.ndarray, Dict]:
         """Select action given observation."""
-        obs_tensor = torch.FloatTensor(observation).unsqueeze(0).to(self.device)
+        obs_tensor = torch.as_tensor(np.asarray(observation), dtype=torch.float32).unsqueeze(0).to(self.device)
         
         with torch.no_grad():
             action, log_prob, _, value = self.network.get_action_and_value(obs_tensor)
@@ -105,11 +105,11 @@ class PPOAgent:
     
     def update(self, rollout_buffer: Dict) -> Dict[str, float]:
         """Update policy using PPO."""
-        observations = torch.FloatTensor(np.array(rollout_buffer["observations"])).to(self.device)
-        actions = torch.FloatTensor(np.array(rollout_buffer["actions"])).to(self.device)
-        old_log_probs = torch.FloatTensor(np.array(rollout_buffer["log_probs"])).to(self.device)
-        advantages = torch.FloatTensor(rollout_buffer["advantages"]).to(self.device)
-        returns = torch.FloatTensor(rollout_buffer["returns"]).to(self.device)
+        observations = torch.as_tensor(np.array(rollout_buffer["observations"]), dtype=torch.float32).to(self.device)
+        actions = torch.as_tensor(np.array(rollout_buffer["actions"]), dtype=torch.float32).to(self.device)
+        old_log_probs = torch.as_tensor(np.array(rollout_buffer["log_probs"]), dtype=torch.float32).to(self.device)
+        advantages = torch.as_tensor(np.asarray(rollout_buffer["advantages"]), dtype=torch.float32).to(self.device)
+        returns = torch.as_tensor(np.asarray(rollout_buffer["returns"]), dtype=torch.float32).to(self.device)
         
         # Normalize advantages
         advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)

@@ -2,10 +2,16 @@
 method: strategy_inversion
 unlearn_name: strategy_inversion
 
+# Unlearning optimizer (separate from training optimizer)
+unlearn_lr: 5e-5  # Same as trajectory_selective for fair comparison
+retain_stability_threshold: 0.7  # Stop before retain degrades too much
+num_unlearn_steps: 500
+eval_frequency: 25
+
 # Core parameters
 num_seeds: 100  # Number of seed optimizations
 num_iterations: 50  # Optimization iterations per seed
-learning_rate: 0.01
+search_lr: 0.01  # LR for state optimization (NOT for policy updates)
 
 # Policy-guided search
 search:
@@ -27,6 +33,6 @@ target_region:
 
 # Negative signal application
 negative_signal:
-  strength: 0.8
+  strength: 0.2  # Matched to trajectory_selective forget_strength
   apply_to_neighbors: true
   neighbor_radius: 0.1

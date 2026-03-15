@@ -2,8 +2,14 @@
 method: trajectory_selective
 unlearn_name: trajectory_selective
 
+# Unlearning optimizer (separate from training optimizer)
+unlearn_lr: 5e-5  # Aggressive enough to show forgetting, early stopping catches collapse
+retain_stability_threshold: 0.7  # Stop before retain degrades too much
+num_unlearn_steps: 500
+eval_frequency: 25
+
 # Core parameters
-forget_strength: 0.5  # Learning rate multiplier for forget signal
+forget_strength: 0.2  # Moderate forget signal
 loss_decomposition: true  # Separate forget/retain loss components
 
 # Trajectory selection
@@ -21,7 +27,7 @@ negative_learning:
 # Loss balancing
 loss_weights:
   forget: 1.0
-  retain: 1.0
+  retain: 0.5  # Lower retain weight so forgetting can dominate
   regularization: 0.01
 
 # Buffer management

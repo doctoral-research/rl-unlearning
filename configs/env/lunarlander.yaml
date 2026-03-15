@@ -1,5 +1,10 @@
 # @package _global_
+env_name: lunarlander
 env_id: LunarLander-v3
 observation_dim: 8
 action_dim: 4
 action_type: discrete
+
+# LunarLander needs more training to converge (target: 200+ return)
+training:
+  total_timesteps: 2_000_000

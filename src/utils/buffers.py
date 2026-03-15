@@ -44,11 +44,11 @@ class ReplayBuffer:
         indices = np.random.randint(0, self.size, size=batch_size)
         
         return {
-            "observations": torch.FloatTensor(self.observations[indices]),
-            "actions": torch.FloatTensor(self.actions[indices]),
-            "rewards": torch.FloatTensor(self.rewards[indices]),
-            "next_observations": torch.FloatTensor(self.next_observations[indices]),
-            "dones": torch.FloatTensor(self.dones[indices]),
+            "observations": torch.as_tensor(self.observations[indices], dtype=torch.float32),
+            "actions": torch.as_tensor(self.actions[indices], dtype=torch.float32),
+            "rewards": torch.as_tensor(self.rewards[indices], dtype=torch.float32),
+            "next_observations": torch.as_tensor(self.next_observations[indices], dtype=torch.float32),
+            "dones": torch.as_tensor(self.dones[indices], dtype=torch.float32),
         }
     
     def __len__(self) -> int:

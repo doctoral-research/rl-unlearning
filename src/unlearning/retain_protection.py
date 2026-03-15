@@ -228,13 +228,15 @@ class RetainProtection:
         """Compute retain stability metrics."""
         if len(eval_returns) == 0 or len(baseline_returns) == 0:
             return {"stability_index": 0.0, "relative_degradation": 0.0}
-        
+
         current_mean = np.mean(eval_returns)
         baseline_mean = np.mean(baseline_returns)
-        
-        degradation = (baseline_mean - current_mean) / (abs(baseline_mean) + 1e-8)
-        stability_index = max(0, 1 - degradation)
-        
+        baseline_std = np.std(baseline_returns)
+
+        scale = max(abs(baseline_mean), baseline_std, 1.0)
+        degradation = abs(current_mean - baseline_mean) / scale
+        stability_index = max(0.0, 1.0 - degradation)
+
         return {
             "stability_index": stability_index,
             "relative_degradation": degradation,

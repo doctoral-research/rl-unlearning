@@ -175,13 +175,13 @@ def train(cfg: DictConfig):
         
         # Compute advantages
         next_value = agent.network.get_value(
-            torch.FloatTensor(obs).unsqueeze(0).to(device)
+            torch.as_tensor(np.asarray(obs), dtype=torch.float32).unsqueeze(0).to(device)
         ).item()
-        
+
         advantages, returns = agent.compute_gae(
-            torch.FloatTensor(rollout_buffer["rewards"]),
-            torch.FloatTensor(rollout_buffer["values"]),
-            torch.FloatTensor(rollout_buffer["dones"]),
+            torch.as_tensor(np.asarray(rollout_buffer["rewards"]), dtype=torch.float32),
+            torch.as_tensor(np.asarray(rollout_buffer["values"]), dtype=torch.float32),
+            torch.as_tensor(np.asarray(rollout_buffer["dones"]), dtype=torch.float32),
             next_value,
         )
         

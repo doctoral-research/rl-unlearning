@@ -1,4 +1,5 @@
 # @package _global_
+env_name: cartpole
 env_id: CartPole-v1
 observation_dim: 4
 action_dim: 2

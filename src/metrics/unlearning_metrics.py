@@ -51,26 +51,32 @@ class UnlearningMetrics:
         Compute Retain Stability Index (RSI).
         Measures how well non-target behaviors are preserved.
         Range: [0, 1], where 1 means perfect preservation.
+
+        Uses a degradation-based formula that works correctly for
+        negative, near-zero, and positive baseline returns:
+            RSI = max(0, 1 - |current - baseline| / scale)
+        where scale accounts for the natural variance of returns.
         """
         if baseline_returns is None:
             baseline_returns = self.baseline_retain_performance
             if baseline_returns is None:
                 return 0.0
             baseline_mean = baseline_returns
+            baseline_std = 0.0
         else:
             baseline_mean = np.mean(baseline_returns)
-        
+            baseline_std = np.std(baseline_returns)
+
         current_mean = np.mean(current_returns)
-        
-        # Compute relative performance
-        if abs(baseline_mean) < 1e-8:
-            return 1.0 if abs(current_mean) < 1e-8 else 0.0
-        
-        relative_performance = current_mean / baseline_mean
-        
-        # RSI is high when performance is maintained
-        rsi = min(1.0, max(0.0, relative_performance))
-        
+
+        # Scale: use max of |baseline|, baseline_std, or a small constant.
+        # This prevents division-by-zero when baseline ≈ 0 and handles
+        # negative-reward environments (e.g. Acrobot) correctly.
+        scale = max(abs(baseline_mean), baseline_std, 1.0)
+
+        degradation = abs(current_mean - baseline_mean) / scale
+        rsi = max(0.0, 1.0 - degradation)
+
         return rsi
     
     def compute_selectivity(
@@ -180,8 +186,8 @@ def evaluate_trajectory_similarity(
     Evaluate how likely the agent is to reproduce a trajectory.
     Returns score in [0, 1] where high score = likely to reproduce.
     """
-    observations = torch.FloatTensor(trajectory["observations"]).to(device)
-    actions = torch.FloatTensor(trajectory["actions"]).to(device)
+    observations = torch.as_tensor(np.asarray(trajectory["observations"]), dtype=torch.float32).to(device)
+    actions = torch.as_tensor(np.asarray(trajectory["actions"]), dtype=torch.float32).to(device)
     
     with torch.no_grad():
         _, log_probs, _, _ = agent.network.get_action_and_value(observations, actions)

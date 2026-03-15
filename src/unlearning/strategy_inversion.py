@@ -93,7 +93,7 @@ class StrategyInversion:
         target_value_range: Tuple[float, float] = None,
     ) -> np.ndarray:
         """Gradient-based optimization to push policy toward target region."""
-        state = torch.FloatTensor(initial_state).to(self.device)
+        state = torch.tensor(np.asarray(initial_state), dtype=torch.float32, device=self.device)
         state.requires_grad = True
         
         optimizer = torch.optim.Adam([state], lr=self.learning_rate)
@@ -106,24 +106,40 @@ class StrategyInversion:
                 action_output, value = self.agent.network(state.unsqueeze(0))
             
             # Compute loss based on target criteria
-            loss = torch.tensor(0.0, device=self.device)
-            
+            has_target = False
+
+            # Start from a differentiable zero connected to the graph
+            loss = (action_output * 0).sum() + (value * 0).sum()
+
             if target_actions is not None:
+                has_target = True
                 # Push policy toward specific actions
                 if self.agent.action_type == "discrete":
-                    target_action = torch.LongTensor([target_actions[0]]).to(self.device)
-                    loss += -torch.log_softmax(action_output, dim=-1)[0, target_action]
+                    target_action = torch.tensor([target_actions[0]], dtype=torch.long, device=self.device)
+                    loss = loss - torch.log_softmax(action_output, dim=-1)[0, target_action]
                 else:
-                    target_action = torch.FloatTensor([target_actions[0]]).to(self.device)
-                    loss += torch.mean((action_output - target_action) ** 2)
-            
+                    target_action = torch.tensor([target_actions[0]], dtype=torch.float32, device=self.device)
+                    loss = loss + torch.mean((action_output - target_action) ** 2)
+
             if target_value_range is not None:
+                has_target = True
                 # Push value estimate toward target range
                 target_value = (target_value_range[0] + target_value_range[1]) / 2
-                loss += (value - target_value) ** 2
-            
-            # Add diversity/exploration term
-            loss += -self.noise_scale * torch.randn_like(loss)
+                loss = loss + (value - target_value) ** 2
+
+            if not has_target:
+                # Default objective: find states where the policy is most
+                # confident (lowest entropy). These are prime candidates
+                # for unlearning because the agent has strong preferences.
+                if self.agent.action_type == "discrete":
+                    probs = torch.softmax(action_output / self.temperature, dim=-1)
+                    entropy = -(probs * torch.log(probs + 1e-8)).sum(dim=-1)
+                    # Minimize entropy → find high-confidence states
+                    loss = loss + entropy.mean()
+                else:
+                    # For continuous: maximize action magnitude (find
+                    # states with strong policy responses)
+                    loss = loss - action_output.pow(2).mean()
             
             loss.backward()
             optimizer.step()
@@ -132,8 +148,8 @@ class StrategyInversion:
             if isinstance(self.observation_space, gym.spaces.Box):
                 with torch.no_grad():
                     state.clamp_(
-                        torch.FloatTensor(self.observation_space.low).to(self.device),
-                        torch.FloatTensor(self.observation_space.high).to(self.device),
+                        torch.as_tensor(self.observation_space.low, dtype=torch.float32).to(self.device),
+                        torch.as_tensor(self.observation_space.high, dtype=torch.float32).to(self.device),
                     )
         
         return state.detach().cpu().numpy()
@@ -212,7 +228,7 @@ class StrategyInversion:
         target_value_range: Tuple[float, float] = None,
     ) -> float:
         """Evaluate how well state matches target criteria."""
-        state_tensor = torch.FloatTensor(state).unsqueeze(0).to(self.device)
+        state_tensor = torch.as_tensor(np.asarray(state), dtype=torch.float32).unsqueeze(0).to(self.device)
         
         with torch.no_grad():
             action_output, value = self.agent.network(state_tensor)
@@ -224,7 +240,7 @@ class StrategyInversion:
                 probs = torch.softmax(action_output, dim=-1)
                 score += probs[0, target_actions[0]].item()
             else:
-                distance = torch.mean((action_output[0] - torch.FloatTensor(target_actions[0]).to(self.device)) ** 2)
+                distance = torch.mean((action_output[0] - torch.as_tensor(np.asarray(target_actions[0]), dtype=torch.float32).to(self.device)) ** 2)
                 score -= distance.item()
         
         if target_value_range is not None:

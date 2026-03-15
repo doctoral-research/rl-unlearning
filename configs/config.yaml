@@ -7,9 +7,12 @@ defaults:
 
 # Experiment settings
 seed: 42
-# Use name and algorithm directly - they're set by env and agent configs
-experiment_name: ${name}_${algorithm}_${now:%Y%m%d_%H%M%S}
 device: auto  # auto, cpu, cuda
+
+# Deterministic naming: {env}_{agent}_seed{seed}
+# Training outputs go to: experiments/{checkpoints,logs,outputs}/{experiment_name}/
+# Unlearning outputs nest under the same experiment with method suffix
+experiment_name: ${env_name}_${name}_seed${seed}
 
 # Training
 training:
