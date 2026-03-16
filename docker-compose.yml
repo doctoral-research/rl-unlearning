@@ -5,8 +5,12 @@ services:
     build:
       context: .
       dockerfile: docker/Dockerfile
+      args:
+        USER_ID: ${USER_ID:-1000}
+        GROUP_ID: ${GROUP_ID:-1000}
     image: rl-unlearning:latest
     container_name: rl-unlearning
+    user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
     volumes:
       - .:/workspace
       - ./experiments:/workspace/experiments
@@ -15,6 +19,7 @@ services:
       - PYTHONUNBUFFERED=1
       - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
       - WANDB_API_KEY=${WANDB_API_KEY:-}
+      - HOME=/workspace
     ipc: host
     shm_size: 8gb
     deploy:
@@ -41,6 +46,7 @@ services:
       dockerfile: Dockerfile
     image: rl-unlearning:latest
     container_name: rl-unlearning-jupyter
+    user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
     ports:
       - "8888:8888"
     volumes:
@@ -49,3 +55,4 @@ services:
     command: jupyter notebook --ip=0.0.0.0 --port=8888 --no-browser --allow-root
     environment:
       - JUPYTER_ENABLE_LAB=yes
+      - HOME=/workspace

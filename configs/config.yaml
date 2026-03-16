@@ -1,9 +1,9 @@
 defaults:
+  - _self_
   - env: cartpole
   - agent: ppo
   - unlearn: trajectory_selective
   - logging: tensorboard
-  - _self_
 
 # Experiment settings
 seed: 42
