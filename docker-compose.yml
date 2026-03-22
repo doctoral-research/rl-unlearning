@@ -4,21 +4,21 @@ services:
   rl-unlearning:
     build:
       context: .
-      dockerfile: docker/Dockerfile
-      args:
-        USER_ID: ${USER_ID:-1000}
-        GROUP_ID: ${GROUP_ID:-1000}
-    image: rl-unlearning:latest
+      dockerfile: docker/Dockerfile.GPU
+    image: rl-unlearning:gpu
     container_name: rl-unlearning
     user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
     volumes:
       - .:/workspace
-      - ./experiments:/workspace/experiments
-      - ./outputs:/workspace/outputs
+    working_dir: /workspace
     environment:
       - PYTHONUNBUFFERED=1
+      - PYTHONPATH=/workspace/src
+      - HYDRA_FULL_ERROR=1
       - CUDA_VISIBLE_DEVICES=${CUDA_VISIBLE_DEVICES:-0}
       - WANDB_API_KEY=${WANDB_API_KEY:-}
+      - WANDB_ENTITY=${WANDB_ENTITY:-}
+      - WANDB_PROJECT=${WANDB_PROJECT:-}
       - HOME=/workspace
     ipc: host
     shm_size: 8gb

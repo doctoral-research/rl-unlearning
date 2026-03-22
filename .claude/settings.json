@@ -27,7 +27,10 @@
       "Bash(python -c \"import gymnasium\")",
       "Bash(conda activate:*)",
       "Bash(conda run:*)",
-      "Bash(conda env:*)"
+      "Bash(conda env:*)",
+      "Bash(docker compose:*)",
+      "Bash(xargs -r docker stop)",
+      "Bash(xargs -r docker rm -f)"
     ],
     "additionalDirectories": [
       "/home/tamas/work/unlearning/rl-unlearning/test_videos"

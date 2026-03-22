@@ -25,9 +25,11 @@ def init_wandb(cfg: DictConfig):
     """Initialize WandB if configured."""
     if cfg.get("backend") == "wandb" and cfg.get("wandb", {}).get("enabled", False):
         import wandb
+        run_name = f"unlearn_{cfg.env_name}_{cfg.method}_seed{cfg.seed}"
         run = wandb.init(
             project=cfg.wandb.get("project", "rl-unlearning"),
             entity=cfg.wandb.get("entity", None),
+            name=run_name,
             group=cfg.wandb.get("group", None),
             job_type="unlearn",
             tags=list(cfg.wandb.get("tags", [])),

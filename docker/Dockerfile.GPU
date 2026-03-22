@@ -44,6 +44,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y --no-install-recommends \
     software-properties-common \
     swig \
+    ffmpeg \
     && add-apt-repository ppa:deadsnakes/ppa \
     && apt-get update \
     && apt-get install -y --no-install-recommends \
@@ -51,15 +52,14 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
     python3.12-venv \
     && rm -rf /var/lib/apt/lists/*
 
-WORKDIR /app
+WORKDIR /workspace
 
 COPY --from=builder /opt/venv /opt/venv
 ENV PATH="/opt/venv/bin:$PATH"
 
-COPY src/ ./src/
-COPY configs/ ./configs/
+COPY . .
 
-ENV PYTHONPATH="/app/src"
+ENV PYTHONPATH="/workspace/src"
 ENV PYTHONUNBUFFERED=1
 ENV HYDRA_FULL_ERROR=1
 
