@@ -35,7 +35,21 @@ class StrategyInversion:
         
         self.observation_space = env.observation_space
         self.action_space = env.action_space
+        self.reference_states = None
     
+    def set_reference_states(self, trajectories: List[Dict]):
+        """Set reference states from training trajectories for sampling.
+
+        Instead of sampling from the full observation space (which produces
+        out-of-distribution states), we sample initial seeds from actual
+        observations the agent has encountered during training.
+        """
+        all_obs = []
+        for traj in trajectories:
+            all_obs.extend(traj["observations"])
+        if all_obs:
+            self.reference_states = np.array(all_obs)
+
     def generate_forget_states(
         self,
         target_actions: List = None,
@@ -61,9 +75,22 @@ class StrategyInversion:
         return forget_states
     
     def _sample_state(self) -> np.ndarray:
-        """Sample random state from observation space."""
+        """Sample a seed state for optimization.
+
+        If reference states from training trajectories are available, sample
+        from those and add a small perturbation.  This keeps seeds in the
+        region of observation space the policy has actually been trained on,
+        avoiding meaningless out-of-distribution inputs.
+        """
+        if self.reference_states is not None:
+            idx = np.random.randint(len(self.reference_states))
+            state = self.reference_states[idx].copy()
+            state += np.random.randn(*state.shape) * self.noise_scale
+            if isinstance(self.observation_space, gym.spaces.Box):
+                state = np.clip(state, self.observation_space.low, self.observation_space.high)
+            return state
+
         if isinstance(self.observation_space, gym.spaces.Box):
-            # Clip infinite bounds to large finite values for sampling
             low = np.clip(self.observation_space.low, -1e6, 1e6)
             high = np.clip(self.observation_space.high, -1e6, 1e6)
             return np.random.uniform(low, high)
@@ -204,7 +231,8 @@ class StrategyInversion:
             # Generate offspring
             offspring = []
             for _ in range(population_size - len(survivors)):
-                parent1, parent2 = np.random.choice(survivors, size=2, replace=False)
+                idx = np.random.choice(len(survivors), size=2, replace=False)
+                parent1, parent2 = survivors[idx[0]], survivors[idx[1]]
                 child = (parent1 + parent2) / 2 + np.random.randn(*initial_state.shape) * self.noise_scale
                 
                 # Clip to bounds

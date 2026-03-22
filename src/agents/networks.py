@@ -160,10 +160,11 @@ class MetaplasticityMask(nn.Module):
         self.mask_type = mask_type
         self.masks = {}
         
-        # Initialize masks
+        # Initialize masks to zero (protect nothing by default).
+        # Masks are set via update_masks() from actual importance scores.
         for name, param in model.named_parameters():
             if param.requires_grad:
-                self.masks[name] = torch.ones_like(param.data)
+                self.masks[name] = torch.zeros_like(param.data)
     
     def compute_importance(self, data_loader, criterion):
         """Compute parameter importance scores."""
@@ -195,8 +196,13 @@ class MetaplasticityMask(nn.Module):
             self.masks[name] = (importance >= threshold_value).float()
     
     def apply_masks(self):
-        """Apply masks to gradients."""
+        """Apply masks to gradients.
+
+        Masks follow the 'importance' convention: mask=1 means the
+        parameter is important and should be *protected* (gradient
+        zeroed), consistent with RetainProtection.apply_masks_to_gradients.
+        """
         for name, param in self.model.named_parameters():
             if param.requires_grad and name in self.masks:
                 if param.grad is not None:
-                    param.grad *= self.masks[name]
+                    param.grad *= (1 - self.masks[name])

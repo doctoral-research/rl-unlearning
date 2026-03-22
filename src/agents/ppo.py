@@ -60,22 +60,30 @@ class PPOAgent:
     def select_action(self, observation: np.ndarray, deterministic: bool = False) -> Tuple[np.ndarray, Dict]:
         """Select action given observation."""
         obs_tensor = torch.as_tensor(np.asarray(observation), dtype=torch.float32).unsqueeze(0).to(self.device)
-        
+
         with torch.no_grad():
-            action, log_prob, _, value = self.network.get_action_and_value(obs_tensor)
-        
-        if deterministic and self.action_type == "discrete":
-            features = self.network.shared(obs_tensor)
-            logits = self.network.actor(features)
-            action = torch.argmax(logits, dim=-1)
-        
+            if deterministic:
+                # Single forward pass, then pick the greedy action
+                action_output, value = self.network(obs_tensor)
+                if self.action_type == "discrete":
+                    action = torch.argmax(action_output, dim=-1)
+                    dist = torch.distributions.Categorical(logits=action_output)
+                    log_prob = dist.log_prob(action)
+                else:
+                    action = action_output  # mean is the deterministic action
+                    action_std = torch.exp(self.network.actor_logstd.expand_as(action_output))
+                    dist = torch.distributions.Normal(action_output, action_std)
+                    log_prob = dist.log_prob(action).sum(-1)
+            else:
+                action, log_prob, _, value = self.network.get_action_and_value(obs_tensor)
+
         action_np = action.cpu().numpy()[0]
-        
+
         info = {
             "log_prob": log_prob.item(),
             "value": value.item(),
         }
-        
+
         return action_np, info
     
     def compute_gae(
@@ -91,12 +99,13 @@ class PPOAgent:
         
         for t in reversed(range(len(rewards))):
             if t == len(rewards) - 1:
-                nextnonterminal = 1.0 - dones[t]
                 nextvalues = next_value
             else:
-                nextnonterminal = 1.0 - dones[t + 1]
                 nextvalues = values[t + 1]
-            
+
+            # dones[t] indicates step t was terminal — don't bootstrap
+            # from nextvalues across an episode boundary.
+            nextnonterminal = 1.0 - dones[t]
             delta = rewards[t] + self.gamma * nextvalues * nextnonterminal - values[t]
             advantages[t] = lastgaelam = delta + self.gamma * self.gae_lambda * nextnonterminal * lastgaelam
         

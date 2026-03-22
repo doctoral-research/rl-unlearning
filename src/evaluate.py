@@ -23,7 +23,7 @@ import seaborn as sns
 
 from agents import PPOAgent
 from metrics import UnlearningMetrics, evaluate_trajectory_similarity
-from utils import set_seed, get_device, setup_logger
+from utils import set_seed, get_device, setup_logger, record_videos
 
 
 def init_wandb(cfg: DictConfig):
@@ -43,11 +43,12 @@ def init_wandb(cfg: DictConfig):
     return None
 
 
-def evaluate_agent(agent, env, num_episodes, deterministic=True):
+def evaluate_agent(agent, env, num_episodes, deterministic=True, seed=None):
     """Run evaluation episodes and return list of episode returns."""
     returns = []
-    for _ in range(num_episodes):
-        obs, _ = env.reset()
+    for i in range(num_episodes):
+        reset_kwargs = {"seed": seed + i} if seed is not None else {}
+        obs, _ = env.reset(**reset_kwargs)
         episode_reward = 0
         done = False
         while not done:
@@ -144,9 +145,10 @@ def evaluate(cfg: DictConfig):
 
     results = {}
 
-    # Baseline
+    # Baseline (seeded for reproducibility)
+    eval_seed = cfg.seed * 1000
     logger.info("Evaluating baseline agent...")
-    baseline_returns = evaluate_agent(baseline_agent, env, num_eval_episodes)
+    baseline_returns = evaluate_agent(baseline_agent, env, num_eval_episodes, seed=eval_seed)
     baseline_forget_scores = compute_forget_scores(baseline_agent, trajectories, device) if trajectories else []
     results["baseline"] = {
         "returns": baseline_returns,
@@ -160,7 +162,7 @@ def evaluate(cfg: DictConfig):
 
     for method_name, agent in methods.items():
         logger.info(f"Evaluating {method_name}...")
-        method_returns = evaluate_agent(agent, env, num_eval_episodes)
+        method_returns = evaluate_agent(agent, env, num_eval_episodes, seed=eval_seed)
         method_forget_scores = compute_forget_scores(agent, trajectories, device) if trajectories else []
 
         results[method_name] = {
@@ -170,12 +172,13 @@ def evaluate(cfg: DictConfig):
 
         logger.info(f"  {method_name} return: {np.mean(method_returns):.2f} ± {np.std(method_returns):.2f}")
 
-        # Compute unlearning metrics
+        # Compute unlearning metrics (with baseline forget scores for relative effectiveness)
         if method_forget_scores:
             metrics = metrics_tracker.compute_all_metrics(
                 forget_scores=method_forget_scores,
                 retain_returns=method_returns,
                 baseline_returns=baseline_returns,
+                baseline_forget_scores=baseline_forget_scores,
             )
             all_metrics[method_name] = metrics
 
@@ -251,6 +254,33 @@ def evaluate(cfg: DictConfig):
     _plot_comparison(results, all_metrics, cfg, output_dir, logger)
 
     env.close()
+
+    # ---- Record behavior videos for each model ----
+    video_dir = output_dir / "videos"
+    video_seed = cfg.seed * 2000
+    all_video_paths = {}
+
+    logger.info("Recording behavior videos...")
+    # Baseline
+    baseline_vids = record_videos(
+        baseline_agent, cfg.env_id, str(video_dir),
+        label="baseline", num_videos=3, seed=video_seed,
+    )
+    all_video_paths["baseline"] = baseline_vids
+
+    # Each unlearned method
+    for method_name, agent in methods.items():
+        vids = record_videos(
+            agent, cfg.env_id, str(video_dir),
+            label=method_name, num_videos=3, seed=video_seed,
+        )
+        all_video_paths[method_name] = vids
+
+    if wandb_run and any(all_video_paths.values()):
+        import wandb
+        for model_name, paths in all_video_paths.items():
+            for vp in paths:
+                wandb.log({f"videos/{model_name}": wandb.Video(vp, fps=30)})
 
     if wandb_run:
         import wandb

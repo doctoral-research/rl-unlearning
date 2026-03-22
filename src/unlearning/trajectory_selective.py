@@ -85,8 +85,11 @@ class TrajectorySelectiveForgetting:
             distance = np.linalg.norm(state1 - state2)
             return np.exp(-distance)
         elif self.target_selection_method == "cosine":
-            # Cosine similarity
-            return np.dot(state1, state2) / (np.linalg.norm(state1) * np.linalg.norm(state2))
+            # Cosine similarity (guard against zero-norm vectors)
+            norm_product = np.linalg.norm(state1) * np.linalg.norm(state2)
+            if norm_product < 1e-8:
+                return 0.0
+            return np.dot(state1, state2) / norm_product
         else:
             return 0.0
     
@@ -160,27 +163,31 @@ class TrajectorySelectiveForgetting:
         return self.forget_strength * policy_loss
     
     def _compute_retain_loss(self, batch: Dict[str, torch.Tensor]) -> torch.Tensor:
-        """Compute loss for retain data (preserve knowledge)."""
+        """Compute loss for retain data (behavior cloning to preserve knowledge).
+
+        Uses behavior cloning (maximize log-probability of recorded actions)
+        rather than policy gradient with advantages.  The retain objective is
+        simply to keep the policy close to its original behavior on retain
+        states — no return estimation is needed for that.
+        """
         observations = batch["observations"].to(self.device)
         actions = batch["actions"].to(self.device)
-        returns = batch.get("returns", batch.get("rewards")).to(self.device)
-        
-        # Standard policy gradient loss to maintain performance
-        _, log_probs, entropy, values = self.agent.network.get_action_and_value(
+
+        _, log_probs, entropy, _ = self.agent.network.get_action_and_value(
             observations, actions
         )
-        
-        # Advantage estimation
-        advantages = returns - values.flatten().detach()
-        policy_loss = -(log_probs * advantages).mean()
-        value_loss = ((values.flatten() - returns) ** 2).mean()
-        
-        return policy_loss + 0.5 * value_loss - 0.01 * entropy.mean()
+
+        # Behavior cloning: maximize probability of recorded retain actions
+        policy_loss = -log_probs.mean()
+
+        # Entropy bonus: subtracting entropy from the loss encourages the
+        # policy to maintain stochasticity on retain states rather than
+        # collapsing to a deterministic distribution.
+        return policy_loss - 0.01 * entropy.mean()
     
     def _compute_regularization(self) -> torch.Tensor:
-        """Compute regularization term."""
-        # L2 regularization
+        """Compute L2 regularization term (weight decay)."""
         l2_reg = torch.tensor(0.0, device=self.device)
         for param in self.agent.network.parameters():
-            l2_reg += torch.norm(param, 2)
+            l2_reg += param.pow(2).sum()
         return l2_reg

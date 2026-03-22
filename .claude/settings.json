@@ -1,0 +1,36 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -m pytest tests/ -v)",
+      "Bash(python -m pytest tests/test_unlearning.py tests/test_metrics.py -v)",
+      "Bash(python -m pytest tests/ -v --tb=short)",
+      "Bash(python -m pytest tests/test_agents.py -v --tb=short -k \"gae\")",
+      "Bash(python -c \"import imageio; print\\(imageio.__version__\\)\")",
+      "Bash(python -c \"import moviepy\")",
+      "Bash(python -c \"import gymnasium; env = gymnasium.make\\(''CartPole-v1'', render_mode=''rgb_array''\\); obs,_ = env.reset\\(\\); frame = env.render\\(\\); print\\(type\\(frame\\), frame.shape\\); env.close\\(\\)\")",
+      "Bash(python -c \":*)",
+      "Bash(chmod +x scripts/run_all.sh)",
+      "Bash(python -c \"import wandb; print\\(wandb.__version__\\); print\\(''logged in:'', wandb.api.api_key is not None\\)\")",
+      "Bash(WANDB_MODE=offline python src/train.py env=cartpole logging=wandb wandb.mode=offline training.total_timesteps=4096 training.eval_frequency=2048 training.save_frequency=2048)",
+      "Bash(sudo rm:*)",
+      "Bash(source .env)",
+      "Bash(export WANDB_API_KEY WANDB_MODE=offline)",
+      "Bash(python src/train.py env=cartpole logging=wandb wandb.mode=offline training.total_timesteps=4096 training.eval_frequency=2048 training.save_frequency=4096)",
+      "Bash(python src/unlearn.py env=cartpole unlearn=trajectory_selective logging=wandb wandb.mode=offline num_unlearn_steps=20 eval_frequency=10)",
+      "Bash(ls -d */)",
+      "Bash(set -a)",
+      "Bash(set +a)",
+      "Bash(bash scripts/run_all.sh)",
+      "Bash(tee experiments_run.log)",
+      "Bash(rm -f /home/tamas/work/unlearning/rl-unlearning/test_videos/*.mp4)",
+      "Bash(rm -f test_videos/*.mp4)",
+      "Bash(python -c \"import gymnasium\")",
+      "Bash(conda activate:*)",
+      "Bash(conda run:*)",
+      "Bash(conda env:*)"
+    ],
+    "additionalDirectories": [
+      "/home/tamas/work/unlearning/rl-unlearning/test_videos"
+    ]
+  }
+}

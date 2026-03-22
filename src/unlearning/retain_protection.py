@@ -49,15 +49,22 @@ class RetainProtection:
         # Initialize importance masks
         self.importance_masks = {}
         self.gradient_accumulators = {}
-        
+        self._masks_initialized = False  # first update_masks uses direct assignment
+
         if self.metaplasticity_enabled:
             self._initialize_masks()
     
     def _initialize_masks(self):
-        """Initialize importance masks for all parameters."""
+        """Initialize importance masks for all parameters.
+
+        Masks start at zero (protect nothing).  The first call to
+        ``update_masks`` will set them based on actual importance scores
+        computed from retain data, so only genuinely important parameters
+        get protected.
+        """
         for name, param in self.agent.network.named_parameters():
             if param.requires_grad:
-                self.importance_masks[name] = torch.ones_like(param.data)
+                self.importance_masks[name] = torch.zeros_like(param.data)
                 self.gradient_accumulators[name] = torch.zeros_like(param.data)
     
     def compute_importance_scores(self, data_loader) -> Dict[str, torch.Tensor]:
@@ -107,12 +114,19 @@ class RetainProtection:
                 # Threshold-based masking
                 threshold_value = torch.quantile(importance.flatten(), self.mask_threshold)
                 new_mask = (importance >= threshold_value).float()
-                
-                # Consolidate with existing mask
-                self.importance_masks[name] = (
-                    self.consolidation_strength * self.importance_masks[name] +
-                    (1 - self.consolidation_strength) * new_mask
-                )
+
+                if not self._masks_initialized:
+                    # First update: apply the computed mask directly (no prior
+                    # to blend with — EMA from zero would suppress the signal).
+                    self.importance_masks[name] = new_mask
+                else:
+                    # Subsequent updates: EMA blend with existing mask
+                    self.importance_masks[name] = (
+                        self.consolidation_strength * self.importance_masks[name] +
+                        (1 - self.consolidation_strength) * new_mask
+                    )
+
+        self._masks_initialized = True
     
     def apply_masks_to_gradients(self):
         """Apply importance masks to gradients during backprop."""
@@ -184,26 +198,34 @@ class RetainProtection:
         if retain_batch is not None:
             observations = retain_batch["observations"].to(self.device)
             actions = retain_batch["actions"].to(self.device)
-            
-            # Get student outputs
-            action_output, value = self.agent.network(observations)
-            
-            # Distillation loss
-            distill_loss = self.compute_distillation_loss(observations, action_output, value)
-            metrics["distillation_loss"] = distill_loss.item()
-            
-            # Standard retain loss
-            _, log_probs, entropy, values = self.agent.network.get_action_and_value(
-                observations, actions
+
+            # Single forward pass through the shared backbone.
+            # We need both raw logits (for distillation) and log_probs/entropy
+            # (for retain loss) from the SAME computation graph.
+            action_logits, value = self.agent.network(observations)
+
+            # Distillation loss (uses raw logits and value)
+            distill_loss = self.compute_distillation_loss(
+                observations, action_logits, value
             )
-            
-            if "returns" in retain_batch:
-                returns = retain_batch["returns"].to(self.device)
-                advantages = returns - values.flatten().detach()
-                policy_loss = -(log_probs * advantages).mean()
-                value_loss = ((values.flatten() - returns) ** 2).mean()
-                retain_loss = policy_loss + 0.5 * value_loss - 0.01 * entropy.mean()
-                metrics["retain_loss"] = retain_loss.item()
+            metrics["distillation_loss"] = distill_loss.item()
+
+            # Compute log_probs and entropy from the same logits
+            if self.agent.action_type == "discrete":
+                dist = torch.distributions.Categorical(logits=action_logits)
+                log_probs = dist.log_prob(actions)
+                entropy = dist.entropy()
+            else:
+                action_mean = action_logits  # for continuous, "logits" are means
+                action_std = torch.exp(self.agent.network.actor_logstd.expand_as(action_mean))
+                dist = torch.distributions.Normal(action_mean, action_std)
+                log_probs = dist.log_prob(actions).sum(-1)
+                entropy = dist.entropy().sum(-1)
+
+            # Behavior-cloning retain loss (no advantages needed)
+            policy_loss = -log_probs.mean()
+            retain_loss = policy_loss - 0.01 * entropy.mean()
+            metrics["retain_loss"] = retain_loss.item()
         
         # Total loss
         total_loss = unlearn_loss + retain_loss + distill_loss

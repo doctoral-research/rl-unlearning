@@ -15,7 +15,7 @@ import torch
 from tqdm import tqdm
 
 from agents import PPOAgent
-from utils import set_seed, get_device, create_directories, setup_logger, save_checkpoint
+from utils import set_seed, get_device, create_directories, setup_logger, save_checkpoint, record_videos
 from utils.buffers import TrajectoryBuffer
 
 
@@ -206,8 +206,9 @@ def train(cfg: DictConfig):
         # Evaluation
         if global_step % cfg.training.eval_frequency == 0:
             eval_rewards = []
-            for _ in range(cfg.training.num_eval_episodes):
-                eval_obs, _ = env.reset()
+            eval_seed = cfg.seed * 1000
+            for ep_i in range(cfg.training.num_eval_episodes):
+                eval_obs, _ = env.reset(seed=eval_seed + ep_i)
                 eval_reward = 0
                 eval_done = False
                 
@@ -260,7 +261,20 @@ def train(cfg: DictConfig):
     logger.info(f"Saved {len(trajectory_buffer)} trajectories to {traj_path}")
     
     env.close()
-    
+
+    # Record behavior videos after training
+    video_dir = f"{cfg.output_dir}/videos"
+    video_seed = cfg.seed * 2000
+    logger.info("Recording post-training behavior videos...")
+    video_paths = record_videos(
+        agent, cfg.env_id, video_dir, label="trained",
+        num_videos=3, seed=video_seed,
+    )
+    if wandb_run and video_paths:
+        import wandb
+        for vp in video_paths:
+            wandb.log({"videos/trained": wandb.Video(vp, fps=30)})
+
     if wandb_run:
         import wandb
         wandb.finish()

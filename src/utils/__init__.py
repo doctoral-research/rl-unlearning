@@ -9,6 +9,7 @@ from .helpers import (
     RunningMeanStd,
 )
 from .buffers import ReplayBuffer, TrajectoryBuffer, DualBuffer
+from .video import record_videos
 
 __all__ = [
     "set_seed",
@@ -21,4 +22,5 @@ __all__ = [
     "ReplayBuffer",
     "TrajectoryBuffer",
     "DualBuffer",
+    "record_videos",
 ]

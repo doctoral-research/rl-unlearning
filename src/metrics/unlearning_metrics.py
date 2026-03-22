@@ -97,25 +97,38 @@ class UnlearningMetrics:
     def compute_forget_effectiveness(
         self,
         forget_trajectories_scores: List[float],
+        baseline_forget_scores: List[float] = None,
         threshold: float = 0.3,
     ) -> float:
         """
         Compute forgetting effectiveness.
-        Measures how much the agent has forgotten target behaviors.
+        Measures how much the agent has forgotten target behaviors *relative
+        to the baseline model*.  This distinguishes genuine selective
+        forgetting from indiscriminate policy collapse.
+
         Range: [0, 1], where 1 means complete forgetting.
         """
         if len(forget_trajectories_scores) == 0:
             return 0.0
-        
-        # Effectiveness is high when scores are below threshold
+
+        current_mean = np.mean(forget_trajectories_scores)
+
+        if baseline_forget_scores is not None and len(baseline_forget_scores) > 0:
+            baseline_mean = np.mean(baseline_forget_scores)
+            # Relative score reduction: how much did scores drop vs baseline?
+            if baseline_mean > 1e-8:
+                relative_reduction = max(0.0, 1.0 - current_mean / baseline_mean)
+            else:
+                relative_reduction = max(0.0, 1.0 - current_mean)
+        else:
+            relative_reduction = max(0.0, 1.0 - current_mean)
+
+        # Fraction of trajectories below threshold
         below_threshold = np.mean([score < threshold for score in forget_trajectories_scores])
-        
-        # Also consider magnitude of reduction
-        score_reduction = 1.0 - np.mean(forget_trajectories_scores)
-        
+
         # Combine both measures
-        effectiveness = 0.5 * below_threshold + 0.5 * max(0, score_reduction)
-        
+        effectiveness = 0.5 * below_threshold + 0.5 * relative_reduction
+
         return effectiveness
     
     def compute_privacy_auc(
@@ -145,17 +158,23 @@ class UnlearningMetrics:
         forget_scores: List[float],
         retain_returns: List[float],
         baseline_returns: List[float] = None,
+        baseline_forget_scores: List[float] = None,
         timesteps: List[int] = None,
     ) -> Dict[str, float]:
         """Compute all unlearning metrics."""
         metrics = {}
-        
-        # AUFC
-        if len(forget_scores) > 1:
+
+        # AUFC — only meaningful when called with a time series of scores.
+        # When called with a single snapshot (list of per-trajectory scores
+        # at one timestep), skip AUFC here; compute it after the loop from
+        # the accumulated history instead.
+        if len(forget_scores) > 1 and timesteps is not None:
             metrics["aufc"] = self.compute_aufc(forget_scores, timesteps)
-        
-        # Forget effectiveness
-        metrics["forget_effectiveness"] = self.compute_forget_effectiveness(forget_scores)
+
+        # Forget effectiveness (relative to baseline)
+        metrics["forget_effectiveness"] = self.compute_forget_effectiveness(
+            forget_scores, baseline_forget_scores=baseline_forget_scores
+        )
         
         # Retain stability
         metrics["retain_stability_index"] = self.compute_retain_stability_index(
@@ -187,7 +206,12 @@ def evaluate_trajectory_similarity(
     Returns score in [0, 1] where high score = likely to reproduce.
     """
     observations = torch.as_tensor(np.asarray(trajectory["observations"]), dtype=torch.float32).to(device)
-    actions = torch.as_tensor(np.asarray(trajectory["actions"]), dtype=torch.float32).to(device)
+    actions_np = np.asarray(trajectory["actions"])
+    # Discrete actions (integers) must be long for Categorical.log_prob
+    if np.issubdtype(actions_np.dtype, np.integer):
+        actions = torch.as_tensor(actions_np, dtype=torch.long).to(device)
+    else:
+        actions = torch.as_tensor(actions_np, dtype=torch.float32).to(device)
     
     with torch.no_grad():
         _, log_probs, _, _ = agent.network.get_action_and_value(observations, actions)

@@ -18,7 +18,7 @@ from tqdm import tqdm
 from agents import PPOAgent
 from unlearning import TrajectorySelectiveForgetting, StrategyInversion, RetainProtection
 from metrics import UnlearningMetrics, evaluate_trajectory_similarity
-from utils import set_seed, get_device, setup_logger
+from utils import set_seed, get_device, setup_logger, record_videos
 
 
 def init_wandb(cfg: DictConfig):
@@ -38,11 +38,12 @@ def init_wandb(cfg: DictConfig):
     return None
 
 
-def evaluate_agent(agent, env, num_episodes, deterministic=True):
+def evaluate_agent(agent, env, num_episodes, deterministic=True, seed=None):
     """Run evaluation episodes and return list of episode returns."""
     returns = []
-    for _ in range(num_episodes):
-        obs, _ = env.reset()
+    for i in range(num_episodes):
+        reset_kwargs = {"seed": seed + i} if seed is not None else {}
+        obs, _ = env.reset(**reset_kwargs)
         episode_reward = 0
         done = False
 
@@ -59,24 +60,31 @@ def evaluate_agent(agent, env, num_episodes, deterministic=True):
 def sample_batch_from_trajectories(
     trajectories, indices, batch_size, action_type, device
 ):
-    """Sample a batch of transitions from the given trajectory indices."""
-    num_sample = min(batch_size, len(indices))
-    sampled_indices = np.random.choice(indices, size=num_sample, replace=False)
+    """Sample a batch of transitions from the given trajectory indices.
 
+    Pools all transitions from the specified trajectories and randomly
+    samples ``batch_size`` transitions.  This gives different mini-batches
+    each call even when the trajectory set is small.
+    """
+    # Pool all transitions from the designated trajectories
     obs_list, act_list, rew_list = [], [], []
-    for idx in sampled_indices:
+    for idx in indices:
         traj = trajectories[idx]
         obs_list.extend(traj["observations"])
         act_list.extend(traj["actions"])
         rew_list.extend(traj["rewards"])
 
-    # Sub-sample transitions if too many were collected
     n_transitions = len(obs_list)
-    if n_transitions > batch_size:
-        chosen = np.random.choice(n_transitions, size=batch_size, replace=False)
-        obs_list = [obs_list[i] for i in chosen]
-        act_list = [act_list[i] for i in chosen]
-        rew_list = [rew_list[i] for i in chosen]
+    if n_transitions == 0:
+        # Edge case: empty trajectories
+        raise ValueError("No transitions found in the specified trajectory indices")
+
+    # Randomly sample batch_size transitions (with replacement if needed)
+    replace = n_transitions < batch_size
+    chosen = np.random.choice(n_transitions, size=min(batch_size, n_transitions) if not replace else batch_size, replace=replace)
+    obs_list = [obs_list[i] for i in chosen]
+    act_list = [act_list[i] for i in chosen]
+    rew_list = [rew_list[i] for i in chosen]
 
     batch = {
         "observations": torch.as_tensor(np.array(obs_list), dtype=torch.float32).to(device),
@@ -93,7 +101,11 @@ def sample_batch_from_trajectories(
 def compute_forget_scores(agent, trajectories, forget_indices, device, max_eval=10):
     """Compute trajectory similarity scores for forget trajectories."""
     scores = []
-    eval_indices = forget_indices[:max_eval] if len(forget_indices) > max_eval else forget_indices
+    if len(forget_indices) > max_eval:
+        # Random subsample to avoid bias from index ordering
+        eval_indices = list(np.random.choice(forget_indices, size=max_eval, replace=False))
+    else:
+        eval_indices = forget_indices
     for idx in eval_indices:
         score = evaluate_trajectory_similarity(agent, trajectories[idx], str(device))
         scores.append(score)
@@ -230,6 +242,11 @@ def unlearn(cfg: DictConfig):
             device=str(device),
         )
 
+        # Use real trajectory observations as seeds instead of random OOD states
+        if trajectories:
+            strategy_inv.set_reference_states(trajectories)
+            logger.info("Set reference states from training trajectories")
+
         # Generate synthetic forget states
         logger.info("Generating synthetic forget states...")
         forget_states = strategy_inv.generate_forget_states()
@@ -268,12 +285,24 @@ def unlearn(cfg: DictConfig):
         )
         logger.info("Retain protection initialized (wrapping trajectory_selective)")
 
-        # Identify forget targets (same as trajectory_selective)
-        if trajectories:
+        # Identify forget targets using the same logic as trajectory_selective:
+        # try toxic_states first, fall back to reward-based selection.
+        toxic_states = cfg.get("toxic_states", None)
+        if toxic_states:
+            toxic_states = [np.array(s) for s in toxic_states]
+
+        forget_indices = unlearning_method.identify_forget_trajectories(
+            trajectories,
+            toxic_states=toxic_states,
+        )
+
+        if not forget_indices and trajectories:
             traj_returns = [sum(t["rewards"]) for t in trajectories]
             num_forget = max(1, int(len(trajectories) * 0.1))
             forget_indices = list(np.argsort(traj_returns)[-num_forget:])
-            logger.info(f"Using top-{num_forget} reward trajectories as forget targets")
+            logger.info(f"No toxic states provided; using top-{num_forget} reward trajectories as forget targets")
+        else:
+            logger.info(f"Identified {len(forget_indices)} trajectories to forget via toxic state matching")
 
     else:
         logger.error(f"Unknown unlearning method: {cfg.method}")
@@ -283,6 +312,24 @@ def unlearn(cfg: DictConfig):
     all_indices = set(range(len(trajectories)))
     retain_indices = sorted(all_indices - set(forget_indices))
     logger.info(f"Retain set: {len(retain_indices)} trajectories")
+
+    # Pre-compute frozen original-policy actions for strategy_inversion
+    # so the unlearning target doesn't shift as the policy changes.
+    frozen_forget_actions = None
+    if cfg.method == "strategy_inversion" and forget_states:
+        logger.info("Pre-computing original policy actions for forget states...")
+        all_states = np.array(forget_states)
+        obs_tensor = torch.as_tensor(all_states, dtype=torch.float32).to(device)
+        with torch.no_grad():
+            # Use argmax (most likely action) rather than a stochastic sample.
+            # Unlearning the policy's *preferred* action at each state gives a
+            # stronger, more targeted signal than unlearning a random sample.
+            action_output, _ = agent.network(obs_tensor)
+            if agent.action_type == "discrete":
+                frozen_forget_actions = torch.argmax(action_output, dim=-1).to(device)
+            else:
+                frozen_forget_actions = action_output.to(device)
+        logger.info(f"Cached {len(frozen_forget_actions)} frozen actions")
 
     # Compute importance masks from retain data before unlearning starts
     if retain_protection is not None and retain_protection.metaplasticity_enabled and retain_indices:
@@ -302,12 +349,23 @@ def unlearn(cfg: DictConfig):
     # Initialize metrics
     metrics_tracker = UnlearningMetrics()
 
-    # Evaluate baseline performance
+    # Evaluate baseline performance (seeded for reproducibility)
     logger.info("Evaluating baseline performance...")
     num_eval_episodes = cfg.training.num_eval_episodes
-    baseline_returns = evaluate_agent(agent, env, num_eval_episodes)
+    eval_seed = cfg.seed * 1000
+    baseline_returns = evaluate_agent(agent, env, num_eval_episodes, seed=eval_seed)
     metrics_tracker.set_baseline(baseline_returns)
     logger.info(f"Baseline performance: {np.mean(baseline_returns):.2f} ± {np.std(baseline_returns):.2f}")
+
+    # Record pre-unlearning behavior videos
+    video_dir = f"{cfg.output_dir}/videos"
+    video_seed = cfg.seed * 2000
+    logger.info("Recording pre-unlearning behavior videos...")
+    record_videos(
+        agent, cfg.env_id, video_dir,
+        label=f"before_{cfg.method}",
+        num_videos=3, seed=video_seed,
+    )
 
     # Compute baseline forget scores for tracking progress
     baseline_forget_scores = []
@@ -331,19 +389,17 @@ def unlearn(cfg: DictConfig):
         step_metrics = {}
 
         if cfg.method == "strategy_inversion" and forget_states:
-            # Build forget batch from synthetic states with current policy actions
+            # Build forget batch from synthetic states with FROZEN original actions.
+            # Using the original policy's actions prevents the moving-target problem
+            # where the policy oscillates as we unlearn its current action each step.
             n_states = min(batch_size, len(forget_states))
             state_indices = np.random.choice(len(forget_states), size=n_states, replace=True)
             batch_states = np.array([forget_states[i] for i in state_indices])
             obs_tensor = torch.as_tensor(batch_states, dtype=torch.float32).to(device)
 
-            # Get current policy's actions for these states (to unlearn them)
-            with torch.no_grad():
-                actions, _, _, _ = agent.network.get_action_and_value(obs_tensor)
-
             forget_batch = {
                 "observations": obs_tensor,
-                "actions": actions.to(device),
+                "actions": frozen_forget_actions[state_indices],
                 "rewards": torch.zeros(len(batch_states)).to(device),
             }
 
@@ -391,7 +447,7 @@ def unlearn(cfg: DictConfig):
 
         # Periodic evaluation
         if step % eval_frequency == 0:
-            eval_returns = evaluate_agent(agent, env, num_eval_episodes)
+            eval_returns = evaluate_agent(agent, env, num_eval_episodes, seed=eval_seed)
 
             # Compute forget scores
             forget_scores = []
@@ -400,12 +456,13 @@ def unlearn(cfg: DictConfig):
                     agent, trajectories, forget_indices, device
                 )
 
-            # Compute metrics
+            # Compute metrics (with baseline forget scores for relative effectiveness)
             if forget_scores:
                 metrics = metrics_tracker.compute_all_metrics(
                     forget_scores=forget_scores,
                     retain_returns=eval_returns,
                     baseline_returns=baseline_returns,
+                    baseline_forget_scores=baseline_forget_scores,
                 )
                 metrics.update(step_metrics)
                 all_metrics_history.append({"step": step, **metrics})
@@ -472,7 +529,7 @@ def unlearn(cfg: DictConfig):
 
     # ---- Final evaluation ----
     logger.info("Final evaluation...")
-    final_returns = evaluate_agent(agent, env, num_eval_episodes * 2)
+    final_returns = evaluate_agent(agent, env, num_eval_episodes * 2, seed=eval_seed)
     logger.info(f"Final performance: {np.mean(final_returns):.2f} ± {np.std(final_returns):.2f}")
 
     # Final forget scores
@@ -482,7 +539,17 @@ def unlearn(cfg: DictConfig):
             forget_scores=final_forget_scores,
             retain_returns=final_returns,
             baseline_returns=baseline_returns,
+            baseline_forget_scores=baseline_forget_scores,
         )
+
+        # Compute AUFC from the time series of mean forget scores
+        if all_metrics_history:
+            forget_score_series = [m["mean_forget_score"] for m in all_metrics_history]
+            step_series = [m["step"] for m in all_metrics_history]
+            final_metrics["aufc"] = metrics_tracker.compute_aufc(
+                forget_score_series, step_series
+            )
+
         logger.info("--- Final Metrics ---")
         for k, v in final_metrics.items():
             logger.info(f"  {k}: {v:.4f}")
@@ -508,6 +575,18 @@ def unlearn(cfg: DictConfig):
 
     env.close()
 
+    # Record post-unlearning behavior videos
+    logger.info("Recording post-unlearning behavior videos...")
+    post_paths = record_videos(
+        agent, cfg.env_id, video_dir,
+        label=f"after_{cfg.method}",
+        num_videos=3, seed=video_seed,
+    )
+    if wandb_run and post_paths:
+        import wandb
+        for vp in post_paths:
+            wandb.log({f"videos/after_{cfg.method}": wandb.Video(vp, fps=30)})
+
     if wandb_run:
         import wandb
         wandb.finish()
@@ -515,16 +594,24 @@ def unlearn(cfg: DictConfig):
 
 
 def _match_trajectories_to_states(trajectories, forget_states, max_matches=10):
-    """Find trajectory indices whose observations are closest to the forget states."""
-    forget_states_arr = np.array(forget_states)
-    mean_forget = forget_states_arr.mean(axis=0)
+    """Find trajectory indices whose observations are closest to the forget states.
 
-    # Score each trajectory by how close its mean observation is to the forget region
+    Uses minimum per-state distance rather than mean-observation distance,
+    so a trajectory that *passes through* the forget region is matched even
+    if it spends most of its time elsewhere.
+    """
+    forget_states_arr = np.array(forget_states)  # (N_forget, obs_dim)
+
     scores = []
     for i, traj in enumerate(trajectories):
-        mean_obs = np.mean(traj["observations"], axis=0)
-        dist = np.linalg.norm(mean_obs - mean_forget)
-        scores.append((dist, i))
+        obs = np.array(traj["observations"])  # (T, obs_dim)
+        # Minimum distance from any observation in the trajectory to any forget state
+        # Efficient: compute pairwise distances between obs and forget_states
+        # Use broadcasting: (T,1,D) - (1,N,D) -> (T,N,D) -> (T,N) -> scalar
+        diffs = obs[:, None, :] - forget_states_arr[None, :, :]
+        dists = np.linalg.norm(diffs, axis=-1)  # (T, N_forget)
+        min_dist = dists.min()
+        scores.append((min_dist, i))
 
     scores.sort()
     return [idx for _, idx in scores[:max_matches]]
