@@ -117,6 +117,7 @@ class PPOAgent:
         observations = torch.as_tensor(np.array(rollout_buffer["observations"]), dtype=torch.float32).to(self.device)
         actions = torch.as_tensor(np.array(rollout_buffer["actions"]), dtype=torch.float32).to(self.device)
         old_log_probs = torch.as_tensor(np.array(rollout_buffer["log_probs"]), dtype=torch.float32).to(self.device)
+        old_values = torch.as_tensor(np.array(rollout_buffer["values"]), dtype=torch.float32).to(self.device)
         advantages = torch.as_tensor(np.asarray(rollout_buffer["advantages"]), dtype=torch.float32).to(self.device)
         returns = torch.as_tensor(np.asarray(rollout_buffer["returns"]), dtype=torch.float32).to(self.device)
         
@@ -140,6 +141,7 @@ class PPOAgent:
                 batch_obs = observations[batch_indices]
                 batch_actions = actions[batch_indices]
                 batch_old_log_probs = old_log_probs[batch_indices]
+                batch_old_values = old_values[batch_indices]
                 batch_advantages = advantages[batch_indices]
                 batch_returns = returns[batch_indices]
                 
@@ -157,8 +159,8 @@ class PPOAgent:
                 # Value loss
                 values = values.flatten()
                 if self.clip_value:
-                    values_clipped = batch_returns + torch.clamp(
-                        values - batch_returns,
+                    values_clipped = batch_old_values + torch.clamp(
+                        values - batch_old_values,
                         -self.clip_epsilon,
                         self.clip_epsilon
                     )

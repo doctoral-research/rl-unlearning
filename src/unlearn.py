@@ -266,7 +266,7 @@ def unlearn(cfg: DictConfig):
         # Use higher forget_strength here since masks will protect retained knowledge
         unlearning_method = TrajectorySelectiveForgetting(
             agent=agent,
-            forget_strength=cfg.get("forget_strength", 0.3),
+            forget_strength=cfg.get("forget_strength", 1.0),
             loss_decomposition=True,
             target_selection_method="similarity",
             target_selection_threshold=0.8,

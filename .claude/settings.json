@@ -30,7 +30,16 @@
       "Bash(conda env:*)",
       "Bash(docker compose:*)",
       "Bash(xargs -r docker stop)",
-      "Bash(xargs -r docker rm -f)"
+      "Bash(xargs -r docker rm -f)",
+      "Bash(python -m json.tool)",
+      "Bash(for env:*)",
+      "Bash(do echo:*)",
+      "Bash(for method:*)",
+      "Read(//home/tamas/work/unlearning/rl-unlearning/experiments/outputs/$env_ppo_seed42/**)",
+      "Bash(done)",
+      "Bash(grep -r \"Training complete\\\\|Final eval\\\\|best_eval\\\\|training_return\\\\|Eval\" experiments/logs/*/train.log)",
+      "Read(//home/tamas/work/unlearning/rl-unlearning/experiments/checkpoints/**)",
+      "Bash(grep -A5 \"lunarlander\" configs/env/*.yaml)"
     ],
     "additionalDirectories": [
       "/home/tamas/work/unlearning/rl-unlearning/test_videos"

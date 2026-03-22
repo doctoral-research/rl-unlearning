@@ -95,6 +95,8 @@ def train(cfg: DictConfig):
     episode_count = 0
     episode_rewards = []
     episode_lengths = []
+    next_eval_step = cfg.training.eval_frequency
+    next_save_step = cfg.training.save_frequency
     
     # Rollout buffer
     rollout_buffer = {
@@ -206,7 +208,7 @@ def train(cfg: DictConfig):
             rollout_buffer[key] = []
         
         # Evaluation
-        if global_step % cfg.training.eval_frequency == 0:
+        if global_step >= next_eval_step:
             eval_rewards = []
             eval_seed = cfg.seed * 1000
             for ep_i in range(cfg.training.num_eval_episodes):
@@ -231,9 +233,10 @@ def train(cfg: DictConfig):
                     "eval/mean_reward": mean_eval_reward,
                     "eval/std_reward": np.std(eval_rewards),
                 }, step=global_step)
-        
+            next_eval_step += cfg.training.eval_frequency
+
         # Save checkpoint
-        if global_step % cfg.training.save_frequency == 0:
+        if global_step >= next_save_step:
             checkpoint_path = f"{cfg.training.checkpoint_dir}/checkpoint_{global_step}.pt"
             Path(cfg.training.checkpoint_dir).mkdir(parents=True, exist_ok=True)
             save_checkpoint(
@@ -244,7 +247,8 @@ def train(cfg: DictConfig):
                 checkpoint_path,
             )
             logger.info(f"Saved checkpoint to {checkpoint_path}")
-        
+            next_save_step += cfg.training.save_frequency
+
         pbar.update(cfg.n_steps)
     
     pbar.close()

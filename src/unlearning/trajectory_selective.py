@@ -33,7 +33,7 @@ class TrajectorySelectiveForgetting:
         self.loss_weights = loss_weights or {
             "forget": 1.0,
             "retain": 1.0,
-            "regularization": 0.01,
+            "regularization": 0.001,
         }
         
         self.forget_trajectories = []
@@ -142,24 +142,43 @@ class TrajectorySelectiveForgetting:
         return metrics
     
     def _compute_forget_loss(self, batch: Dict[str, torch.Tensor]) -> torch.Tensor:
-        """Compute loss for forget data (negative learning signal)."""
+        """Compute loss for forget data (negative learning signal).
+
+        Two complementary objectives:
+        1. Gradient ascent on log_prob: increase the loss the policy would
+           normally minimize, pushing it away from these actions.
+        2. Entropy maximisation: push the policy toward uniform randomness
+           on forget states so it has no preference.
+        """
         observations = batch["observations"].to(self.device)
         actions = batch["actions"].to(self.device)
-        
+
         # Get policy outputs
-        _, log_probs, entropy, values = self.agent.network.get_action_and_value(
-            observations, actions
-        )
-        
-        # Negative learning: encourage opposite behavior
-        if self.gradient_reversal:
-            # Reverse gradient to decrease probability of these actions
-            policy_loss = log_probs.mean()  # Positive to decrease log prob
+        action_output, value = self.agent.network(observations)
+
+        if self.agent.action_type == "discrete":
+            dist = torch.distributions.Categorical(logits=action_output)
+            log_probs = dist.log_prob(actions)
+            entropy = dist.entropy()
+
+            if self.gradient_reversal:
+                # Ascend on log-prob (make these actions less likely)
+                # AND push toward uniform (maximize entropy)
+                policy_loss = log_probs.mean() - entropy.mean()
+            else:
+                policy_loss = -entropy.mean()
         else:
-            # Or maximize entropy to make policy uncertain
-            policy_loss = -entropy.mean()
-        
-        # Scale by forget strength
+            action_mean = action_output
+            action_std = torch.exp(self.agent.network.actor_logstd.expand_as(action_mean))
+            dist = torch.distributions.Normal(action_mean, action_std)
+            log_probs = dist.log_prob(actions).sum(-1)
+            entropy = dist.entropy().sum(-1)
+
+            if self.gradient_reversal:
+                policy_loss = log_probs.mean() - entropy.mean()
+            else:
+                policy_loss = -entropy.mean()
+
         return self.forget_strength * policy_loss
     
     def _compute_retain_loss(self, batch: Dict[str, torch.Tensor]) -> torch.Tensor:

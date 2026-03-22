@@ -4,10 +4,10 @@ unlearn_name: retain_protection
 
 # Unlearning optimizer (separate from training optimizer)
 # Higher LR than others — masks protect important params so we can push harder
-unlearn_lr: 1e-4
-retain_stability_threshold: 0.7  # Same threshold as others for fair comparison
-num_unlearn_steps: 500
-eval_frequency: 25
+unlearn_lr: 3e-4
+retain_stability_threshold: 0.5
+num_unlearn_steps: 2000
+eval_frequency: 100
 
 # Metaplasticity masks
 metaplasticity:
