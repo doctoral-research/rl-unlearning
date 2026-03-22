@@ -7,7 +7,6 @@ services:
       dockerfile: docker/Dockerfile.GPU
     image: rl-unlearning:gpu
     container_name: rl-unlearning
-    user: "${USER_ID:-1000}:${GROUP_ID:-1000}"
     volumes:
       - .:/workspace
     working_dir: /workspace
@@ -20,6 +19,8 @@ services:
       - WANDB_ENTITY=${WANDB_ENTITY:-}
       - WANDB_PROJECT=${WANDB_PROJECT:-}
       - HOME=/workspace
+      - HOST_UID=${USER_ID:-1000}
+      - HOST_GID=${GROUP_ID:-1000}
     ipc: host
     shm_size: 8gb
     deploy:

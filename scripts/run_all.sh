@@ -116,3 +116,9 @@ echo "    Videos:      experiments/outputs/*/videos/"
 echo "    Plots:       experiments/outputs/*/evaluation_comparison.png"
 echo "    Metrics:     experiments/outputs/*/evaluation_metrics.json"
 echo "============================================================"
+
+# Fix file ownership if running in Docker as root
+if [ "$(id -u)" = "0" ] && [ -n "${HOST_UID:-}" ]; then
+    echo "Fixing file ownership to ${HOST_UID}:${HOST_GID:-$HOST_UID}..."
+    chown -R "${HOST_UID}:${HOST_GID:-$HOST_UID}" experiments/ wandb/ 2>/dev/null || true
+fi
