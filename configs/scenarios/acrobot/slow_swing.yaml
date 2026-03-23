@@ -1,0 +1,27 @@
+name: slow_swing
+description: >
+  Forget high-velocity swinging. After unlearning, the agent should solve
+  the task using controlled, low-velocity movements rather than aggressive
+  swinging. This likely makes the task harder or impossible, testing whether
+  unlearning can restrict the behavioral envelope.
+env_id: Acrobot-v1
+
+# Forget trajectories where either joint has high angular velocity.
+match_mode: any_step
+
+# obs: [cos_theta1, sin_theta1, cos_theta2, sin_theta2, theta1_dot, theta2_dot]
+groups:
+  - name: fast_joint1
+    conditions:
+      - dim: 4
+        dim_name: theta1_dot
+        op: "abs>"
+        value: 6.0
+        target: state
+  - name: fast_joint2
+    conditions:
+      - dim: 5
+        dim_name: theta2_dot
+        op: "abs>"
+        value: 14.0
+        target: state

@@ -1,0 +1,23 @@
+name: no_clockwise
+description: >
+  Forget the clockwise swing-up strategy. The Acrobot typically learns to
+  swing both clockwise and counterclockwise to build momentum. After
+  unlearning, the agent should only use counterclockwise swings (negative
+  theta1_dot) to reach the goal. Tests whether a specific strategy path
+  can be removed while preserving the alternative.
+env_id: Acrobot-v1
+
+# Forget trajectories that spend significant time swinging clockwise.
+# theta1_dot > 2.0 indicates meaningful clockwise rotation (not just noise).
+match_mode: proportion
+match_threshold: 0.2
+
+# obs: [cos_theta1, sin_theta1, cos_theta2, sin_theta2, theta1_dot, theta2_dot]
+groups:
+  - name: clockwise_swing
+    conditions:
+      - dim: 4
+        dim_name: theta1_dot
+        op: ">"
+        value: 2.0
+        target: state

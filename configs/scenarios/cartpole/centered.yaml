@@ -1,0 +1,27 @@
+name: centered
+description: >
+  Forget behavior at the edges of the track. After unlearning, the agent should
+  only balance when the cart stays near the center (|x| < 1.0). Tests whether
+  unlearning can restrict the agent's operating range without destroying the
+  core balancing skill.
+env_id: CartPole-v1
+
+# Forget trajectories that ever reach the outer zones.
+match_mode: any_step
+
+# obs: [cart_position, cart_velocity, pole_angle, pole_angular_velocity]
+groups:
+  - name: far_right
+    conditions:
+      - dim: 0
+        dim_name: cart_position
+        op: ">"
+        value: 1.0
+        target: state
+  - name: far_left
+    conditions:
+      - dim: 0
+        dim_name: cart_position
+        op: "<"
+        value: -1.0
+        target: state

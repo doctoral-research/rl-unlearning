@@ -19,6 +19,7 @@ from agents import PPOAgent
 from unlearning import TrajectorySelectiveForgetting, StrategyInversion, RetainProtection
 from metrics import UnlearningMetrics, evaluate_trajectory_similarity
 from utils import set_seed, get_device, setup_logger, record_videos
+from scenarios import ForgetScenario
 
 
 def init_wandb(cfg: DictConfig):
@@ -182,6 +183,12 @@ def unlearn(cfg: DictConfig):
         logger.warning("No trajectories found, generating random forget targets")
         trajectories = []
 
+    # ---- Load forget scenario (if configured) ----
+    scenario = ForgetScenario.from_config(cfg)
+    if scenario:
+        logger.info(f"Loaded scenario: {scenario.name}")
+        logger.info(scenario.summary())
+
     # ---- Initialize unlearning method and identify forget/retain sets ----
     forget_indices = []
     retain_indices = []
@@ -201,23 +208,22 @@ def unlearn(cfg: DictConfig):
             device=str(device),
         )
 
-        # Identify forget trajectories
-        toxic_states = cfg.get("toxic_states", None)
-        if toxic_states:
-            toxic_states = [np.array(s) for s in toxic_states]
-
-        forget_indices = unlearning_method.identify_forget_trajectories(
-            trajectories,
-            toxic_states=toxic_states,
-        )
-
-        # If no toxic states matched, use reward-based selection as fallback:
-        # forget the top-performing trajectories (high-reward region unlearning)
-        if not forget_indices and trajectories:
-            traj_returns = [sum(t["rewards"]) for t in trajectories]
-            num_forget = max(1, int(len(trajectories) * 0.1))
-            forget_indices = list(np.argsort(traj_returns)[-num_forget:])
-            logger.info(f"No toxic states provided; using top-{num_forget} reward trajectories as forget targets")
+        # Identify forget trajectories: scenario > toxic_states > reward fallback
+        if scenario and trajectories:
+            forget_indices = scenario.identify_forget_trajectories(trajectories)
+            logger.info(f"Scenario '{scenario.name}' matched {len(forget_indices)} forget trajectories")
+        else:
+            toxic_states = cfg.get("toxic_states", None)
+            if toxic_states:
+                toxic_states = [np.array(s) for s in toxic_states]
+            forget_indices = unlearning_method.identify_forget_trajectories(
+                trajectories, toxic_states=toxic_states,
+            )
+            if not forget_indices and trajectories:
+                traj_returns = [sum(t["rewards"]) for t in trajectories]
+                num_forget = max(1, int(len(trajectories) * 0.1))
+                forget_indices = list(np.argsort(traj_returns)[-num_forget:])
+                logger.info(f"No scenario/toxic_states; using top-{num_forget} reward trajectories as forget targets")
 
         logger.info(f"Identified {len(forget_indices)} trajectories to forget")
 
@@ -244,10 +250,24 @@ def unlearn(cfg: DictConfig):
             device=str(device),
         )
 
-        # Use real trajectory observations as seeds instead of random OOD states
-        if trajectories:
-            strategy_inv.set_reference_states(trajectories)
-            logger.info("Set reference states from training trajectories")
+        if scenario and trajectories:
+            # Scenario-guided: first identify forget trajectories, then use
+            # their matching states as seeds for synthetic state generation.
+            forget_indices = scenario.identify_forget_trajectories(trajectories)
+            logger.info(f"Scenario '{scenario.name}' matched {len(forget_indices)} forget trajectories")
+
+            if forget_indices:
+                scenario_states = scenario.get_forget_states_from_trajectories(
+                    trajectories, forget_indices
+                )
+                if scenario_states:
+                    strategy_inv.reference_states = np.array(scenario_states)
+                    logger.info(f"Set {len(scenario_states)} scenario-matched states as seeds")
+        else:
+            # Original: use all trajectory observations as seeds
+            if trajectories:
+                strategy_inv.set_reference_states(trajectories)
+                logger.info("Set reference states from training trajectories")
 
         # Generate synthetic forget states
         logger.info("Generating synthetic forget states...")
@@ -255,15 +275,13 @@ def unlearn(cfg: DictConfig):
         logger.info(f"Generated {len(forget_states)} forget states")
 
         # For evaluation: identify closest real trajectories to the forget states
-        if trajectories and forget_states:
+        if trajectories and forget_states and not forget_indices:
             forget_indices = _match_trajectories_to_states(
                 trajectories, forget_states, max_matches=max(1, int(len(trajectories) * 0.1))
             )
             logger.info(f"Matched {len(forget_indices)} trajectories near forget states")
 
     elif cfg.method == "retain_protection":
-        # Retain protection wraps another unlearning method (trajectory_selective by default)
-        # Use higher forget_strength here since masks will protect retained knowledge
         unlearning_method = TrajectorySelectiveForgetting(
             agent=agent,
             forget_strength=cfg.get("forget_strength", 1.0),
@@ -287,24 +305,22 @@ def unlearn(cfg: DictConfig):
         )
         logger.info("Retain protection initialized (wrapping trajectory_selective)")
 
-        # Identify forget targets using the same logic as trajectory_selective:
-        # try toxic_states first, fall back to reward-based selection.
-        toxic_states = cfg.get("toxic_states", None)
-        if toxic_states:
-            toxic_states = [np.array(s) for s in toxic_states]
-
-        forget_indices = unlearning_method.identify_forget_trajectories(
-            trajectories,
-            toxic_states=toxic_states,
-        )
-
-        if not forget_indices and trajectories:
-            traj_returns = [sum(t["rewards"]) for t in trajectories]
-            num_forget = max(1, int(len(trajectories) * 0.1))
-            forget_indices = list(np.argsort(traj_returns)[-num_forget:])
-            logger.info(f"No toxic states provided; using top-{num_forget} reward trajectories as forget targets")
+        # Identify forget targets: scenario > toxic_states > reward fallback
+        if scenario and trajectories:
+            forget_indices = scenario.identify_forget_trajectories(trajectories)
+            logger.info(f"Scenario '{scenario.name}' matched {len(forget_indices)} forget trajectories")
         else:
-            logger.info(f"Identified {len(forget_indices)} trajectories to forget via toxic state matching")
+            toxic_states = cfg.get("toxic_states", None)
+            if toxic_states:
+                toxic_states = [np.array(s) for s in toxic_states]
+            forget_indices = unlearning_method.identify_forget_trajectories(
+                trajectories, toxic_states=toxic_states,
+            )
+            if not forget_indices and trajectories:
+                traj_returns = [sum(t["rewards"]) for t in trajectories]
+                num_forget = max(1, int(len(trajectories) * 0.1))
+                forget_indices = list(np.argsort(traj_returns)[-num_forget:])
+                logger.info(f"No scenario/toxic_states; using top-{num_forget} reward trajectories as forget targets")
 
     else:
         logger.error(f"Unknown unlearning method: {cfg.method}")

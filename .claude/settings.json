@@ -39,7 +39,19 @@
       "Bash(done)",
       "Bash(grep -r \"Training complete\\\\|Final eval\\\\|best_eval\\\\|training_return\\\\|Eval\" experiments/logs/*/train.log)",
       "Read(//home/tamas/work/unlearning/rl-unlearning/experiments/checkpoints/**)",
-      "Bash(grep -A5 \"lunarlander\" configs/env/*.yaml)"
+      "Bash(grep -A5 \"lunarlander\" configs/env/*.yaml)",
+      "Bash(docker ps:*)",
+      "Read(//home/tamas/work/unlearning/rl-unlearning/**)",
+      "Bash(chmod +x /home/tamas/work/unlearning/rl-unlearning/scripts/run_unlearn_seeds.sh)",
+      "Bash(ls experiments/outputs/*/evaluation_metrics.json)",
+      "Bash(ls experiments/outputs/*seed43*/)",
+      "Bash(ls experiments/outputs/*seed42*/trajectories.pkl)",
+      "Bash(docker stop:*)",
+      "Bash(docker run:*)",
+      "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python -c \":*)",
+      "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/unlearn.py env=cartpole unlearn=trajectory_selective seed=42 scenario=cartpole/left_only)",
+      "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/unlearn.py env=cartpole unlearn=strategy_inversion seed=42 scenario=cartpole/left_only)",
+      "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/unlearn.py env=cartpole unlearn=retain_protection seed=42 scenario=cartpole/left_only)"
     ],
     "additionalDirectories": [
       "/home/tamas/work/unlearning/rl-unlearning/test_videos"

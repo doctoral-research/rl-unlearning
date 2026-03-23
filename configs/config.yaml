@@ -9,6 +9,10 @@ defaults:
 seed: 42
 device: auto  # auto, cpu, cuda
 
+# Forget scenario (e.g. cartpole/left_only, acrobot/no_clockwise)
+# Set to null to use the default reward-based forget target selection.
+scenario: null
+
 # Deterministic naming: {env}_{agent}_seed{seed}
 # Training outputs go to: experiments/{checkpoints,logs,outputs}/{experiment_name}/
 # Unlearning outputs nest under the same experiment with method suffix

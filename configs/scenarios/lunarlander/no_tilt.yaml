@@ -1,0 +1,20 @@
+name: no_tilt
+description: >
+  Forget tilted flight. After unlearning, the agent should keep the lander
+  nearly upright at all times (|angle| < 0.2 rad). Tests whether a
+  behavioral constraint can be enforced across the entire episode.
+env_id: LunarLander-v3
+
+# Forget trajectories that spend significant time tilted.
+match_mode: proportion
+match_threshold: 0.25
+
+# obs: [x, y, vx, vy, angle, angular_velocity, left_leg_contact, right_leg_contact]
+groups:
+  - name: tilted
+    conditions:
+      - dim: 4
+        dim_name: angle
+        op: "abs>"
+        value: 0.2
+        target: state

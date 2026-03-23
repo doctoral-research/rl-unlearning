@@ -1,0 +1,23 @@
+name: left_only
+description: >
+  Forget right-side balancing. After unlearning, the agent should only be able
+  to balance the pole while keeping the cart on the left side (negative x).
+  Tests whether unlearning can remove behavior in a specific state region
+  while preserving the same skill in the complementary region.
+env_id: CartPole-v1
+
+# A trajectory is forgotten if it spends >=30% of its time on the right side.
+# Using proportion mode because with a good policy the cart oscillates around
+# center -- any_step would catch nearly all trajectories.
+match_mode: proportion
+match_threshold: 0.3
+
+# obs: [cart_position, cart_velocity, pole_angle, pole_angular_velocity]
+groups:
+  - name: right_side
+    conditions:
+      - dim: 0
+        dim_name: cart_position
+        op: ">"
+        value: 0.0
+        target: state

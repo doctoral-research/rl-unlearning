@@ -1,0 +1,36 @@
+name: center_landing
+description: >
+  Forget off-center landing approaches. After unlearning, the agent should
+  only land near the center pad (|x| < 0.2). Tests whether spatial
+  targeting can restrict where the agent operates.
+env_id: LunarLander-v3
+
+# Forget trajectories where the lander is significantly off-center near landing.
+match_mode: any_step
+
+# obs: [x, y, vx, vy, angle, angular_velocity, left_leg_contact, right_leg_contact]
+groups:
+  - name: off_center_right_near_ground
+    conditions:
+      - dim: 0
+        dim_name: x
+        op: ">"
+        value: 0.3
+        target: state
+      - dim: 1
+        dim_name: y
+        op: "<"
+        value: 0.4
+        target: state
+  - name: off_center_left_near_ground
+    conditions:
+      - dim: 0
+        dim_name: x
+        op: "<"
+        value: -0.3
+        target: state
+      - dim: 1
+        dim_name: y
+        op: "<"
+        value: 0.4
+        target: state
