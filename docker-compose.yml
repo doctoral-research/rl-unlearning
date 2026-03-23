@@ -18,7 +18,7 @@ services:
       - WANDB_API_KEY=${WANDB_API_KEY:-}
       - WANDB_ENTITY=${WANDB_ENTITY:-}
       - WANDB_PROJECT=${WANDB_PROJECT:-}
-      - HOME=/workspace
+      - HOME=/tmp/home
       - HOST_UID=${USER_ID:-1000}
       - HOST_GID=${GROUP_ID:-1000}
     ipc: host

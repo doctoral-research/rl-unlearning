@@ -17,7 +17,12 @@ from tqdm import tqdm
 
 from agents import PPOAgent
 from unlearning import TrajectorySelectiveForgetting, StrategyInversion, RetainProtection
-from metrics import UnlearningMetrics, evaluate_trajectory_similarity
+from metrics import UnlearningMetrics
+from evaluate import (
+    evaluate_agent_with_trajectories,
+    compute_scenario_metrics,
+    compute_scenario_forget_effectiveness,
+)
 from utils import set_seed, get_device, setup_logger, record_videos
 from scenarios import ForgetScenario
 
@@ -26,14 +31,22 @@ def init_wandb(cfg: DictConfig):
     """Initialize WandB if configured."""
     if cfg.get("backend") == "wandb" and cfg.get("wandb", {}).get("enabled", False):
         import wandb
-        run_name = f"unlearn_{cfg.env_name}_{cfg.method}_seed{cfg.seed}"
+        scenario_name = cfg.get("scenario", "none")
+        if scenario_name and "/" in str(scenario_name):
+            scenario_name = str(scenario_name).split("/")[-1]
+        run_name = f"{cfg.env_name}/{scenario_name}/{cfg.method}/seed{cfg.seed}"
+        group = cfg.wandb.get("group", None) or f"{cfg.env_name}/{scenario_name}"
+        tags = list(cfg.wandb.get("tags", []))
+        tags.extend([cfg.env_name, cfg.method])
+        if scenario_name and scenario_name != "none":
+            tags.append(scenario_name)
         run = wandb.init(
             project=cfg.wandb.get("project", "rl-unlearning"),
             entity=cfg.wandb.get("entity", None),
             name=run_name,
-            group=cfg.wandb.get("group", None),
+            group=group,
             job_type="unlearn",
-            tags=list(cfg.wandb.get("tags", [])),
+            tags=tags,
             mode=cfg.wandb.get("mode", "online"),
             config=OmegaConf.to_container(cfg, resolve=True),
         )
@@ -41,41 +54,44 @@ def init_wandb(cfg: DictConfig):
     return None
 
 
-def evaluate_agent(agent, env, num_episodes, deterministic=True, seed=None):
-    """Run evaluation episodes and return list of episode returns."""
-    returns = []
-    for i in range(num_episodes):
-        reset_kwargs = {"seed": seed + i} if seed is not None else {}
-        obs, _ = env.reset(**reset_kwargs)
-        episode_reward = 0
-        done = False
-
-        while not done:
-            action, _ = agent.select_action(obs, deterministic=deterministic)
-            obs, reward, terminated, truncated, _ = env.step(action)
-            episode_reward += reward
-            done = terminated or truncated
-
-        returns.append(episode_reward)
-    return returns
-
-
 def sample_batch_from_trajectories(
-    trajectories, indices, batch_size, action_type, device
+    trajectories, indices, batch_size, action_type, device, scenario=None
 ):
     """Sample a batch of transitions from the given trajectory indices.
 
     Pools all transitions from the specified trajectories and randomly
     samples ``batch_size`` transitions.  This gives different mini-batches
     each call even when the trajectory set is small.
+
+    If ``scenario`` is provided and has step-level conditions, only
+    transitions whose (obs, action) matches the scenario are included.
+    This prevents diluting the forget signal with retain-region transitions.
     """
-    # Pool all transitions from the designated trajectories
+    # Pool transitions from the designated trajectories
     obs_list, act_list, rew_list = [], [], []
+    filter_steps = (
+        scenario is not None
+        and scenario.match_mode in ("any_step", "all_steps", "proportion")
+    )
+
     for idx in indices:
         traj = trajectories[idx]
-        obs_list.extend(traj["observations"])
-        act_list.extend(traj["actions"])
-        rew_list.extend(traj["rewards"])
+        obs = traj["observations"]
+        actions = traj["actions"]
+        rewards = traj["rewards"]
+        n_steps = len(actions)
+
+        if filter_steps:
+            for t in range(n_steps):
+                if scenario._step_matches(obs[t], actions[t]):
+                    obs_list.append(obs[t])
+                    act_list.append(actions[t])
+                    rew_list.append(rewards[t])
+        else:
+            # top_percentile / trajectory / no scenario: use all transitions
+            obs_list.extend(obs[:n_steps])
+            act_list.extend(actions)
+            rew_list.extend(rewards)
 
     n_transitions = len(obs_list)
     if n_transitions == 0:
@@ -101,20 +117,6 @@ def sample_batch_from_trajectories(
     return batch
 
 
-def compute_forget_scores(agent, trajectories, forget_indices, device, max_eval=10):
-    """Compute trajectory similarity scores for forget trajectories."""
-    scores = []
-    if len(forget_indices) > max_eval:
-        # Random subsample to avoid bias from index ordering
-        eval_indices = list(np.random.choice(forget_indices, size=max_eval, replace=False))
-    else:
-        eval_indices = forget_indices
-    for idx in eval_indices:
-        score = evaluate_trajectory_similarity(agent, trajectories[idx], str(device))
-        scores.append(score)
-    return scores
-
-
 @hydra.main(version_base=None, config_path="../configs", config_name="config")
 def unlearn(cfg: DictConfig):
     """Main unlearning function."""
@@ -136,8 +138,9 @@ def unlearn(cfg: DictConfig):
     if wandb_run:
         logger.info(f"WandB run: {wandb_run.url}")
 
-    # Load trained agent
-    checkpoint_path = f"{cfg.training.checkpoint_dir}/final_model.pt"
+    # Load trained agent from baseline dir (or fall back to checkpoint_dir)
+    baseline_dir = cfg.get("baseline_dir", cfg.training.checkpoint_dir)
+    checkpoint_path = f"{baseline_dir}/final_model.pt"
     if not Path(checkpoint_path).exists():
         logger.error(f"Checkpoint not found: {checkpoint_path}")
         return
@@ -173,8 +176,9 @@ def unlearn(cfg: DictConfig):
     )
     logger.info(f"Created fresh unlearning optimizer with lr={unlearn_lr}")
 
-    # Load trajectories
-    traj_path = f"{cfg.output_dir}/trajectories.pkl"
+    # Load trajectories from baseline output dir (or fall back to output_dir)
+    baseline_output = cfg.get("baseline_output_dir", cfg.output_dir)
+    traj_path = f"{baseline_output}/trajectories.pkl"
     if Path(traj_path).exists():
         with open(traj_path, "rb") as f:
             trajectories = pickle.load(f)
@@ -251,8 +255,10 @@ def unlearn(cfg: DictConfig):
         )
 
         if scenario and trajectories:
-            # Scenario-guided: first identify forget trajectories, then use
-            # their matching states as seeds for synthetic state generation.
+            # Scenario-guided: use actual states from the forget region directly.
+            # Do NOT run generate_forget_states() — its gradient optimization
+            # pushes states toward high-confidence regions which may be OUTSIDE
+            # the forget region, causing unlearning to target the wrong states.
             forget_indices = scenario.identify_forget_trajectories(trajectories)
             logger.info(f"Scenario '{scenario.name}' matched {len(forget_indices)} forget trajectories")
 
@@ -261,18 +267,17 @@ def unlearn(cfg: DictConfig):
                     trajectories, forget_indices
                 )
                 if scenario_states:
-                    strategy_inv.reference_states = np.array(scenario_states)
-                    logger.info(f"Set {len(scenario_states)} scenario-matched states as seeds")
+                    forget_states = scenario_states
+                    logger.info(f"Using {len(forget_states)} scenario-matched forget states directly")
         else:
-            # Original: use all trajectory observations as seeds
+            # No scenario: use synthetic state generation
             if trajectories:
                 strategy_inv.set_reference_states(trajectories)
                 logger.info("Set reference states from training trajectories")
 
-        # Generate synthetic forget states
-        logger.info("Generating synthetic forget states...")
-        forget_states = strategy_inv.generate_forget_states()
-        logger.info(f"Generated {len(forget_states)} forget states")
+            logger.info("Generating synthetic forget states...")
+            forget_states = strategy_inv.generate_forget_states()
+            logger.info(f"Generated {len(forget_states)} forget states")
 
         # For evaluation: identify closest real trajectories to the forget states
         if trajectories and forget_states and not forget_indices:
@@ -335,18 +340,20 @@ def unlearn(cfg: DictConfig):
     # so the unlearning target doesn't shift as the policy changes.
     frozen_forget_actions = None
     if cfg.method == "strategy_inversion" and forget_states:
-        logger.info("Pre-computing original policy actions for forget states...")
+        logger.info(f"Pre-computing original policy actions for {len(forget_states)} forget states...")
         all_states = np.array(forget_states)
-        obs_tensor = torch.as_tensor(all_states, dtype=torch.float32).to(device)
+        # Process in batches to avoid OOM with large scenario state sets
+        chunk_size = 1024
+        action_chunks = []
         with torch.no_grad():
-            # Use argmax (most likely action) rather than a stochastic sample.
-            # Unlearning the policy's *preferred* action at each state gives a
-            # stronger, more targeted signal than unlearning a random sample.
-            action_output, _ = agent.network(obs_tensor)
-            if agent.action_type == "discrete":
-                frozen_forget_actions = torch.argmax(action_output, dim=-1).to(device)
-            else:
-                frozen_forget_actions = action_output.to(device)
+            for i in range(0, len(all_states), chunk_size):
+                chunk = torch.as_tensor(all_states[i:i+chunk_size], dtype=torch.float32).to(device)
+                action_output, _ = agent.network(chunk)
+                if agent.action_type == "discrete":
+                    action_chunks.append(torch.argmax(action_output, dim=-1))
+                else:
+                    action_chunks.append(action_output)
+        frozen_forget_actions = torch.cat(action_chunks, dim=0).to(device)
         logger.info(f"Cached {len(frozen_forget_actions)} frozen actions")
 
     # Compute importance masks from retain data before unlearning starts
@@ -364,16 +371,25 @@ def unlearn(cfg: DictConfig):
         retain_protection.update_masks(importances)
         logger.info("Importance masks computed and applied")
 
-    # Initialize metrics
-    metrics_tracker = UnlearningMetrics()
-
     # Evaluate baseline performance (seeded for reproducibility)
     logger.info("Evaluating baseline performance...")
     num_eval_episodes = cfg.training.num_eval_episodes
     eval_seed = cfg.seed * 1000
-    baseline_returns = evaluate_agent(agent, env, num_eval_episodes, seed=eval_seed)
-    metrics_tracker.set_baseline(baseline_returns)
+    baseline_returns, baseline_eval_trajs = evaluate_agent_with_trajectories(
+        agent, env, num_eval_episodes, seed=eval_seed
+    )
     logger.info(f"Baseline performance: {np.mean(baseline_returns):.2f} ± {np.std(baseline_returns):.2f}")
+
+    # Compute baseline scenario metrics
+    baseline_scenario_metrics = {}
+    if scenario:
+        baseline_scenario_metrics = compute_scenario_metrics(scenario, baseline_eval_trajs)
+        frf = baseline_scenario_metrics.get("forget_region_fraction", None)
+        ftf = baseline_scenario_metrics.get("forget_traj_fraction", None)
+        logger.info(f"Baseline scenario: forget_region_frac={frf}, forget_traj_frac={ftf}")
+
+    metrics_tracker = UnlearningMetrics()
+    metrics_tracker.set_baseline(baseline_returns)
 
     # Record pre-unlearning behavior videos
     video_dir = f"{cfg.output_dir}/videos"
@@ -384,12 +400,6 @@ def unlearn(cfg: DictConfig):
         label=f"before_{cfg.method}",
         num_videos=3, seed=video_seed,
     )
-
-    # Compute baseline forget scores for tracking progress
-    baseline_forget_scores = []
-    if trajectories and forget_indices:
-        baseline_forget_scores = compute_forget_scores(agent, trajectories, forget_indices, device)
-        logger.info(f"Baseline forget score: {np.mean(baseline_forget_scores):.4f}")
 
     # ---- Unlearning loop ----
     logger.info("Starting unlearning process...")
@@ -431,12 +441,13 @@ def unlearn(cfg: DictConfig):
             step_metrics = unlearning_method.unlearn_step(forget_batch, retain_batch)
 
         elif cfg.method == "retain_protection" and forget_indices and trajectories:
-            # Sample forget batch
+            # Sample forget batch (scenario-filtered: only matching transitions)
             forget_batch = sample_batch_from_trajectories(
-                trajectories, forget_indices, batch_size, cfg.action_type, device
+                trajectories, forget_indices, batch_size, cfg.action_type, device,
+                scenario=scenario,
             )
 
-            # Sample retain batch
+            # Sample retain batch (unfiltered: all transitions are valid retain data)
             retain_batch = None
             if retain_indices:
                 retain_batch = sample_batch_from_trajectories(
@@ -449,12 +460,13 @@ def unlearn(cfg: DictConfig):
             )
 
         elif cfg.method == "trajectory_selective" and forget_indices and trajectories:
-            # Sample forget batch
+            # Sample forget batch (scenario-filtered: only matching transitions)
             forget_batch = sample_batch_from_trajectories(
-                trajectories, forget_indices, batch_size, cfg.action_type, device
+                trajectories, forget_indices, batch_size, cfg.action_type, device,
+                scenario=scenario,
             )
 
-            # Sample retain batch
+            # Sample retain batch (unfiltered: all transitions are valid retain data)
             retain_batch = None
             if retain_indices:
                 retain_batch = sample_batch_from_trajectories(
@@ -465,61 +477,79 @@ def unlearn(cfg: DictConfig):
 
         # Periodic evaluation
         if step % eval_frequency == 0:
-            eval_returns = evaluate_agent(agent, env, num_eval_episodes, seed=eval_seed)
+            eval_returns, eval_trajs = evaluate_agent_with_trajectories(
+                agent, env, num_eval_episodes, seed=eval_seed
+            )
 
-            # Compute forget scores
-            forget_scores = []
-            if trajectories and forget_indices:
-                forget_scores = compute_forget_scores(
-                    agent, trajectories, forget_indices, device
+            # Retain stability (return-based, always meaningful)
+            retain_stab = metrics_tracker.compute_retain_stability_index(
+                eval_returns, baseline_returns
+            )
+
+            metrics = {
+                "retain_stability": retain_stab,
+                "mean_return": float(np.mean(eval_returns)),
+            }
+            metrics.update(step_metrics)
+
+            # Scenario-aware metrics
+            if scenario and baseline_scenario_metrics:
+                scn_metrics = compute_scenario_metrics(scenario, eval_trajs)
+                scn_forget_eff = compute_scenario_forget_effectiveness(
+                    scenario, baseline_scenario_metrics, scn_metrics
                 )
+                scn_selectivity = scn_forget_eff * retain_stab
+                metrics["scenario_forget_eff"] = scn_forget_eff
+                metrics["scenario_selectivity"] = scn_selectivity
+                metrics["forget_region_fraction"] = scn_metrics.get("forget_region_fraction", 0.0)
+                metrics["forget_traj_fraction"] = scn_metrics.get("forget_traj_fraction", 0.0)
+                if "conditioned_action_rate" in scn_metrics:
+                    metrics["conditioned_action_rate"] = scn_metrics["conditioned_action_rate"]
+                # Add dimension stats
+                for k, v in scn_metrics.items():
+                    if k.endswith("_mean") or k.endswith("_condition_frac"):
+                        metrics[k] = v
 
-            # Compute metrics (with baseline forget scores for relative effectiveness)
-            if forget_scores:
-                metrics = metrics_tracker.compute_all_metrics(
-                    forget_scores=forget_scores,
-                    retain_returns=eval_returns,
-                    baseline_returns=baseline_returns,
-                    baseline_forget_scores=baseline_forget_scores,
-                )
-                metrics.update(step_metrics)
-                all_metrics_history.append({"step": step, **metrics})
-
+                selectivity = scn_selectivity
                 logger.info(
                     f"Step {step} | "
-                    f"Forget Eff: {metrics['forget_effectiveness']:.3f} | "
-                    f"Retain Stab: {metrics['retain_stability_index']:.3f} | "
-                    f"Selectivity: {metrics['selectivity']:.3f} | "
-                    f"Mean Forget Score: {metrics['mean_forget_score']:.4f}"
+                    f"Scn Forget: {scn_forget_eff:.3f} | "
+                    f"Retain Stab: {retain_stab:.3f} | "
+                    f"Scn Select: {scn_selectivity:.3f} | "
+                    f"Region Frac: {metrics['forget_region_fraction']:.4f}"
+                )
+            else:
+                selectivity = retain_stab  # no scenario = just track stability
+                logger.info(
+                    f"Step {step} | "
+                    f"Retain Stab: {retain_stab:.3f} | "
+                    f"Mean Return: {np.mean(eval_returns):.2f}"
                 )
 
-                if wandb_run:
-                    import wandb
-                    wandb.log(
-                        {f"unlearn/{k}": v for k, v in metrics.items()},
-                        step=step,
-                    )
+            all_metrics_history.append({"step": step, **metrics})
 
-                # Track best model by selectivity (forget effectiveness * retain stability)
-                if metrics["selectivity"] > best_selectivity:
-                    best_selectivity = metrics["selectivity"]
-                    best_state_dict = {
-                        k: v.clone() for k, v in agent.network.state_dict().items()
-                    }
+            if wandb_run:
+                import wandb
+                wandb.log(
+                    {f"unlearn/{k}": v for k, v in metrics.items()},
+                    step=step,
+                )
 
-                # Early stopping: if retain stability drops below threshold,
-                # stop and restore the best model found so far
-                if (
-                    step > 0
-                    and metrics["retain_stability_index"] < retain_stability_threshold
-                ):
-                    logger.warning(
-                        f"Early stopping at step {step}: retain stability "
-                        f"{metrics['retain_stability_index']:.3f} < "
-                        f"{retain_stability_threshold:.3f}"
-                    )
-                    stopped_early = True
-                    break
+            # Track best model by scenario selectivity
+            if selectivity > best_selectivity:
+                best_selectivity = selectivity
+                best_state_dict = {
+                    k: v.clone() for k, v in agent.network.state_dict().items()
+                }
+
+            # Early stopping: if retain stability drops below threshold
+            if step > 0 and retain_stab < retain_stability_threshold:
+                logger.warning(
+                    f"Early stopping at step {step}: retain stability "
+                    f"{retain_stab:.3f} < {retain_stability_threshold:.3f}"
+                )
+                stopped_early = True
+                break
 
         # Update retain protection masks periodically
         if (
@@ -547,34 +577,41 @@ def unlearn(cfg: DictConfig):
 
     # ---- Final evaluation ----
     logger.info("Final evaluation...")
-    final_returns = evaluate_agent(agent, env, num_eval_episodes * 2, seed=eval_seed)
+    final_returns, final_eval_trajs = evaluate_agent_with_trajectories(
+        agent, env, num_eval_episodes * 2, seed=eval_seed
+    )
     logger.info(f"Final performance: {np.mean(final_returns):.2f} ± {np.std(final_returns):.2f}")
 
-    # Final forget scores
-    if trajectories and forget_indices:
-        final_forget_scores = compute_forget_scores(agent, trajectories, forget_indices, device)
-        final_metrics = metrics_tracker.compute_all_metrics(
-            forget_scores=final_forget_scores,
-            retain_returns=final_returns,
-            baseline_returns=baseline_returns,
-            baseline_forget_scores=baseline_forget_scores,
+    final_metrics = {
+        "mean_return": float(np.mean(final_returns)),
+        "std_return": float(np.std(final_returns)),
+        "retain_stability": metrics_tracker.compute_retain_stability_index(
+            final_returns, baseline_returns
+        ),
+    }
+
+    if scenario and baseline_scenario_metrics:
+        final_scn = compute_scenario_metrics(scenario, final_eval_trajs)
+        final_scn_eff = compute_scenario_forget_effectiveness(
+            scenario, baseline_scenario_metrics, final_scn
         )
+        final_metrics["scenario_forget_eff"] = final_scn_eff
+        final_metrics["scenario_selectivity"] = final_scn_eff * final_metrics["retain_stability"]
+        final_metrics["forget_region_fraction"] = final_scn.get("forget_region_fraction", 0.0)
+        final_metrics["forget_traj_fraction"] = final_scn.get("forget_traj_fraction", 0.0)
+        if "conditioned_action_rate" in final_scn:
+            final_metrics["conditioned_action_rate"] = final_scn["conditioned_action_rate"]
+        for k, v in final_scn.items():
+            if k.endswith("_mean") or k.endswith("_condition_frac"):
+                final_metrics[k] = v
 
-        # Compute AUFC from the time series of mean forget scores
-        if all_metrics_history:
-            forget_score_series = [m["mean_forget_score"] for m in all_metrics_history]
-            step_series = [m["step"] for m in all_metrics_history]
-            final_metrics["aufc"] = metrics_tracker.compute_aufc(
-                forget_score_series, step_series
-            )
+    logger.info("--- Final Metrics ---")
+    for k, v in final_metrics.items():
+        logger.info(f"  {k}: {v:.4f}")
 
-        logger.info("--- Final Metrics ---")
-        for k, v in final_metrics.items():
-            logger.info(f"  {k}: {v:.4f}")
-
-        if wandb_run:
-            import wandb
-            wandb.log({f"unlearn/final/{k}": v for k, v in final_metrics.items()})
+    if wandb_run:
+        import wandb
+        wandb.log({f"unlearn/final/{k}": v for k, v in final_metrics.items()})
 
     # Save unlearned model (named by method for multi-method comparison)
     unlearned_path = f"{cfg.training.checkpoint_dir}/unlearned_{cfg.method}.pt"

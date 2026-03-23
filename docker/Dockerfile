@@ -37,6 +37,7 @@ WORKDIR /app
 # Install minimal runtime dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     swig \
+    gosu \
     && rm -rf /var/lib/apt/lists/*
 
 # Copy virtual environment from builder
@@ -46,9 +47,12 @@ ENV PATH="/opt/venv/bin:$PATH"
 # Copy source code and configs
 COPY src/ ./src/
 COPY configs/ ./configs/
+COPY docker/entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
 ENV PYTHONPATH="/app/src"
 ENV PYTHONUNBUFFERED=1
 ENV HYDRA_FULL_ERROR=1
 
+ENTRYPOINT ["/entrypoint.sh"]
 CMD ["python", "-c", "import torch; print(f'RL-Unlearning ready. PyTorch {torch.__version__}')"]
