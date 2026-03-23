@@ -121,11 +121,43 @@ class ForgetScenario:
 
     def identify_forget_trajectories(self, trajectories: List[Dict]) -> List[int]:
         """Return indices of trajectories that match the forget criteria."""
+        if self.match_mode == "top_percentile":
+            return self._top_percentile_match(trajectories)
+
         indices = []
         for i, traj in enumerate(trajectories):
             if self._trajectory_matches(traj):
                 indices.append(i)
         return indices
+
+    def _top_percentile_match(self, trajectories: List[Dict]) -> List[int]:
+        """Select the top match_threshold fraction of trajectories by return.
+
+        rank_by (from config):
+          'return'  — total episode return (default)
+          'length'  — episode length
+        rank_order (from config):
+          'descending' — highest values are forgotten (default)
+          'ascending'  — lowest values are forgotten
+        """
+        rank_by = self.groups[0].get("rank_by", "return") if self.groups else "return"
+        rank_order = self.groups[0].get("rank_order", "descending") if self.groups else "descending"
+
+        if rank_by == "return":
+            values = [sum(t["rewards"]) for t in trajectories]
+        elif rank_by == "length":
+            values = [len(t["observations"]) for t in trajectories]
+        else:
+            raise ValueError(f"Unknown rank_by: {rank_by}")
+
+        n = len(trajectories)
+        num_forget = max(1, int(n * self.match_threshold))
+
+        sorted_idx = np.argsort(values)
+        if rank_order == "descending":
+            return list(sorted_idx[-num_forget:])
+        else:
+            return list(sorted_idx[:num_forget])
 
     def matches_state(self, obs: np.ndarray, action=None) -> bool:
         """Check if a single state (and optional action) matches any group."""
@@ -138,21 +170,37 @@ class ForgetScenario:
 
         Useful for strategy_inversion: provides on-distribution seed states
         that are specifically in the forget region.
+
+        For trajectory-level modes (top_percentile, trajectory) there is no
+        per-step filter, so all observations from forget trajectories are returned.
         """
         states = []
+        has_step_conditions = self.match_mode in ("any_step", "all_steps", "proportion")
+
         for idx in forget_indices:
             traj = trajectories[idx]
             obs = traj["observations"]
             actions = traj.get("actions", [None] * len(obs))
             for t in range(len(obs)):
-                act = actions[t] if t < len(actions) else None
-                if self._step_matches(obs[t], act):
+                if has_step_conditions:
+                    act = actions[t] if t < len(actions) else None
+                    if self._step_matches(obs[t], act):
+                        states.append(np.array(obs[t]))
+                else:
+                    # Trajectory-level match — all states are valid seeds
                     states.append(np.array(obs[t]))
         return states
 
     def _trajectory_matches(self, trajectory: Dict) -> bool:
         obs = trajectory["observations"]
         actions = trajectory.get("actions", [None] * len(obs))
+
+        if self.match_mode == "trajectory":
+            # Conditions operate on trajectory-level aggregates
+            traj_return = sum(trajectory.get("rewards", []))
+            traj_length = len(obs)
+            agg = {"return": traj_return, "length": traj_length}
+            return self._trajectory_level_matches(agg)
 
         if self.match_mode == "any_step":
             for t in range(len(obs)):
@@ -180,6 +228,24 @@ class ForgetScenario:
 
         raise ValueError(f"Unknown match_mode: {self.match_mode}")
 
+    def _trajectory_level_matches(self, agg: dict) -> bool:
+        """Check trajectory-level conditions (return, length, etc.)."""
+        for group in self.groups:
+            group_ok = True
+            for cond in group["conditions"]:
+                key = cond.get("target", "return")
+                val = agg.get(key)
+                if val is None:
+                    group_ok = False
+                    break
+                op_fn = _OPS.get(cond["op"])
+                if op_fn is None or not op_fn(val, cond["value"]):
+                    group_ok = False
+                    break
+            if group_ok:
+                return True
+        return False
+
     def _step_matches(self, obs: np.ndarray, action=None) -> bool:
         """True if ANY group matches (groups are OR'd)."""
         for group in self.groups:
@@ -189,6 +255,8 @@ class ForgetScenario:
 
     def _group_matches(self, group: dict, obs: np.ndarray, action=None) -> bool:
         """True if ALL conditions in the group match (AND'd)."""
+        if "conditions" not in group:
+            return False
         for cond in group["conditions"]:
             target = cond.get("target", "state")
 
@@ -213,15 +281,23 @@ class ForgetScenario:
         """Human-readable summary of the scenario."""
         lines = [f"Scenario: {self.name}", f"  {self.description}"]
         lines.append(f"  match_mode: {self.match_mode}")
-        if self.match_mode == "proportion":
+        if self.match_mode in ("proportion", "top_percentile"):
             lines.append(f"  match_threshold: {self.match_threshold}")
         for g in self.groups:
             gname = g.get("name", "unnamed")
-            lines.append(f"  group '{gname}':")
-            for c in g["conditions"]:
-                target = c.get("target", "state")
-                dim_label = c.get("dim_name", f"dim[{c['dim']}]")
-                lines.append(f"    {target}.{dim_label} {c['op']} {c['value']}")
+            if self.match_mode == "top_percentile":
+                rank_by = g.get("rank_by", "return")
+                rank_order = g.get("rank_order", "descending")
+                lines.append(f"  rank_by: {rank_by} ({rank_order})")
+            else:
+                lines.append(f"  group '{gname}':")
+                for c in g["conditions"]:
+                    target = c.get("target", "state")
+                    if target in ("return", "length"):
+                        lines.append(f"    {target} {c['op']} {c['value']}")
+                    else:
+                        dim_label = c.get("dim_name", f"dim[{c.get('dim', '?')}]")
+                        lines.append(f"    {target}.{dim_label} {c['op']} {c['value']}")
         return "\n".join(lines)
 
     def __repr__(self):

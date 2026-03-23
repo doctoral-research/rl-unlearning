@@ -1,0 +1,14 @@
+name: high_reward
+description: >
+  Forget the top 10% highest-return trajectories. These represent the
+  best landings the agent has learned. The goal is to degrade peak
+  performance while preserving baseline competence. This is the
+  original default unlearning target.
+env_id: LunarLander-v3
+
+match_mode: top_percentile
+match_threshold: 0.1
+
+groups:
+  - rank_by: return
+    rank_order: descending

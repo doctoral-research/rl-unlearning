@@ -51,7 +51,14 @@
       "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python -c \":*)",
       "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/unlearn.py env=cartpole unlearn=trajectory_selective seed=42 scenario=cartpole/left_only)",
       "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/unlearn.py env=cartpole unlearn=strategy_inversion seed=42 scenario=cartpole/left_only)",
-      "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/unlearn.py env=cartpole unlearn=retain_protection seed=42 scenario=cartpole/left_only)"
+      "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/unlearn.py env=cartpole unlearn=retain_protection seed=42 scenario=cartpole/left_only)",
+      "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/unlearn.py env=cartpole unlearn=trajectory_selective seed=42 scenario=cartpole/left_only unlearn_lr=1e-5 eval_frequency=20 num_unlearn_steps=500)",
+      "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/unlearn.py env=cartpole unlearn=strategy_inversion seed=42 scenario=cartpole/left_only unlearn_lr=1e-5 eval_frequency=20 num_unlearn_steps=500)",
+      "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/unlearn.py env=cartpole unlearn=retain_protection seed=42 scenario=cartpole/left_only unlearn_lr=1e-5 eval_frequency=20 num_unlearn_steps=500)",
+      "Bash(/home/tamas/miniconda3/envs/rl_unlearning/bin/python src/evaluate.py env=cartpole seed=42)",
+      "Bash(chmod +x /home/tamas/work/unlearning/reinforcement-unlearning/scripts/run_all_scenarios.sh)",
+      "Bash(/home/tamas/work/unlearning/reinforcement-unlearning/scripts/run_all_scenarios.sh)",
+      "Bash(tee /home/tamas/work/unlearning/reinforcement-unlearning/experiments/outputs/batch_run.log)"
     ],
     "additionalDirectories": [
       "/home/tamas/work/unlearning/rl-unlearning/test_videos"

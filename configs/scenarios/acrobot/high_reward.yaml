@@ -1,0 +1,14 @@
+name: high_reward
+description: >
+  Forget the top 10% highest-return trajectories (fastest solves).
+  For Acrobot, higher return means solving faster (less negative reward).
+  The goal is to remove the agent's ability to solve quickly while
+  retaining basic swing-up capability.
+env_id: Acrobot-v1
+
+match_mode: top_percentile
+match_threshold: 0.1
+
+groups:
+  - rank_by: return
+    rank_order: descending

@@ -1,0 +1,14 @@
+name: high_reward
+description: >
+  Forget the top-performing trajectories by return (the original default).
+  For CartPole this is paradoxical: the optimal policy always scores 500,
+  so there is no meaningful separation between forget and retain. This
+  scenario exists to reproduce and document that failure mode.
+env_id: CartPole-v1
+
+match_mode: top_percentile
+match_threshold: 0.1
+
+groups:
+  - rank_by: return
+    rank_order: descending
