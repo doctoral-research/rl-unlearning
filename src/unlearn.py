@@ -188,10 +188,16 @@ def unlearn(cfg: DictConfig):
         trajectories = []
 
     # ---- Load forget scenario (if configured) ----
+    random_forget = cfg.get("random_forget", False)
+    no_step_filter = cfg.get("no_step_filter", False)
     scenario = ForgetScenario.from_config(cfg)
     if scenario:
         logger.info(f"Loaded scenario: {scenario.name}")
         logger.info(scenario.summary())
+    if random_forget:
+        logger.info("RANDOM FORGET MODE: scenario used for eval only, not for target selection")
+    if no_step_filter:
+        logger.info("NO STEP FILTER MODE: using all steps from forget trajectories (ablation)")
 
     # ---- Initialize unlearning method and identify forget/retain sets ----
     forget_indices = []
@@ -213,7 +219,19 @@ def unlearn(cfg: DictConfig):
         )
 
         # Identify forget trajectories: scenario > toxic_states > reward fallback
-        if scenario and trajectories:
+        if random_forget and trajectories:
+            # Random baseline: pick same number of trajectories as scenario would,
+            # but randomly. Scenario still loaded for evaluation metrics only.
+            if scenario:
+                scenario_indices = scenario.identify_forget_trajectories(trajectories)
+                num_forget = len(scenario_indices)
+            else:
+                num_forget = max(1, int(len(trajectories) * 0.1))
+            forget_indices = list(np.random.choice(
+                len(trajectories), size=num_forget, replace=False
+            ))
+            logger.info(f"Random forget: selected {len(forget_indices)} random trajectories (scenario would pick {num_forget})")
+        elif scenario and trajectories:
             forget_indices = scenario.identify_forget_trajectories(trajectories)
             logger.info(f"Scenario '{scenario.name}' matched {len(forget_indices)} forget trajectories")
         else:
@@ -460,10 +478,10 @@ def unlearn(cfg: DictConfig):
             )
 
         elif cfg.method == "trajectory_selective" and forget_indices and trajectories:
-            # Sample forget batch (scenario-filtered: only matching transitions)
+            # Sample forget batch (scenario-filtered unless random_forget mode)
             forget_batch = sample_batch_from_trajectories(
                 trajectories, forget_indices, batch_size, cfg.action_type, device,
-                scenario=scenario,
+                scenario=None if (random_forget or no_step_filter) else scenario,
             )
 
             # Sample retain batch (unfiltered: all transitions are valid retain data)

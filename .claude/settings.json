@@ -96,7 +96,27 @@
       "Bash(do if:*)",
       "Bash(then echo:*)",
       "Bash(fi)",
-      "Read(//dev/**)"
+      "Read(//dev/**)",
+      "Read(//home/tamas/work/**)",
+      "Bash(python src/train_left_only.py --seed 42 --total_timesteps 4096 --experiment_name test_retrain)",
+      "Bash(python src/unlearn.py env=cartpole unlearn=trajectory_selective seed=42 scenario=cartpole/left_only experiment_name=test_random_forget +baseline_dir=experiments/checkpoints/cartpole_ppo_seed42 +baseline_output_dir=experiments/outputs/cartpole_ppo_seed42 unlearn_lr=1e-5 num_unlearn_steps=2 eval_frequency=1 +random_forget=true)",
+      "Bash(grep -i random /home/tamas/work/unlearning/reinforcement-unlearning/experiments/hydra_logs/2026-03-24/10-22-*/unlearn.log)",
+      "Bash(for SEED in 42 43 44)",
+      "Bash(do EXP_NAME=\"cartpole_left_only_full_retrain_seed$SEED\")",
+      "Bash(mkdir -p \"experiments/outputs/$EXP_NAME\" \"experiments/checkpoints/$EXP_NAME\" \"experiments/logs/$EXP_NAME\")",
+      "Bash(python src/train_left_only.py --seed 42 --experiment_name cartpole_left_only_full_retrain_seed42 --total_timesteps 500000)",
+      "Bash(python src/train_left_only.py --seed 43 --experiment_name cartpole_left_only_full_retrain_seed43 --total_timesteps 500000)",
+      "Bash(python src/train_left_only.py --seed 44 --experiment_name cartpole_left_only_full_retrain_seed44 --total_timesteps 500000)",
+      "Bash(python src/unlearn.py env=cartpole unlearn=trajectory_selective seed=42 experiment_name=cartpole_left_only_random_forget_seed42 +baseline_dir=experiments/checkpoints/cartpole_ppo_seed42 +baseline_output_dir=experiments/outputs/cartpole_ppo_seed42 unlearn_lr=1e-5 num_unlearn_steps=500 eval_frequency=20 scenario=cartpole/left_only +random_forget=true)",
+      "Bash(python src/unlearn.py env=cartpole unlearn=trajectory_selective seed=43 experiment_name=cartpole_left_only_random_forget_seed43 +baseline_dir=experiments/checkpoints/cartpole_ppo_seed42 +baseline_output_dir=experiments/outputs/cartpole_ppo_seed42 unlearn_lr=1e-5 num_unlearn_steps=500 eval_frequency=20 scenario=cartpole/left_only +random_forget=true)",
+      "Bash(python src/unlearn.py env=cartpole unlearn=trajectory_selective seed=44 experiment_name=cartpole_left_only_random_forget_seed44 +baseline_dir=experiments/checkpoints/cartpole_ppo_seed42 +baseline_output_dir=experiments/outputs/cartpole_ppo_seed42 unlearn_lr=1e-5 num_unlearn_steps=500 eval_frequency=20 scenario=cartpole/left_only +random_forget=true)",
+      "Bash(python src/unlearn.py env=cartpole unlearn=trajectory_selective seed=42 scenario=cartpole/left_only experiment_name=cartpole_left_only_trajectory_selective_seed42 +baseline_dir=experiments/checkpoints/cartpole_ppo_seed42 +baseline_output_dir=experiments/outputs/cartpole_ppo_seed42 unlearn_lr=1e-5 num_unlearn_steps=500 eval_frequency=20)",
+      "Bash(python src/unlearn.py env=cartpole unlearn=trajectory_selective seed=43 scenario=cartpole/left_only experiment_name=cartpole_left_only_trajectory_selective_seed43 +baseline_dir=experiments/checkpoints/cartpole_ppo_seed42 +baseline_output_dir=experiments/outputs/cartpole_ppo_seed42 unlearn_lr=1e-5 num_unlearn_steps=500 eval_frequency=20)",
+      "Bash(python src/unlearn.py env=cartpole unlearn=trajectory_selective seed=44 scenario=cartpole/left_only experiment_name=cartpole_left_only_trajectory_selective_seed44 +baseline_dir=experiments/checkpoints/cartpole_ppo_seed42 +baseline_output_dir=experiments/outputs/cartpole_ppo_seed42 unlearn_lr=1e-5 num_unlearn_steps=500 eval_frequency=20)",
+      "Bash(ls -la experiments/logs/cartpole_left_only_full_retrain_seed*/train.log)",
+      "Bash(pdflatex -interaction=nonstopmode introb2026.tex)",
+      "Bash(bibtex introb2026:*)",
+      "Bash(python scripts/generate_paper_plots.py)"
     ],
     "additionalDirectories": [
       "/home/tamas/work/unlearning/rl-unlearning/test_videos"
