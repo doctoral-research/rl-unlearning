@@ -64,6 +64,7 @@ for ENV in cartpole acrobot lunarlander; do
 
             echo ""
             echo ">>> [${TOTAL}/27] ${RUN_NAME}"
+            mkdir -p "${EXP_DIR}"
 
             # ---- Unlearn ----
             if $PYTHON src/unlearn.py \

@@ -91,7 +91,12 @@
       "Bash(chmod +x /home/tamas/work/unlearning/reinforcement-unlearning/docker/entrypoint.sh)",
       "Bash(find /home/tamas/work/unlearning/reinforcement-unlearning -user root -not -path */wandb/* -not -path */.git/*)",
       "Bash(sudo chown:*)",
-      "Bash(sudo find:*)"
+      "Bash(sudo find:*)",
+      "Bash(while read:*)",
+      "Bash(do if:*)",
+      "Bash(then echo:*)",
+      "Bash(fi)",
+      "Read(//dev/**)"
     ],
     "additionalDirectories": [
       "/home/tamas/work/unlearning/rl-unlearning/test_videos"
