@@ -325,6 +325,7 @@ class TestPPOUpdate:
             "observations": np.random.randn(n, 4).astype(np.float32),
             "actions": np.random.randint(0, 2, size=(n,)).astype(np.float32),
             "log_probs": np.random.randn(n).astype(np.float32),
+            "values": np.random.randn(n).astype(np.float32),
             "advantages": np.random.randn(n).astype(np.float32),
             "returns": np.random.randn(n).astype(np.float32),
         }

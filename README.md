@@ -3,9 +3,9 @@
 </p>
 
 <p align="center">
-    <a href="https://github.com/elte-machine-unlearning/rl-unlearning/actions/workflows/ci.yml"><img src="https://github.com/elte-machine-unlearning/rl-unlearning/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
-    <a href="https://github.com/elte-machine-unlearning/rl-unlearning/actions/workflows/docker.yml"><img src="https://github.com/elte-machine-unlearning/rl-unlearning/actions/workflows/docker.yml/badge.svg?branch=main" alt="Docker"></a>
-    <a href="https://github.com/elte-machine-unlearning/rl-unlearning/blob/main/LICENSE"><img src="https://img.shields.io/github/license/elte-machine-unlearning/rl-unlearning" alt="License"></a>
+    <a href="https://github.com/doctoral-research/rl-unlearning/actions/workflows/ci.yml"><img src="https://github.com/doctoral-research/rl-unlearning/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
+    <a href="https://github.com/doctoral-research/rl-unlearning/actions/workflows/docker.yml"><img src="https://github.com/doctoral-research/rl-unlearning/actions/workflows/docker.yml/badge.svg?branch=main" alt="Docker"></a>
+    <a href="https://github.com/doctoral-research/rl-unlearning/blob/main/LICENSE"><img src="https://img.shields.io/github/license/doctoral-research/rl-unlearning" alt="License"></a>
     <img src="https://img.shields.io/badge/python-3.10+-blue" alt="Python 3.10+">
     <img src="https://img.shields.io/badge/pytorch-2.0+-orange" alt="PyTorch 2.0+">
 </p>
@@ -169,7 +169,8 @@ rl-unlearning/
 │   │   └── helpers.py           #   Seeding, checkpoints, logging
 │   ├── train.py                 # Training entry point
 │   ├── unlearn.py               # Unlearning entry point
-│   └── evaluate.py              # Evaluation & comparison
+│   ├── evaluate.py              # Evaluation & comparison
+│   └── scenarios.py             # Forget-region definitions (ForgetScenario)
 ├── scripts/                     # Sweep runners + plotting
 │   ├── make_plots.py            #   Generate paper figures from experiments/outputs
 │   ├── run_sweep.sh             #   Multi-seed/scenario sweep
@@ -180,6 +181,7 @@ rl-unlearning/
 │   ├── env/                     #   cartpole, lunarlander, acrobot
 │   ├── agent/                   #   ppo
 │   ├── unlearn/                 #   trajectory_selective, strategy_inversion, retain_protection
+│   ├── scenarios/               #   Per-env forget regions (e.g. cartpole/left_only)
 │   └── logging/                 #   tensorboard, wandb
 ├── experiments/                 # Experiment outputs (generated)
 │   ├── checkpoints/             #   Model weights (final + unlearned variants)
@@ -434,7 +436,7 @@ python scripts/make_plots.py
 | `heatmap_retain-stability-index.png` | Methods x Environments heatmap |
 | `heatmap_selectivity.png` | Methods x Environments heatmap |
 
-All plots are saved to `plots/` by default (separate from `experiments/` to avoid permission issues in Docker).
+All plots are saved to `docs/images/results/` (separate from `experiments/` to avoid permission issues in Docker).
 
 ---
 
@@ -616,10 +618,11 @@ echo "GROUP_ID=$(id -g)" >> .env
 ## Citation
 
 ```bibtex
-@inproceedings{takacs2025unlearning,
-  title={Selective Behavior Unlearning in On-Policy Reinforcement Learning},
+@inproceedings{takacs2026unlearning,
+  title={Targeted Behavioral Unlearning for Discrete On-Policy Reinforcement Learning},
   author={Takács, Tamás},
-  year={2025}
+  booktitle={International Conference on Intelligent Robotics (IntRob)},
+  year={2026}
 }
 ```
 

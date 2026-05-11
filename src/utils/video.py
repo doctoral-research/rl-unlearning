@@ -83,7 +83,8 @@ def record_videos(
         writer.release()
 
         # Re-encode to H.264 for broad compatibility (VSCode, browsers)
-        import subprocess, shutil
+        import shutil
+        import subprocess
         if shutil.which("ffmpeg"):
             subprocess.run(
                 ["ffmpeg", "-y", "-i", str(tmp_path), "-c:v", "libx264",
