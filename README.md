@@ -5,6 +5,8 @@
 <p align="center">
     <a href="https://github.com/doctoral-research/rl-unlearning/actions/workflows/ci.yml"><img src="https://github.com/doctoral-research/rl-unlearning/actions/workflows/ci.yml/badge.svg?branch=main" alt="CI"></a>
     <a href="https://github.com/doctoral-research/rl-unlearning/actions/workflows/docker.yml"><img src="https://github.com/doctoral-research/rl-unlearning/actions/workflows/docker.yml/badge.svg?branch=main" alt="Docker"></a>
+    <a href="https://codecov.io/gh/doctoral-research/rl-unlearning"><img src="https://codecov.io/gh/doctoral-research/rl-unlearning/branch/main/graph/badge.svg" alt="codecov"></a>
+    <a href="https://github.com/doctoral-research/rl-unlearning/issues"><img src="https://img.shields.io/github/issues/doctoral-research/rl-unlearning" alt="GitHub issues"></a>
     <a href="https://github.com/doctoral-research/rl-unlearning/blob/main/LICENSE"><img src="https://img.shields.io/github/license/doctoral-research/rl-unlearning" alt="License"></a>
     <img src="https://img.shields.io/badge/python-3.10+-blue" alt="Python 3.10+">
     <img src="https://img.shields.io/badge/pytorch-2.0+-orange" alt="PyTorch 2.0+">
