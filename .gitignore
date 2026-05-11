@@ -85,3 +85,6 @@ temp/
 models/*.pt
 models/*.pth
 checkpoints/
+
+# Papers (sources, figures, build artifacts)
+paper/

@@ -115,7 +115,7 @@ python src/unlearn.py unlearn=retain_protection
 python src/evaluate.py
 
 # 4. Generate plots
-python src/plot_results.py --env cartpole
+python scripts/make_plots.py
 ```
 
 All scripts use [Hydra](https://hydra.cc/) for configuration. Override any parameter from the command line:
@@ -145,7 +145,7 @@ for env in cartpole acrobot lunarlander; do
 done
 
 # Plot everything + cross-environment comparison
-python src/plot_results.py --all --compare
+python scripts/make_plots.py
 ```
 
 ---
@@ -169,9 +169,12 @@ rl-unlearning/
 │   │   └── helpers.py           #   Seeding, checkpoints, logging
 │   ├── train.py                 # Training entry point
 │   ├── unlearn.py               # Unlearning entry point
-│   ├── evaluate.py              # Evaluation & comparison
-│   ├── plot_results.py          # Comprehensive plotting & dashboards
-│   └── run_experiments.py       # Multi-experiment runner
+│   └── evaluate.py              # Evaluation & comparison
+├── scripts/                     # Sweep runners + plotting
+│   ├── make_plots.py            #   Generate paper figures from experiments/outputs
+│   ├── run_sweep.sh             #   Multi-seed/scenario sweep
+│   ├── train_baselines.sh       #   Train baseline policies per environment
+│   └── collect_trajectories.sh  #   Collect rollouts from trained policies
 ├── configs/                     # Hydra configuration
 │   ├── config.yaml              #   Main config (defaults + global settings)
 │   ├── env/                     #   cartpole, lunarlander, acrobot
@@ -182,7 +185,7 @@ rl-unlearning/
 │   ├── checkpoints/             #   Model weights (final + unlearned variants)
 │   ├── logs/                    #   Training/unlearning/evaluation logs
 │   └── outputs/                 #   Metrics JSON, evaluation CSVs, trajectories
-├── plots/                       # Generated plots (per-env + comparison)
+├── docs/images/results/         # Paper figures written by make_plots.py
 ├── tests/                       # pytest test suite
 ├── docker/                      # Dockerfile, Dockerfile.GPU, build.sh, run.sh
 ├── .github/workflows/           # CI (lint + test) and Docker build pipelines
@@ -401,17 +404,10 @@ Outputs:
 
 ## Plotting and Visualization
 
-Comprehensive plotting script that generates publication-quality figures from experiment data:
+`scripts/make_plots.py` generates the paper figures from `experiments/outputs/` across seeds `{42, 43, 44}` and writes them to `docs/images/results/`:
 
 ```bash
-# Single experiment folder
-python src/plot_results.py experiments/outputs/cartpole_ppo_seed42
-
-# By environment name
-python src/plot_results.py --env cartpole
-
-# All environments + cross-environment comparison
-python src/plot_results.py --all --compare
+python scripts/make_plots.py
 ```
 
 ### Per-Experiment Plots (8 plots per environment)
