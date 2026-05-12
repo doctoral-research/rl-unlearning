@@ -1,0 +1,30 @@
+name: avoid_turn_left_in_BR
+description: >
+  Action-conditional forget: don't take action TURN_LEFT (action 0)
+  when the agent is in the bottom-right room. Unlike region-based
+  scenarios that mask whole transitions, this only forbids ONE specific
+  action at those states — the policy is allowed to be in the BR room,
+  just not to turn left there. Tests fine-grained unlearning on the
+  action axis instead of the state axis.
+env_id: MiniGrid-FourRooms-v0
+match_mode: proportion
+match_threshold: 0.05
+
+groups:
+  - name: turn_left_in_BR
+    conditions:
+      - dim: 0
+        dim_name: agent_x
+        op: ">"
+        value: 9.5
+        target: state
+      - dim: 1
+        dim_name: agent_y
+        op: ">"
+        value: 9.5
+        target: state
+      - dim: 0
+        dim_name: action
+        op: "=="
+        value: 0
+        target: action

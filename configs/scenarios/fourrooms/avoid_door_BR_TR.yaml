@@ -1,0 +1,35 @@
+name: avoid_door_BR_TR
+description: >
+  Forget the doorway between bottom-right and top-right rooms (at cell
+  (15, 9)). Forces the agent to route through other doorways. Tests
+  unlearning on a small, well-localized region — the chicken-and-egg
+  dynamic should bite hardest here because forget transitions become
+  rare quickly once the policy stops using this doorway.
+env_id: MiniGrid-FourRooms-v0
+match_mode: proportion
+match_threshold: 0.10
+
+# 3x3 cluster centred on the (15,9) doorway.
+groups:
+  - name: door_BR_TR
+    conditions:
+      - dim: 0
+        dim_name: agent_x
+        op: ">="
+        value: 14
+        target: state
+      - dim: 0
+        dim_name: agent_x
+        op: "<="
+        value: 16
+        target: state
+      - dim: 1
+        dim_name: agent_y
+        op: ">="
+        value: 8
+        target: state
+      - dim: 1
+        dim_name: agent_y
+        op: "<="
+        value: 10
+        target: state

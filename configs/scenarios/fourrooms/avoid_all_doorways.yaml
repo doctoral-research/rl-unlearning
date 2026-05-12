@@ -1,0 +1,53 @@
+name: avoid_all_doorways
+description: >
+  Forget the four doorway cells: (15, 9), (7, 9), (9, 13), (9, 1).
+  The agent must reach the goal by NOT stepping on the doorway tiles
+  themselves. In practice impossible to satisfy fully without
+  teleportation, but exposes how unlearning trades off region-violation
+  vs reachability. Useful diagnostic: should drive return to zero.
+env_id: MiniGrid-FourRooms-v0
+match_mode: proportion
+match_threshold: 0.05
+
+# Each doorway cell is its own AND group; groups are OR'd.
+groups:
+  - name: door_BR_TR
+    conditions:
+      - dim: 0
+        op: "=="
+        value: 15
+        target: state
+      - dim: 1
+        op: "=="
+        value: 9
+        target: state
+  - name: door_BL_TL
+    conditions:
+      - dim: 0
+        op: "=="
+        value: 7
+        target: state
+      - dim: 1
+        op: "=="
+        value: 9
+        target: state
+  - name: door_BL_BR
+    conditions:
+      - dim: 0
+        op: "=="
+        value: 9
+        target: state
+      - dim: 1
+        op: "=="
+        value: 13
+        target: state
+  - name: door_TL_TR
+    conditions:
+      - dim: 0
+        op: "=="
+        value: 9
+        target: state
+      - dim: 1
+        op: "=="
+        value: 1
+        target: state

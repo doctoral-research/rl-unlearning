@@ -1,0 +1,51 @@
+name: avoid_two_clusters
+description: >
+  Two disjoint forget regions simultaneously. Tests compositional
+  unlearning: can a single PPO+unlearn loop drive forget_eff toward 1
+  on multiple non-overlapping regions at the same time, or does the
+  signal split and produce partial forgetting on each?
+
+  Cluster A: 3x3 around (4, 4) in the top-left room.
+  Cluster B: 3x3 around (14, 14) in the bottom-right room.
+  Neither cluster touches a doorway or the goal.
+env_id: MiniGrid-FourRooms-v0
+match_mode: proportion
+match_threshold: 0.05
+
+groups:
+  - name: TL_cluster
+    conditions:
+      - dim: 0
+        op: ">="
+        value: 3
+        target: state
+      - dim: 0
+        op: "<="
+        value: 5
+        target: state
+      - dim: 1
+        op: ">="
+        value: 3
+        target: state
+      - dim: 1
+        op: "<="
+        value: 5
+        target: state
+  - name: BR_cluster
+    conditions:
+      - dim: 0
+        op: ">="
+        value: 13
+        target: state
+      - dim: 0
+        op: "<="
+        value: 15
+        target: state
+      - dim: 1
+        op: ">="
+        value: 13
+        target: state
+      - dim: 1
+        op: "<="
+        value: 15
+        target: state
