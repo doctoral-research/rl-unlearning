@@ -363,6 +363,7 @@ def evaluate(cfg: DictConfig):
     env = make_env(
         cfg.env_id, seed=cfg.seed,
         obs_encoding=cfg.get("obs_encoding", "image"),
+        fixed_goal_pos=cfg.get("fixed_goal_pos", None),
     )
 
     # ---- Load baseline model ----

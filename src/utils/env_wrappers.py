@@ -121,11 +121,22 @@ def make_minigrid_env(
     exploration_beta: float = 0.05,
     exploration_anneal_steps: int = 0,
     obs_encoding: str = "image",
+    fixed_goal_pos: tuple | None = None,
     **gym_kwargs,
 ) -> gym.Env:
-    """Construct a MiniGrid env with the flat-pos wrapper."""
+    """Construct a MiniGrid env with the flat-pos wrapper.
+
+    ``fixed_goal_pos=(x, y)`` pins the goal cell for envs that normally
+    randomise it (e.g. FourRooms). Important so that "avoid region X"
+    scenarios remain well-defined across episodes — without pinning,
+    ~19% of FourRooms seeds put the goal inside the forget region.
+    """
     import minigrid  # noqa: F401  (registers MiniGrid envs)
-    env = gym.make(env_id, **gym_kwargs)
+    if fixed_goal_pos is not None and "FourRooms" in env_id:
+        from minigrid.envs.fourrooms import FourRoomsEnv
+        env = FourRoomsEnv(goal_pos=tuple(fixed_goal_pos), **gym_kwargs)
+    else:
+        env = gym.make(env_id, **gym_kwargs)
     env = MiniGridFlatPos(env, obs_encoding=obs_encoding)
     if exploration_bonus == "count_based":
         env = CountBasedExploration(
@@ -146,6 +157,7 @@ def make_env(
     exploration_beta: float = 0.05,
     exploration_anneal_steps: int = 0,
     obs_encoding: str = "image",
+    fixed_goal_pos: tuple | None = None,
     **gym_kwargs,
 ) -> gym.Env:
     """Single entry point used across train/unlearn/evaluate.
@@ -166,6 +178,7 @@ def make_env(
             exploration_beta=exploration_beta,
             exploration_anneal_steps=exploration_anneal_steps,
             obs_encoding=obs_encoding,
+            fixed_goal_pos=fixed_goal_pos,
             **gym_kwargs,
         )
     env = gym.make(env_id, **gym_kwargs)

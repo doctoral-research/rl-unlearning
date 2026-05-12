@@ -150,6 +150,7 @@ def unlearn(cfg: DictConfig):
     env = make_env(
         cfg.env_id, seed=cfg.seed,
         obs_encoding=cfg.get("obs_encoding", "image"),
+        fixed_goal_pos=cfg.get("fixed_goal_pos", None),
     )
 
     # Create agent with the TRAINING learning rate (from agent config, not unlearn config)
@@ -198,6 +199,35 @@ def unlearn(cfg: DictConfig):
     if scenario:
         logger.info(f"Loaded scenario: {scenario.name}")
         logger.info(scenario.summary())
+        # Sanity check for MiniGrid envs: warn if the goal cell falls
+        # inside the forget region. Such scenarios are ill-posed — the
+        # agent cannot reach the goal AND stay out of the forget zone.
+        # (Empty-8x8 / FourRooms / similar grid envs only.)
+        if "MiniGrid" in cfg.get("env_id", ""):
+            try:
+                import gymnasium as gym
+                import minigrid  # noqa: F401
+                inspect_env = gym.make(cfg.env_id).unwrapped
+                inspect_env.reset(seed=int(cfg.seed))
+                for gy in range(inspect_env.height):
+                    for gx in range(inspect_env.width):
+                        c = inspect_env.grid.get(gx, gy)
+                        if c is not None and c.type == "goal":
+                            fake_obs = np.zeros(
+                                cfg.get("observation_dim", 3) or 3, dtype=np.float32,
+                            )
+                            fake_obs[0] = gx
+                            fake_obs[1] = gy
+                            if scenario.matches_state(fake_obs):
+                                logger.warning(
+                                    "⚠️  Scenario forget region contains the GOAL "
+                                    f"cell at ({gx}, {gy}). The agent cannot reach "
+                                    "the goal while avoiding the forget region — "
+                                    "results will be misleading."
+                                )
+                            break
+            except Exception as e:
+                logger.debug(f"Goal-in-forget sanity check skipped: {e}")
     if random_forget:
         logger.info("RANDOM FORGET MODE: scenario used for eval only, not for target selection")
     if no_step_filter:
@@ -458,6 +488,7 @@ def unlearn(cfg: DictConfig):
             num_demos=int(demos_cfg.get("num_demos", 20)),
             seed=int(cfg.seed),
             obs_encoding=cfg.get("obs_encoding", "image"),
+            fixed_goal_pos=cfg.get("fixed_goal_pos", None),
         )
         if demos:
             demo_start = len(trajectories)

@@ -13,6 +13,12 @@ action_type: discrete
 # uses to solve FourRooms with vanilla PPO.
 obs_encoding: symbolic
 
+# Pin the goal at the top-right room (13, 3) so the "avoid bottom-right"
+# scenario is well-defined for every episode. Without this, FourRooms
+# randomises the goal and ~19% of seeds place it inside the forget zone,
+# making the unlearning task ill-posed for those episodes.
+fixed_goal_pos: [13, 3]
+
 # Canonical SB3-zoo recipe for FourRooms (eval reward ~0.5 at 5M steps,
 # https://huggingface.co/sb3/ppo-MiniGrid-FourRooms-v0). Vanilla PPO is
 # enough — no exploration bonus needed once the obs encoding is right.

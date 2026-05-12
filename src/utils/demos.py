@@ -157,6 +157,7 @@ def generate_counterfactual_demos(
     num_demos: int = 20,
     seed: int = 42,
     obs_encoding: str = "image",
+    fixed_goal_pos: tuple | None = None,
 ) -> List[Dict]:
     """Generate counterfactual-path demonstrations.
 
@@ -179,7 +180,10 @@ def generate_counterfactual_demos(
     for s in attempt_seeds:
         if len(demos) >= num_demos:
             break
-        env = make_env(env_id, seed=int(s), obs_encoding=obs_encoding)
+        env = make_env(
+            env_id, seed=int(s), obs_encoding=obs_encoding,
+            fixed_goal_pos=fixed_goal_pos,
+        )
         obs, _ = env.reset(seed=int(s))
         unwrapped = env.unwrapped
         start = tuple(int(v) for v in unwrapped.agent_pos)

@@ -70,6 +70,7 @@ def train(cfg: DictConfig):
         exploration_beta=cfg.get("exploration_beta", 0.05),
         exploration_anneal_steps=cfg.get("exploration_anneal_steps", 0),
         obs_encoding=cfg.get("obs_encoding", "image"),
+        fixed_goal_pos=cfg.get("fixed_goal_pos", None),
     )
     
     # Create agent
