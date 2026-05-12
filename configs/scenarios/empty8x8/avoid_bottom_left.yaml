@@ -1,0 +1,32 @@
+name: avoid_bottom_left
+description: >
+  Forget the natural "down-then-right" path that vanilla PPO learns on
+  Empty-8x8. The baseline travels along the left column (x=1) down to
+  y=6, then across to the goal at (6, 6). After unlearning, the agent
+  should switch to a "right-then-down" or diagonal path, avoiding the
+  bottom-left quadrant.
+
+  Visually: occupancy heatmap shifts from a vertical-then-horizontal
+  L (left column + bottom row) to a horizontal-then-vertical L
+  (top row + right column) — same task, mirrored path.
+env_id: MiniGrid-Empty-8x8-v0
+
+match_mode: proportion
+match_threshold: 0.15
+
+# Obs layout: dim 0 = x, dim 1 = y. Bottom-left quadrant = x in [1, 3]
+# AND y in [4, 6]. Trajectories that spend >=15% of steps there are
+# marked as forget-worthy.
+groups:
+  - name: bottom_left
+    conditions:
+      - dim: 0
+        dim_name: agent_x
+        op: "<"
+        value: 3.5
+        target: state
+      - dim: 1
+        dim_name: agent_y
+        op: ">"
+        value: 3.5
+        target: state

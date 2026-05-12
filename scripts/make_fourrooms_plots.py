@@ -37,12 +37,28 @@ sys.path.insert(0, str(ROOT / "src"))
 from agents import PPOAgent  # noqa: E402
 from utils.env_wrappers import make_env  # noqa: E402
 
-# FourRooms geometry. Doorway at row/col 9. Bottom-right room (the forget
-# region) covers x in [10,17] and y in [10,17].
+# Geometry presets — pick via --env. Defaults are FourRooms.
+GEOMETRY = {
+    "fourrooms": {
+        "grid_w": 19, "grid_h": 19,
+        "forget_x": (10, 17), "forget_y": (10, 17),
+        "env_id": "MiniGrid-FourRooms-v0",
+        "forget_label": "bottom-right room",
+    },
+    "empty8x8": {
+        "grid_w": 8, "grid_h": 8,
+        "forget_x": (1, 3), "forget_y": (4, 6),
+        "env_id": "MiniGrid-Empty-8x8-v0",
+        "forget_label": "bottom-left quadrant",
+    },
+}
+N_ACTIONS = 7  # MiniGrid: 0=left, 1=right, 2=forward, 3=pickup, 4=drop, 5=toggle, 6=done
+
+# Mutable globals populated by main() from GEOMETRY before plotting.
 GRID_W, GRID_H = 19, 19
 FORGET_X = (10, 17)
 FORGET_Y = (10, 17)
-N_ACTIONS = 7  # MiniGrid: 0=left, 1=right, 2=forward, 3=pickup, 4=drop, 5=toggle, 6=done
+FORGET_LABEL = "forget region"
 
 
 def load_agent(ckpt_path: Path, obs_dim: int, n_actions: int) -> PPOAgent:
@@ -54,7 +70,7 @@ def load_agent(ckpt_path: Path, obs_dim: int, n_actions: int) -> PPOAgent:
 
 def rollout_with_positions(
     agent: PPOAgent, env_id: str, num_episodes: int, max_steps: int = 200,
-    deterministic: bool = True, seed: int = 0,
+    deterministic: bool = False, seed: int = 0,
 ) -> Tuple[np.ndarray, List[List[Tuple[int, int]]], List[float]]:
     """Returns: visit_counts (H, W) int, per-episode pos lists, returns list."""
     visits = np.zeros((GRID_H, GRID_W), dtype=np.int64)
@@ -124,7 +140,7 @@ def plot_occupancy_grid(
         ax.set_title(name, fontsize=11)
         ax.set_xticks([]); ax.set_yticks([])
     fig.colorbar(im, ax=axes, fraction=0.025, pad=0.02, label="visits")
-    fig.suptitle("FourRooms state occupancy — forget region shaded", fontsize=12)
+    fig.suptitle(f"State occupancy — forget region ({FORGET_LABEL}) shaded", fontsize=12)
     fig.savefig(output, dpi=150, bbox_inches="tight")
     plt.close(fig)
 
@@ -166,7 +182,7 @@ def plot_policy_field(
         ax.set_aspect("equal")
         ax.set_title(name, fontsize=11)
         ax.set_xticks([]); ax.set_yticks([])
-    fig.suptitle("FourRooms policy field — argmax action per cell", fontsize=12)
+    fig.suptitle("Policy field — argmax action per cell (right=heading 0)", fontsize=12)
     fig.savefig(output, dpi=150, bbox_inches="tight")
     plt.close(fig)
 
@@ -184,7 +200,7 @@ def plot_pareto(
     ax.set_xlim(0, 1); ax.set_ylim(0, 1.05)
     ax.axhline(1.0, color="gray", linestyle="--", alpha=0.4)
     ax.grid(True, alpha=0.3)
-    ax.set_title("Forget vs Retain — FourRooms (avoid bottom-right)")
+    ax.set_title(f"Forget vs Retain — {FORGET_LABEL}")
     ax.legend(loc="lower left", fontsize=9, frameon=False)
     fig.tight_layout()
     fig.savefig(output, dpi=150, bbox_inches="tight")
@@ -193,12 +209,25 @@ def plot_pareto(
 
 def main():
     p = argparse.ArgumentParser()
-    p.add_argument("--experiment", default="fourrooms_ppo_seed42")
-    p.add_argument("--scenario", default="avoid_bottom_right")
-    p.add_argument("--env-id", default="MiniGrid-FourRooms-v0")
-    p.add_argument("--output-dir", default="docs/images/results/fourrooms")
+    p.add_argument("--env", choices=list(GEOMETRY.keys()), default="fourrooms")
+    p.add_argument("--experiment", default=None,
+                   help="default: {env}_ppo_seed42")
+    p.add_argument("--output-dir", default=None,
+                   help="default: docs/images/results/{env}")
     p.add_argument("--num-episodes", type=int, default=30)
     args = p.parse_args()
+
+    geom = GEOMETRY[args.env]
+    global GRID_W, GRID_H, FORGET_X, FORGET_Y, FORGET_LABEL
+    GRID_W, GRID_H = geom["grid_w"], geom["grid_h"]
+    FORGET_X = geom["forget_x"]
+    FORGET_Y = geom["forget_y"]
+    FORGET_LABEL = geom["forget_label"]
+    args.env_id = geom["env_id"]
+    if args.experiment is None:
+        args.experiment = f"{args.env}_ppo_seed42"
+    if args.output_dir is None:
+        args.output_dir = f"docs/images/results/{args.env}"
 
     ckpt_dir = ROOT / "experiments" / "checkpoints" / args.experiment
     out_dir = ROOT / args.output_dir

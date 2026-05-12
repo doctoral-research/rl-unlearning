@@ -10,5 +10,5 @@ action_type: discrete
 # MiniGrid maps are sparse-reward, partial-observation. More training needed
 # than CartPole; less than LunarLander.
 training:
-  total_timesteps: 1_500_000
+  total_timesteps: 5_000_000
   eval_frequency: 10_000

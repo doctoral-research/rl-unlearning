@@ -64,7 +64,11 @@ def train(cfg: DictConfig):
     
     # Create environment (routes MiniGrid envs through the flat-pos wrapper)
     from utils.env_wrappers import make_env
-    env = make_env(cfg.env_id, seed=cfg.seed)
+    env = make_env(
+        cfg.env_id, seed=cfg.seed,
+        exploration_bonus=cfg.get("exploration_bonus", None),
+        exploration_beta=cfg.get("exploration_beta", 0.05),
+    )
     
     # Create agent
     agent = PPOAgent(

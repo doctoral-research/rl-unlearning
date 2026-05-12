@@ -41,13 +41,60 @@ class MiniGridFlatPos(gym.ObservationWrapper):
         ).astype(np.float32)
 
 
+class CountBasedExploration(gym.Wrapper):
+    """Add a per-pose visit-count exploration bonus to the env reward.
+
+    Bonus added at step t:    beta / sqrt(N(s_t) + 1)
+    where N(s) is the number of times pose s has been visited across the
+    wrapper's lifetime. Pose is hashed from the first ``hash_dims`` obs
+    components — for MiniGrid wrapped with MiniGridFlatPos these are
+    (agent_x, agent_y, direction).
+
+    Defeats vanilla PPO's exploration ceiling on sparse-reward gridworlds
+    like FourRooms. Opt-in only — applied via ``make_env(..., exploration_bonus=...)``.
+    """
+
+    def __init__(self, env: gym.Env, beta: float = 0.05, hash_dims: int = 3):
+        super().__init__(env)
+        self._beta = float(beta)
+        self._hash_dims = int(hash_dims)
+        self._counts: dict[tuple, int] = {}
+
+    def _key(self, obs: np.ndarray) -> tuple:
+        flat = np.asarray(obs).reshape(-1)
+        return tuple(int(round(v)) for v in flat[: self._hash_dims])
+
+    def reset(self, **kwargs):
+        # Visit counts persist across episodes (intrinsic memory).
+        obs, info = self.env.reset(**kwargs)
+        return obs, info
+
+    def step(self, action):
+        obs, reward, term, trunc, info = self.env.step(action)
+        key = self._key(obs)
+        self._counts[key] = self._counts.get(key, 0) + 1
+        bonus = self._beta / np.sqrt(self._counts[key] + 1)
+        info.setdefault("intrinsic_reward", 0.0)
+        info["intrinsic_reward"] = float(bonus)
+        return obs, float(reward) + bonus, term, trunc, info
+
+
 def make_minigrid_env(
-    env_id: str, seed: int | None = None, **gym_kwargs,
+    env_id: str, seed: int | None = None,
+    exploration_bonus: str | None = None,
+    exploration_beta: float = 0.05,
+    **gym_kwargs,
 ) -> gym.Env:
-    """Construct a MiniGrid env with the standard flat-pos wrapper."""
+    """Construct a MiniGrid env with the flat-pos wrapper.
+
+    Optional ``exploration_bonus="count_based"`` adds a count-based
+    intrinsic reward to every step (see CountBasedExploration).
+    """
     import minigrid  # noqa: F401  (registers MiniGrid envs)
     env = gym.make(env_id, **gym_kwargs)
     env = MiniGridFlatPos(env)
+    if exploration_bonus == "count_based":
+        env = CountBasedExploration(env, beta=exploration_beta)
     if seed is not None:
         env.reset(seed=seed)
     return env
@@ -57,16 +104,30 @@ def is_minigrid_env(env_id: str) -> bool:
     return env_id.startswith("MiniGrid-")
 
 
-def make_env(env_id: str, seed: int | None = None, **gym_kwargs) -> gym.Env:
+def make_env(
+    env_id: str, seed: int | None = None,
+    exploration_bonus: str | None = None,
+    exploration_beta: float = 0.05,
+    **gym_kwargs,
+) -> gym.Env:
     """Single entry point used across train/unlearn/evaluate.
 
     Routes MiniGrid envs through the flat-pos wrapper; everything else
     goes through plain `gym.make(env_id, **gym_kwargs)` to preserve
     existing behaviour. Extra kwargs (e.g. ``render_mode="rgb_array"``)
     pass through to `gym.make`.
+
+    ``exploration_bonus="count_based"`` (MiniGrid only) adds a per-pose
+    count-based intrinsic reward — useful for sparse-reward envs like
+    FourRooms where vanilla PPO can't crack exploration.
     """
     if is_minigrid_env(env_id):
-        return make_minigrid_env(env_id, seed=seed, **gym_kwargs)
+        return make_minigrid_env(
+            env_id, seed=seed,
+            exploration_bonus=exploration_bonus,
+            exploration_beta=exploration_beta,
+            **gym_kwargs,
+        )
     env = gym.make(env_id, **gym_kwargs)
     if seed is not None:
         env.reset(seed=seed)

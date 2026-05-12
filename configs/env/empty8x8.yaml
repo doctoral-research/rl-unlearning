@@ -1,0 +1,12 @@
+# @package _global_
+env_name: empty8x8
+env_id: MiniGrid-Empty-8x8-v0
+# Obs = [agent_x, agent_y, direction, flat 7x7x3 partial-view] = 150
+observation_dim: 150
+action_dim: 7
+action_type: discrete
+
+# Empty-8x8 is dense-enough (step penalty) for vanilla PPO to solve quickly.
+training:
+  total_timesteps: 500_000
+  eval_frequency: 5_000
