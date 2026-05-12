@@ -99,8 +99,10 @@ def rollout_frames(
 def main():
     p = argparse.ArgumentParser()
     p.add_argument("--env", choices=list(GEOMETRY.keys()), default="empty8x8")
-    p.add_argument("--variant", required=True,
-                   help="'baseline' or any unlearned variant name (e.g. 'trajectory_selective', 'triad', 'triad_nodemos').")
+    p.add_argument("--variant",
+                   help="'baseline' or any unlearned variant name; ignored if --checkpoint is set.")
+    p.add_argument("--checkpoint", default=None,
+                   help="Explicit path to a .pt file. Bypasses --variant lookup.")
     p.add_argument("--experiment", default=None,
                    help="default: {env}_ppo_seed42")
     p.add_argument("--forget-box", nargs=4, type=int, required=True,
@@ -120,10 +122,14 @@ def main():
     if args.experiment is None:
         args.experiment = f"{args.env}_ppo_seed42"
 
-    if args.variant == "baseline":
+    if args.checkpoint:
+        ckpt = Path(args.checkpoint)
+    elif args.variant == "baseline":
         ckpt = ROOT / "experiments" / "checkpoints" / args.experiment / "final_model.pt"
-    else:
+    elif args.variant:
         ckpt = ROOT / "experiments" / "checkpoints" / args.experiment / f"unlearned_{args.variant}.pt"
+    else:
+        sys.exit("Provide --variant or --checkpoint")
     if not ckpt.exists():
         sys.exit(f"checkpoint not found: {ckpt}")
 
