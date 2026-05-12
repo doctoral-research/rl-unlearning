@@ -65,6 +65,77 @@ def transitions_in_forget_region(
     return mask
 
 
+class ForgetReplayBuffer:
+    """Ring buffer of forget transitions for on-policy online unlearning.
+
+    Stores (obs, action, log_prob_at_collection) tuples from past
+    rollouts. The recorded log_prob is the policy's log-prob AT THE
+    TIME the transition was collected: this lets us apply PPO-style
+    importance-sampling correction when reusing old forget data under
+    a drifted current policy.
+
+    Solves the chicken-and-egg: even when the current policy no longer
+    visits the forget region, the buffer keeps providing forget data
+    for the unlearning loss. Off-policiness is bounded by clipping the
+    IS ratio (PPO-style).
+    """
+
+    def __init__(self, capacity: int = 4096):
+        self.capacity = int(capacity)
+        self._obs: list[np.ndarray] = []
+        self._act: list = []
+        self._logp: list[float] = []
+
+    def __len__(self) -> int:
+        return len(self._obs)
+
+    def add(self, obs: np.ndarray, action, log_prob: float) -> None:
+        if len(self._obs) >= self.capacity:
+            self._obs.pop(0)
+            self._act.pop(0)
+            self._logp.pop(0)
+        self._obs.append(np.asarray(obs, dtype=np.float32))
+        self._act.append(action)
+        self._logp.append(float(log_prob))
+
+    def sample(self, batch_size: int):
+        if len(self._obs) == 0:
+            return None
+        n = min(batch_size, len(self._obs))
+        idx = np.random.choice(len(self._obs), size=n, replace=n > len(self._obs))
+        obs = np.stack([self._obs[i] for i in idx])
+        act = np.asarray([self._act[i] for i in idx])
+        logp = np.asarray([self._logp[i] for i in idx], dtype=np.float32)
+        return obs, act, logp
+
+
+def is_clipped_reversal_loss(
+    agent, observations, actions, old_log_probs,
+    clip_ratio: float = 0.2, **_,
+):
+    """The proposed method: importance-sampled gradient-reversal with
+    PPO-style ratio clipping.
+
+    Loss = +mean( clipped_ratio * log_pi_current(a|s) ) - mean(entropy)
+
+    The `+` (instead of standard PPO's `-`) is the gradient reversal:
+    we maximize log-prob of forget actions, but only with importance
+    weight clipped to [1-eps, 1+eps] to keep the update statistically
+    valid under the policy drift from the time the transition was
+    collected. This lets us reuse forget transitions from the replay
+    buffer even after the policy has drifted away from them.
+    """
+    if len(observations) == 0:
+        return torch.tensor(
+            0.0, device=next(agent.network.parameters()).device,
+        )
+    log_probs, entropy = _policy_log_probs_entropy(agent, observations, actions)
+    ratio = (log_probs - old_log_probs).exp()
+    ratio_clipped = torch.clamp(ratio, 1.0 - clip_ratio, 1.0 + clip_ratio)
+    # The IS estimator: E_old[ratio * f(x)]. Here f = log_pi_current(a|s).
+    return (ratio_clipped * log_probs).mean() - entropy.mean()
+
+
 # ---------------------------------------------------------------------------
 # Unlearning losses pluggable per --unlearn_method
 # ---------------------------------------------------------------------------
@@ -101,6 +172,7 @@ def no_op_loss(agent, observations, actions, **_):
 UNLEARN_METHODS = {
     "gradient_reversal": gradient_reversal_loss,
     "no_op": no_op_loss,
+    "is_replay": is_clipped_reversal_loss,
 }
 
 
@@ -203,6 +275,15 @@ def online_unlearn(cfg: DictConfig):
     unlearn_loss_fn = UNLEARN_METHODS[method_name]
     unlearn_weight = float(cfg.get("unlearn_weight", 0.5))
 
+    # The proposed method (is_replay) uses a ring buffer of past
+    # forget transitions to survive the chicken-and-egg.
+    replay_buf = None
+    if method_name == "is_replay":
+        replay_buf = ForgetReplayBuffer(
+            capacity=int(cfg.get("replay_capacity", 4096)),
+        )
+    target_kl = float(cfg.get("target_kl", 0.05))
+
     # ---- Baseline eval (for retain stability reference) ----
     baseline_metrics = eval_agent(agent, env, scenario, baseline_return=0.0,
                                    num_episodes=16, seed=10000)
@@ -246,6 +327,12 @@ def online_unlearn(cfg: DictConfig):
         n_forget = int(forget_mask.sum())
         forget_frac = n_forget / len(buf_obs)
 
+        # For is_replay: add new on-policy forget transitions to the buffer.
+        # Each entry stores the log-prob at collection time for IS correction.
+        if replay_buf is not None and n_forget > 0:
+            for i in np.where(forget_mask)[0]:
+                replay_buf.add(buf_obs[i], buf_act[i], buf_logp[i])
+
         # ---- Phase 3: PPO update on retain set + unlearning on forget set ----
         # Compute GAE on full rollout (retain rewards intact).
         with torch.no_grad():
@@ -266,13 +353,58 @@ def online_unlearn(cfg: DictConfig):
         }
         ppo_metrics = agent.update(ppo_rollout)
 
-        # Unlearning side-step: ascend on log-prob of forget transitions.
-        # Skip when the method returns a non-differentiable zero (no_op
-        # control) or when this rollout has no forget transitions (the
-        # chicken-and-egg failure we want to expose).
+        # Unlearning side-step.
+        # - no_op:            skip (control)
+        # - gradient_reversal: use only current on-policy forget data
+        #                     (subject to chicken-and-egg)
+        # - is_replay:        sample from replay buffer + IS correction
+        #                     (the proposed method)
         unlearn_loss_val = 0.0
-        if n_forget > 0 and method_name != "no_op":
-            forget_obs_t = torch.as_tensor(buf_obs[forget_mask], dtype=torch.float32).to(device)
+        replay_kl = 0.0
+        replay_size = 0 if replay_buf is None else len(replay_buf)
+
+        if method_name == "no_op":
+            pass  # control: nothing to do
+        elif method_name == "is_replay" and replay_buf is not None and len(replay_buf) > 0:
+            # Multi-step optimisation against the buffer. Stop early if
+            # the policy drifts past target_kl from where the buffer
+            # entries were collected (bounded-KL step).
+            n_substeps = int(cfg.get("replay_substeps", 4))
+            replay_batch = int(cfg.get("replay_batch_size", 256))
+            for _ in range(n_substeps):
+                sample = replay_buf.sample(replay_batch)
+                if sample is None:
+                    break
+                s_obs, s_act, s_logp = sample
+                s_obs_t = torch.as_tensor(s_obs, dtype=torch.float32).to(device)
+                s_act_t = torch.as_tensor(s_act).to(device)
+                s_logp_t = torch.as_tensor(s_logp, dtype=torch.float32).to(device)
+                # Compute KL from collection-time policy to current; abort
+                # if too far.
+                with torch.no_grad():
+                    cur_logp, _ = _policy_log_probs_entropy(agent, s_obs_t, s_act_t)
+                    kl = (s_logp_t - cur_logp).mean().abs().item()
+                if kl > target_kl:
+                    replay_kl = kl
+                    break
+                agent.optimizer.zero_grad()
+                loss = unlearn_weight * unlearn_loss_fn(
+                    agent, s_obs_t, s_act_t, old_log_probs=s_logp_t,
+                )
+                if loss.requires_grad:
+                    loss.backward()
+                    torch.nn.utils.clip_grad_norm_(
+                        agent.network.parameters(), agent.max_grad_norm,
+                    )
+                    agent.optimizer.step()
+                    unlearn_loss_val = float(loss.item())
+                    replay_kl = kl
+        elif n_forget > 0:
+            # Baseline on-policy unlearning: use only current rollout's
+            # forget transitions.
+            forget_obs_t = torch.as_tensor(
+                buf_obs[forget_mask], dtype=torch.float32,
+            ).to(device)
             forget_act_t = torch.as_tensor(buf_act[forget_mask]).to(device)
             agent.optimizer.zero_grad()
             loss = unlearn_weight * unlearn_loss_fn(agent, forget_obs_t, forget_act_t)
@@ -291,6 +423,8 @@ def online_unlearn(cfg: DictConfig):
             "n_forget_transitions": n_forget,
             "forget_frac_rollout": forget_frac,
             "unlearn_loss": unlearn_loss_val,
+            "replay_buf_size": replay_size,
+            "replay_kl": replay_kl,
             "ppo_policy_loss": ppo_metrics.get("policy_loss", 0.0),
             "ppo_value_loss": ppo_metrics.get("value_loss", 0.0),
         }
