@@ -233,8 +233,17 @@ def online_unlearn(cfg: DictConfig):
     logger.info(OmegaConf.to_yaml(cfg))
 
     # ---- Env and agent ----
+    # Use SEPARATE training and eval envs so eval-episode resets don't
+    # corrupt the training env state between iterations. (When the same
+    # env is shared, the training loop's `obs` variable diverges from
+    # the env's internal state after every eval call.)
     env = make_env(
         cfg.env_id, seed=cfg.seed,
+        obs_encoding=cfg.get("obs_encoding", "image"),
+        fixed_goal_pos=cfg.get("fixed_goal_pos", None),
+    )
+    eval_env = make_env(
+        cfg.env_id, seed=cfg.seed + 99999,
         obs_encoding=cfg.get("obs_encoding", "image"),
         fixed_goal_pos=cfg.get("fixed_goal_pos", None),
     )
@@ -285,7 +294,7 @@ def online_unlearn(cfg: DictConfig):
     target_kl = float(cfg.get("target_kl", 0.05))
 
     # ---- Baseline eval (for retain stability reference) ----
-    baseline_metrics = eval_agent(agent, env, scenario, baseline_return=0.0,
+    baseline_metrics = eval_agent(agent, eval_env, scenario, baseline_return=0.0,
                                    num_episodes=16, seed=10000)
     baseline_return = baseline_metrics["mean_return"]
     logger.info(
@@ -429,7 +438,7 @@ def online_unlearn(cfg: DictConfig):
             "ppo_value_loss": ppo_metrics.get("value_loss", 0.0),
         }
         if it % eval_every == 0 or it == n_iters - 1:
-            ev = eval_agent(agent, env, scenario, baseline_return, num_episodes=16,
+            ev = eval_agent(agent, eval_env, scenario, baseline_return, num_episodes=16,
                             seed=20000 + it)
             rec.update({f"eval/{k}": v for k, v in ev.items()})
             logger.info(
@@ -442,7 +451,11 @@ def online_unlearn(cfg: DictConfig):
 
     # ---- Save metrics + final model ----
     out_root = Path(cfg.training.checkpoint_dir).parent.parent / "outputs"
-    out_dir = out_root / f"online_unlearn_{cfg.env_name}_seed{cfg.seed}_{method_name}"
+    run_suffix = cfg.get("run_suffix", None)
+    dir_name = f"online_unlearn_{cfg.env_name}_seed{cfg.seed}_{method_name}"
+    if run_suffix:
+        dir_name = f"{dir_name}_{run_suffix}"
+    out_dir = out_root / dir_name
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / "history.json").write_text(json.dumps(history, indent=2))
     torch.save({"network": agent.network.state_dict()},
