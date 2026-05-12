@@ -411,6 +411,32 @@ def unlearn(cfg: DictConfig):
     retain_indices = sorted(all_indices - set(forget_indices))
     logger.info(f"Retain set: {len(retain_indices)} trajectories")
 
+    # Counterfactual demos: when the baseline policy is degenerate (single
+    # path), retain_indices is tiny or empty. Inject scripted alternative-
+    # path trajectories so the unlearner has a concrete "do this instead"
+    # signal. Opt-in via +demos.enabled=true on the CLI.
+    demos_cfg = cfg.get("demos", None)
+    if demos_cfg and demos_cfg.get("enabled", False):
+        from utils.demos import generate_counterfactual_demos
+        fb = demos_cfg.forget_box  # [[xlo, xhi], [ylo, yhi]]
+        forget_box = ((int(fb[0][0]), int(fb[0][1])), (int(fb[1][0]), int(fb[1][1])))
+        demos = generate_counterfactual_demos(
+            env_id=cfg.env_id,
+            forget_box=forget_box,
+            num_demos=int(demos_cfg.get("num_demos", 20)),
+            seed=int(cfg.seed),
+        )
+        if demos:
+            demo_start = len(trajectories)
+            trajectories.extend(demos)
+            retain_indices = retain_indices + list(range(demo_start, len(trajectories)))
+            logger.info(
+                f"Added {len(demos)} counterfactual demos to retain set "
+                f"(retain set now {len(retain_indices)} trajectories)"
+            )
+        else:
+            logger.warning("Counterfactual demo generation produced 0 trajectories")
+
     # Pre-compute frozen original-policy actions for strategy_inversion
     # so the unlearning target doesn't shift as the policy changes.
     frozen_forget_actions = None
