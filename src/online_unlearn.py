@@ -352,12 +352,23 @@ def online_unlearn(cfg: DictConfig):
             torch.as_tensor(buf_rew), torch.as_tensor(buf_val),
             torch.as_tensor(buf_done), next_value,
         )
+        # Disjoint-objective mode: zero out PPO's policy-gradient signal on
+        # forget transitions so PPO doesn't reinforce the very behavior the
+        # unlearn loss is trying to remove. Value targets stay intact so the
+        # critic still learns the env. This is what makes the setting
+        # coherent: PPO operates on retain states only, unlearn loss operates
+        # on forget states only. The two objectives no longer fight.
+        if bool(cfg.get("disjoint_objective", True)):
+            adv_np = adv.numpy().copy()
+            adv_np[forget_mask] = 0.0
+        else:
+            adv_np = adv.numpy()
         ppo_rollout = {
             "observations": buf_obs,
             "actions": buf_act,
             "log_probs": buf_logp,
             "values": buf_val,
-            "advantages": adv.numpy(),
+            "advantages": adv_np,
             "returns": ret.numpy(),
         }
         ppo_metrics = agent.update(ppo_rollout)
