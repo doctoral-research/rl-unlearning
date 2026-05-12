@@ -28,10 +28,10 @@ ROOT = Path(__file__).resolve().parents[1]
 
 # Map (label, dir_suffix, color, linestyle)
 CONDITIONS = [
-    ("no_op (shared objective)",       "no_op_noop",           "#999999", "--"),
-    ("is_replay (shared objective)",   "is_replay_w2.0",       "#cc6600", "--"),
-    ("no_op (disjoint objective)",     "no_op_disjoint",       "#3366cc", "-"),
-    ("is_replay (disjoint objective)", "is_replay_disjoint_w2", "#cc0000", "-"),
+    ("no_op (shared objective)",       "noop_shared",           "#999999", "--"),
+    ("is_replay (shared objective)",   "is_replay_shared",       "#cc6600", "--"),
+    ("no_op (disjoint objective)",     "noop_disjoint",       "#3366cc", "-"),
+    ("is_replay (disjoint objective)", "is_replay_disjoint", "#cc0000", "-"),
 ]
 
 
