@@ -181,9 +181,23 @@ class RetainProtection:
         retain_batch: Optional[Dict[str, torch.Tensor]] = None,
         unlearning_method = None,
     ) -> Dict[str, float]:
-        """Perform protected update with metaplasticity and distillation."""
+        """Perform protected update with metaplasticity and distillation.
+
+        Honors ``unlearning_method.loss_weights`` if present so CLI
+        overrides like ``loss_weights.retain=2.0`` actually take effect
+        through retain_protection / TRIAD. Previously the components were
+        summed with implicit weights of 1, which made loss balancing on
+        these methods impossible.
+        """
         metrics = {}
-        
+
+        # Pull loss weights from the inner unlearner if available; default
+        # to all-1 so existing callers see no behavior change.
+        loss_weights = (
+            getattr(unlearning_method, "loss_weights", None)
+            if unlearning_method is not None else None
+        ) or {"forget": 1.0, "retain": 1.0, "regularization": 0.001}
+
         # Standard unlearning loss
         if unlearning_method is not None:
             unlearn_loss = unlearning_method._compute_forget_loss(forget_batch)
@@ -227,8 +241,12 @@ class RetainProtection:
             retain_loss = policy_loss - 0.01 * entropy.mean()
             metrics["retain_loss"] = retain_loss.item()
         
-        # Total loss
-        total_loss = unlearn_loss + retain_loss + distill_loss
+        # Total loss — apply method-level weights so CLI overrides work.
+        total_loss = (
+            loss_weights["forget"] * unlearn_loss
+            + loss_weights["retain"] * retain_loss
+            + distill_loss  # distillation already has its own alpha inside
+        )
         
         # Backpropagation
         self.agent.optimizer.zero_grad()

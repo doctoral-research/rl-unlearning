@@ -251,6 +251,11 @@ def unlearn(cfg: DictConfig):
         logger.info(f"Identified {len(forget_indices)} trajectories to forget")
 
     elif cfg.method == "strategy_inversion":
+        # Pass loss_weights through if set on cfg (e.g. via CLI override).
+        # Without this, the inner TrajectorySelectiveForgetting ignored
+        # overrides and ran with the default (forget=retain=1.0), which
+        # on saturated forget sets leaves no positive signal toward demos.
+        lw = OmegaConf.to_container(cfg.loss_weights) if "loss_weights" in cfg else None
         unlearning_method = TrajectorySelectiveForgetting(
             agent=agent,
             forget_strength=cfg.get("negative_signal", {}).get("strength", 0.1),
@@ -258,6 +263,7 @@ def unlearn(cfg: DictConfig):
             target_selection_method="similarity",
             target_selection_threshold=0.8,
             gradient_reversal=True,
+            loss_weights=lw,
             device=str(device),
         )
 
@@ -306,6 +312,7 @@ def unlearn(cfg: DictConfig):
             logger.info(f"Matched {len(forget_indices)} trajectories near forget states")
 
     elif cfg.method == "retain_protection":
+        lw = OmegaConf.to_container(cfg.loss_weights) if "loss_weights" in cfg else None
         unlearning_method = TrajectorySelectiveForgetting(
             agent=agent,
             forget_strength=cfg.get("forget_strength", 1.0),
@@ -313,6 +320,7 @@ def unlearn(cfg: DictConfig):
             target_selection_method="similarity",
             target_selection_threshold=0.8,
             gradient_reversal=True,
+            loss_weights=lw,
             device=str(device),
         )
 
@@ -395,12 +403,33 @@ def unlearn(cfg: DictConfig):
         else:
             forget_indices = []
 
-        # Generate synthetic forget states.
-        if trajectories:
-            strategy_inv.set_reference_states(trajectories)
-        logger.info(f"TRIAD stage 1 (DISCOVER): generating {cfg.num_seeds} synthetic states...")
-        forget_states = strategy_inv.generate_forget_states()
-        logger.info(f"TRIAD discovered {len(forget_states)} synthetic forget states")
+        # Stage 1 (DISCOVER): collect real scenario-matched forget states
+        # FIRST — these are guaranteed to lie in the forget region. If
+        # scenario gives us enough, skip the synthetic search entirely.
+        # Otherwise, only augment with synthetic states (which can land
+        # anywhere in obs space) up to the configured budget. Without this
+        # filter, synthetic states could fall on the demo path and fight
+        # the counterfactual retain signal.
+        forget_states = []
+        if scenario and trajectories and forget_indices:
+            forget_states = scenario.get_forget_states_from_trajectories(
+                trajectories, forget_indices,
+            )
+            logger.info(
+                f"TRIAD stage 1 (DISCOVER): {len(forget_states)} real "
+                f"scenario-matched forget states"
+            )
+        if len(forget_states) < int(cfg.num_seeds):
+            if trajectories:
+                strategy_inv.set_reference_states(trajectories)
+            need = int(cfg.num_seeds) - len(forget_states)
+            logger.info(
+                f"TRIAD stage 1 (DISCOVER): augmenting with {need} "
+                f"synthetic states (scenario gave {len(forget_states)})"
+            )
+            extra = strategy_inv.generate_forget_states()[:need]
+            forget_states = list(forget_states) + list(extra)
+        logger.info(f"TRIAD total forget states: {len(forget_states)}")
 
     else:
         logger.error(f"Unknown unlearning method: {cfg.method}")
