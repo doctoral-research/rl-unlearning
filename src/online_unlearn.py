@@ -336,6 +336,14 @@ def online_unlearn(cfg: DictConfig):
         n_forget = int(forget_mask.sum())
         forget_frac = n_forget / len(buf_obs)
 
+        # Phase 2b: optional reward-shaping baseline.
+        # Subtract a penalty from the env reward on forget transitions.
+        # This is the obvious "why not just modify the reward?" baseline.
+        # PPO then naturally avoids the forget region via reward maximisation.
+        neg_pen = float(cfg.get("negative_reward_penalty", 0.0))
+        if neg_pen > 0 and n_forget > 0:
+            buf_rew = buf_rew - neg_pen * forget_mask.astype(np.float32)
+
         # For is_replay: add new on-policy forget transitions to the buffer.
         # Each entry stores the log-prob at collection time for IS correction.
         if replay_buf is not None and n_forget > 0:
