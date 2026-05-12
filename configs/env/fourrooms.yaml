@@ -1,14 +1,21 @@
 # @package _global_
 env_name: fourrooms
 env_id: MiniGrid-FourRooms-v0
-# Obs = [agent_x, agent_y, direction, flat 7x7x3 partial-view] = 3 + 147 = 150
-observation_dim: 150
+# Obs = [agent_x, agent_y, direction] + FlatObsWrapper symbolic encoding.
+# FlatObs is 2835 dims (7*7*N_objects*N_colors*N_states + ...). Total 2838.
+observation_dim: 2838
 # Discrete(7): left, right, forward, pickup, drop, toggle, done
 action_dim: 7
 action_type: discrete
 
-# MiniGrid maps are sparse-reward, partial-observation. More training needed
-# than CartPole; less than LunarLander.
+# Use MiniGrid's symbolic FlatObs encoding (one-hot tiles) plus pose
+# prefix. Raw 7x7x3 RGB is hostile to MLPs; symbolic is what SB3-zoo
+# uses to solve FourRooms with vanilla PPO.
+obs_encoding: symbolic
+
+# Canonical SB3-zoo recipe for FourRooms (eval reward ~0.5 at 5M steps,
+# https://huggingface.co/sb3/ppo-MiniGrid-FourRooms-v0). Vanilla PPO is
+# enough — no exploration bonus needed once the obs encoding is right.
 training:
   total_timesteps: 5_000_000
-  eval_frequency: 10_000
+  eval_frequency: 50_000

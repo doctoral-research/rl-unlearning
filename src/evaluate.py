@@ -360,7 +360,10 @@ def evaluate(cfg: DictConfig):
 
     # Create environment (routes MiniGrid envs through the flat-pos wrapper)
     from utils.env_wrappers import make_env
-    env = make_env(cfg.env_id, seed=cfg.seed)
+    env = make_env(
+        cfg.env_id, seed=cfg.seed,
+        obs_encoding=cfg.get("obs_encoding", "image"),
+    )
 
     # ---- Load baseline model ----
     baseline_dir = Path(cfg.get("baseline_dir", cfg.training.checkpoint_dir))

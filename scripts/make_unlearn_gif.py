@@ -37,8 +37,10 @@ from agents import PPOAgent  # noqa: E402
 from utils.env_wrappers import make_env  # noqa: E402
 
 GEOMETRY = {
-    "fourrooms": {"env_id": "MiniGrid-FourRooms-v0", "obs_dim": 150},
-    "empty8x8":  {"env_id": "MiniGrid-Empty-8x8-v0", "obs_dim": 150},
+    "fourrooms": {"env_id": "MiniGrid-FourRooms-v0", "obs_dim": 2838,
+                  "obs_encoding": "symbolic"},
+    "empty8x8":  {"env_id": "MiniGrid-Empty-8x8-v0", "obs_dim": 150,
+                  "obs_encoding": "image"},
 }
 
 
@@ -72,9 +74,10 @@ def overlay_forget_region(
 def rollout_frames(
     env_id: str, ckpt_path: Path, forget_box: Tuple[int, int, int, int],
     seed: int = 0, max_steps: int = 60, deterministic: bool = False,
-    obs_dim: int = 150,
+    obs_dim: int = 150, obs_encoding: str = "image",
 ) -> List[np.ndarray]:
-    env = make_env(env_id, seed=seed, render_mode="rgb_array")
+    env = make_env(env_id, seed=seed, render_mode="rgb_array",
+                   obs_encoding=obs_encoding)
     obs, _ = env.reset(seed=seed)
     agent = load_agent(ckpt_path, obs_dim=obs_dim)
 
@@ -131,6 +134,7 @@ def main():
             geom["env_id"], ckpt, forget_box,
             seed=args.seed + ep, max_steps=args.max_steps,
             deterministic=args.deterministic, obs_dim=geom["obs_dim"],
+            obs_encoding=geom.get("obs_encoding", "image"),
         )
         all_frames.extend(frames)
 

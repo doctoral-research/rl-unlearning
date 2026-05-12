@@ -44,12 +44,16 @@ GEOMETRY = {
         "forget_x": (10, 17), "forget_y": (10, 17),
         "env_id": "MiniGrid-FourRooms-v0",
         "forget_label": "bottom-right room",
+        "obs_dim": 2838,
+        "obs_encoding": "symbolic",
     },
     "empty8x8": {
         "grid_w": 8, "grid_h": 8,
         "forget_x": (1, 3), "forget_y": (4, 6),
         "env_id": "MiniGrid-Empty-8x8-v0",
         "forget_label": "bottom-left quadrant",
+        "obs_dim": 150,
+        "obs_encoding": "image",
     },
 }
 N_ACTIONS = 7  # MiniGrid: 0=left, 1=right, 2=forward, 3=pickup, 4=drop, 5=toggle, 6=done
@@ -70,13 +74,13 @@ def load_agent(ckpt_path: Path, obs_dim: int, n_actions: int) -> PPOAgent:
 
 def rollout_with_positions(
     agent: PPOAgent, env_id: str, num_episodes: int, max_steps: int = 200,
-    deterministic: bool = False, seed: int = 0,
+    deterministic: bool = False, seed: int = 0, obs_encoding: str = "image",
 ) -> Tuple[np.ndarray, List[List[Tuple[int, int]]], List[float]]:
     """Returns: visit_counts (H, W) int, per-episode pos lists, returns list."""
     visits = np.zeros((GRID_H, GRID_W), dtype=np.int64)
     pos_lists: List[List[Tuple[int, int]]] = []
     returns: List[float] = []
-    env = make_env(env_id, seed=seed)
+    env = make_env(env_id, seed=seed, obs_encoding=obs_encoding)
     for ep in range(num_episodes):
         obs, _ = env.reset(seed=seed + ep)
         positions: List[Tuple[int, int]] = []
@@ -97,13 +101,12 @@ def rollout_with_positions(
     return visits, pos_lists, returns
 
 
-def per_cell_argmax(agent: PPOAgent, env_id: str) -> np.ndarray:
+def per_cell_argmax(agent: PPOAgent, env_id: str, obs_dim: int = 150) -> np.ndarray:
     """For each (x, y) cell, query the policy at a *representative* obs and
     return the argmax action. We synthesise an obs by placing the agent at
     (x, y) with direction 0 and a zeroed view buffer — the network sees a
     canonical pose. Imperfect but fine for visualising policy preferences."""
     actions = np.full((GRID_H, GRID_W), -1, dtype=np.int64)
-    obs_dim = 150
     for y in range(GRID_H):
         for x in range(GRID_W):
             obs = np.zeros(obs_dim, dtype=np.float32)
@@ -249,13 +252,16 @@ def main():
     pareto: Dict[str, Tuple[float, float]] = {}
     baseline_ret_mean: float | None = None
 
+    obs_dim = geom["obs_dim"]
+    obs_encoding = geom["obs_encoding"]
     for name, path in variants.items():
         print(f"  rolling out {name} from {path.name}...")
-        agent = load_agent(path, obs_dim=150, n_actions=N_ACTIONS)
+        agent = load_agent(path, obs_dim=obs_dim, n_actions=N_ACTIONS)
         visits, pos_lists, returns = rollout_with_positions(
             agent, args.env_id, args.num_episodes, seed=12345,
+            obs_encoding=obs_encoding,
         )
-        field = per_cell_argmax(agent, args.env_id)
+        field = per_cell_argmax(agent, args.env_id, obs_dim=obs_dim)
         occupancies[name] = visits
         fields[name] = field
 

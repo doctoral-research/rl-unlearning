@@ -147,7 +147,10 @@ def unlearn(cfg: DictConfig):
 
     # Create environment (routes MiniGrid envs through the flat-pos wrapper)
     from utils.env_wrappers import make_env
-    env = make_env(cfg.env_id, seed=cfg.seed)
+    env = make_env(
+        cfg.env_id, seed=cfg.seed,
+        obs_encoding=cfg.get("obs_encoding", "image"),
+    )
 
     # Create agent with the TRAINING learning rate (from agent config, not unlearn config)
     # Note: unlearn configs may override cfg.learning_rate (e.g. strategy_inversion
@@ -454,6 +457,7 @@ def unlearn(cfg: DictConfig):
             forget_box=forget_box,
             num_demos=int(demos_cfg.get("num_demos", 20)),
             seed=int(cfg.seed),
+            obs_encoding=cfg.get("obs_encoding", "image"),
         )
         if demos:
             demo_start = len(trajectories)
@@ -766,10 +770,15 @@ def unlearn(cfg: DictConfig):
             importances = retain_protection.compute_importance_scores(retain_batches)
             retain_protection.update_masks(importances)
 
-    # Restore best model if we stopped early or if current model is worse
-    if best_state_dict is not None and stopped_early:
+    # Restore the best-by-selectivity checkpoint at the end. Previously we
+    # only restored on early-stop, so a run that completed all steps could
+    # drift past a much better intermediate point and save the worse final
+    # weights. The "best" tracking happens every eval anyway, so always
+    # rolling back to it is the right default.
+    if best_state_dict is not None:
         agent.network.load_state_dict(best_state_dict)
-        logger.info(f"Restored best model (selectivity={best_selectivity:.4f})")
+        why = "(early-stop)" if stopped_early else "(end of run)"
+        logger.info(f"Restored best model {why} selectivity={best_selectivity:.4f}")
 
     # ---- Final evaluation ----
     logger.info("Final evaluation...")
