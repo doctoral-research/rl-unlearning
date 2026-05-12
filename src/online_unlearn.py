@@ -36,7 +36,6 @@ from pathlib import Path
 import hydra
 import numpy as np
 import torch
-import torch.nn.functional as F
 from omegaconf import DictConfig, OmegaConf
 from tqdm import tqdm
 
@@ -71,35 +70,37 @@ def transitions_in_forget_region(
 # ---------------------------------------------------------------------------
 
 
-def gradient_reversal_loss(
-    agent: PPOAgent, observations: torch.Tensor, actions: torch.Tensor,
-) -> torch.Tensor:
-    """Ascend on log-prob of the (forget) actions: push policy away from
-    them. Plus entropy bonus on forget states to push toward uniform.
-
-    Used in trajectory_selective offline; here we apply it ONLY to the
-    forget-flagged transitions from the current PPO rollout — the
-    quintessential on-policy online setting where every forget gradient
-    is freshly sampled from the current policy.
-    """
-    if len(observations) == 0:
-        return torch.tensor(0.0, device=next(agent.network.parameters()).device)
+def _policy_log_probs_entropy(agent, observations, actions):
+    """Helper: get log-probs and entropy under current policy."""
     logits, _ = agent.network(observations)
     if agent.action_type == "discrete":
         dist = torch.distributions.Categorical(logits=logits)
-        log_probs = dist.log_prob(actions)
-        entropy = dist.entropy()
-    else:
-        action_std = torch.exp(agent.network.actor_logstd.expand_as(logits))
-        dist = torch.distributions.Normal(logits, action_std)
-        log_probs = dist.log_prob(actions).sum(-1)
-        entropy = dist.entropy().sum(-1)
-    # +log_prob = ascend on the action taken; -entropy = encourage uniformity.
+        return dist.log_prob(actions), dist.entropy()
+    action_std = torch.exp(agent.network.actor_logstd.expand_as(logits))
+    dist = torch.distributions.Normal(logits, action_std)
+    return dist.log_prob(actions).sum(-1), dist.entropy().sum(-1)
+
+
+def gradient_reversal_loss(agent, observations, actions, **_):
+    """Ascend on forget-action log-prob, push policy toward uniform on
+    forget states. Same as trajectory_selective._compute_forget_loss but
+    on data freshly sampled from the current on-policy distribution."""
+    if len(observations) == 0:
+        return torch.tensor(0.0, device=next(agent.network.parameters()).device)
+    log_probs, entropy = _policy_log_probs_entropy(agent, observations, actions)
     return log_probs.mean() - entropy.mean()
+
+
+def no_op_loss(agent, observations, actions, **_):
+    """Control: zero unlearning loss. Pure continued PPO. Useful as the
+    baseline to compare against — shows what the policy does under
+    continued env interaction WITHOUT any unlearning pressure."""
+    return torch.tensor(0.0, device=next(agent.network.parameters()).device)
 
 
 UNLEARN_METHODS = {
     "gradient_reversal": gradient_reversal_loss,
+    "no_op": no_op_loss,
 }
 
 
@@ -266,18 +267,22 @@ def online_unlearn(cfg: DictConfig):
         ppo_metrics = agent.update(ppo_rollout)
 
         # Unlearning side-step: ascend on log-prob of forget transitions.
+        # Skip when the method returns a non-differentiable zero (no_op
+        # control) or when this rollout has no forget transitions (the
+        # chicken-and-egg failure we want to expose).
         unlearn_loss_val = 0.0
-        if n_forget > 0:
+        if n_forget > 0 and method_name != "no_op":
             forget_obs_t = torch.as_tensor(buf_obs[forget_mask], dtype=torch.float32).to(device)
             forget_act_t = torch.as_tensor(buf_act[forget_mask]).to(device)
             agent.optimizer.zero_grad()
             loss = unlearn_weight * unlearn_loss_fn(agent, forget_obs_t, forget_act_t)
-            loss.backward()
-            torch.nn.utils.clip_grad_norm_(
-                agent.network.parameters(), agent.max_grad_norm,
-            )
-            agent.optimizer.step()
-            unlearn_loss_val = float(loss.item())
+            if loss.requires_grad:
+                loss.backward()
+                torch.nn.utils.clip_grad_norm_(
+                    agent.network.parameters(), agent.max_grad_norm,
+                )
+                agent.optimizer.step()
+                unlearn_loss_val = float(loss.item())
 
         # ---- Phase 4: eval ----
         rec = {
