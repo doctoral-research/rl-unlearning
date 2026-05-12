@@ -1,0 +1,75 @@
+# @package _global_
+# TRIAD: unified three-stage unlearning pipeline composing all three pillars.
+#
+#   1. DISCOVER  — strategy_inversion augments the forget set with synthetic
+#                  high-confidence states (in addition to scenario-matched
+#                  real trajectories).
+#   2. REVERSE   — trajectory_selective applies gradient-reversed updates on
+#                  the combined real+synthetic forget batch.
+#   3. PROTECT   — retain_protection masks important-for-retain parameters
+#                  and adds KL distillation from a frozen teacher throughout.
+#
+# Use case: stronger forget signal (DISCOVER widens the affected region)
+# without sacrificing retain stability (PROTECT blocks important weights).
+method: triad
+unlearn_name: triad
+
+# Unlearning optimizer (separate from training optimizer). Mid-range — masks
+# protect us, but augmented forget set gives us more diverse gradients than
+# pure retain_protection.
+unlearn_lr: 2e-4
+retain_stability_threshold: 0.5
+num_unlearn_steps: 2000
+eval_frequency: 100
+
+# ---- Stage 1: DISCOVER (strategy_inversion settings) ----
+# Synthetic states generated ONCE upfront, mixed with scenario states each step.
+num_seeds: 50            # smaller than pure strategy_inversion: we have real states too
+num_iterations: 30
+search_lr: 0.01
+search:
+  method: gradient_based  # gradient_based, random, evolutionary
+  temperature: 1.0
+  noise_scale: 0.1
+
+# Mixing ratio: 0.5 = half the forget batch is synthetic, half is real.
+synthetic_mix_ratio: 0.5
+
+# ---- Stage 2: REVERSE (trajectory_selective settings) ----
+forget_strength: 0.3      # moderate — protect+distill keep us safe
+negative_learning:
+  gradient_reversal: true
+loss_weights:
+  forget: 1.0
+  retain: 0.5
+  regularization: 0.01
+
+# Scenario-driven trajectory matching (same as trajectory_selective)
+target_selection:
+  method: similarity
+  threshold: 0.8
+
+# ---- Stage 3: PROTECT (retain_protection settings) ----
+metaplasticity:
+  enabled: true
+  mask_type: importance
+  update_frequency: 250
+  threshold: 0.7         # protect top 30% most important params
+  consolidation_strength: 0.9
+
+distillation:
+  enabled: true
+  teacher_update_frequency: 5000
+  temperature: 2.0
+  alpha: 0.2
+  only_retain_states: true
+
+ewc:
+  enabled: false
+  lambda_ewc: 1000.0
+  fisher_sample_size: 1000
+
+stability:
+  check_frequency: 1000
+  threshold: 0.1
+  adaptive_weights: true

@@ -1,0 +1,34 @@
+name: avoid_bottom_right
+description: >
+  Forget the "bottom-right detour" path to the goal. The goal is in the
+  top-right room and the agent starts in the bottom-left room, so there
+  are two natural paths: through the bottom-right (BR) room or through
+  the top-left (TL) room. After unlearning, the agent should reach the
+  goal *without* visiting the bottom-right room. Same task, restricted
+  route — a clean test of spatial behavioral steering on a
+  poster-friendly env.
+env_id: MiniGrid-FourRooms-v0
+
+# A trajectory is "forget-worthy" if it spends >=15% of its steps in the
+# bottom-right room. Proportion mode handles the common case where the
+# agent only passes through BR briefly.
+match_mode: proportion
+match_threshold: 0.15
+
+# Obs layout (see src/utils/env_wrappers.py MiniGridFlatPos):
+#   dim 0 = agent_x, dim 1 = agent_y, dim 2 = direction, dims 3.. = view.
+# FourRooms is 19x19. Doorway columns/rows at index 9.
+# Bottom-right room: x in [10, 17], y in [10, 17].
+groups:
+  - name: bottom_right_room
+    conditions:
+      - dim: 0
+        dim_name: agent_x
+        op: ">"
+        value: 9.5
+        target: state
+      - dim: 1
+        dim_name: agent_y
+        op: ">"
+        value: 9.5
+        target: state

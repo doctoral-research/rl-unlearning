@@ -53,7 +53,8 @@ def record_videos(
     out = Path(output_dir)
     out.mkdir(parents=True, exist_ok=True)
 
-    env = gym.make(env_id, render_mode="rgb_array")
+    from utils.env_wrappers import make_env
+    env = make_env(env_id, render_mode="rgb_array")
     saved_paths = []
 
     for ep in range(num_videos):

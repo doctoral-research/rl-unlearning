@@ -1,0 +1,14 @@
+# @package _global_
+env_name: fourrooms
+env_id: MiniGrid-FourRooms-v0
+# Obs = [agent_x, agent_y, direction, flat 7x7x3 partial-view] = 3 + 147 = 150
+observation_dim: 150
+# Discrete(7): left, right, forward, pickup, drop, toggle, done
+action_dim: 7
+action_type: discrete
+
+# MiniGrid maps are sparse-reward, partial-observation. More training needed
+# than CartPole; less than LunarLander.
+training:
+  total_timesteps: 1_500_000
+  eval_frequency: 10_000

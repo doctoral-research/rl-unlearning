@@ -62,8 +62,9 @@ def train(cfg: DictConfig):
     if wandb_run:
         logger.info(f"WandB run: {wandb_run.url}")
     
-    # Create environment
-    env = gym.make(cfg.env_id)
+    # Create environment (routes MiniGrid envs through the flat-pos wrapper)
+    from utils.env_wrappers import make_env
+    env = make_env(cfg.env_id, seed=cfg.seed)
     
     # Create agent
     agent = PPOAgent(

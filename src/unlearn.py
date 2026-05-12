@@ -145,8 +145,9 @@ def unlearn(cfg: DictConfig):
         logger.error(f"Checkpoint not found: {checkpoint_path}")
         return
 
-    # Create environment
-    env = gym.make(cfg.env_id)
+    # Create environment (routes MiniGrid envs through the flat-pos wrapper)
+    from utils.env_wrappers import make_env
+    env = make_env(cfg.env_id, seed=cfg.seed)
 
     # Create agent with the TRAINING learning rate (from agent config, not unlearn config)
     # Note: unlearn configs may override cfg.learning_rate (e.g. strategy_inversion
@@ -345,6 +346,62 @@ def unlearn(cfg: DictConfig):
                 forget_indices = list(np.argsort(traj_returns)[-num_forget:])
                 logger.info(f"No scenario/toxic_states; using top-{num_forget} reward trajectories as forget targets")
 
+    elif cfg.method == "triad":
+        # ---- TRIAD: DISCOVER + REVERSE + PROTECT ----
+        # Three-stage pipeline composing all pillars. Real scenario-matched
+        # forget trajectories AND synthetic high-confidence states feed a
+        # gradient-reversed update, with metaplasticity masks + KL distillation
+        # guarding retain performance.
+        unlearning_method = TrajectorySelectiveForgetting(
+            agent=agent,
+            forget_strength=cfg.get("forget_strength", 0.3),
+            loss_decomposition=True,
+            target_selection_method=cfg.target_selection.method,
+            target_selection_threshold=cfg.target_selection.threshold,
+            gradient_reversal=cfg.negative_learning.gradient_reversal,
+            loss_weights=OmegaConf.to_container(cfg.loss_weights),
+            device=str(device),
+        )
+
+        # Stage 3: PROTECT — set up masks + distillation.
+        retain_protection = RetainProtection(
+            agent=agent,
+            metaplasticity_enabled=cfg.metaplasticity.enabled,
+            mask_type=cfg.metaplasticity.mask_type,
+            mask_threshold=cfg.metaplasticity.threshold,
+            consolidation_strength=cfg.metaplasticity.get("consolidation_strength", 0.9),
+            distillation_enabled=cfg.distillation.enabled,
+            distillation_temperature=cfg.distillation.temperature,
+            distillation_alpha=cfg.distillation.alpha,
+            device=str(device),
+        )
+
+        # Stage 1: DISCOVER — scenario states ∪ synthetic state generation.
+        strategy_inv = StrategyInversion(
+            agent=agent,
+            env=env,
+            num_seeds=cfg.num_seeds,
+            num_iterations=cfg.num_iterations,
+            learning_rate=cfg.get("search_lr", 0.01),
+            search_method=cfg.search.method,
+            temperature=cfg.search.get("temperature", 1.0),
+            noise_scale=cfg.search.get("noise_scale", 0.1),
+            device=str(device),
+        )
+
+        if scenario and trajectories:
+            forget_indices = scenario.identify_forget_trajectories(trajectories)
+            logger.info(f"Scenario '{scenario.name}' matched {len(forget_indices)} forget trajectories")
+        else:
+            forget_indices = []
+
+        # Generate synthetic forget states.
+        if trajectories:
+            strategy_inv.set_reference_states(trajectories)
+        logger.info(f"TRIAD stage 1 (DISCOVER): generating {cfg.num_seeds} synthetic states...")
+        forget_states = strategy_inv.generate_forget_states()
+        logger.info(f"TRIAD discovered {len(forget_states)} synthetic forget states")
+
     else:
         logger.error(f"Unknown unlearning method: {cfg.method}")
         return
@@ -492,6 +549,72 @@ def unlearn(cfg: DictConfig):
                 )
 
             step_metrics = unlearning_method.unlearn_step(forget_batch, retain_batch)
+
+        elif cfg.method == "triad" and trajectories:
+            # Stage 2: REVERSE on a mixed batch (real scenario + synthetic).
+            #   forget_batch = (1-r) * real-from-scenario  +  r * synthetic
+            # then run the PROTECT-wrapped update so masks + distillation
+            # guard retain performance.
+            mix_ratio = float(cfg.get("synthetic_mix_ratio", 0.5))
+            n_real = max(1, int(batch_size * (1.0 - mix_ratio))) if forget_indices else 0
+            n_synth = batch_size - n_real if forget_states else 0
+
+            real_obs, real_acts = None, None
+            if n_real > 0 and forget_indices:
+                real_batch = sample_batch_from_trajectories(
+                    trajectories, forget_indices, n_real, cfg.action_type, device,
+                    scenario=scenario,
+                )
+                real_obs = real_batch["observations"]
+                real_acts = real_batch["actions"]
+
+            synth_obs, synth_acts = None, None
+            if n_synth > 0 and forget_states:
+                state_indices = np.random.choice(
+                    len(forget_states), size=n_synth, replace=True,
+                )
+                batch_states = np.array([forget_states[i] for i in state_indices])
+                synth_obs = torch.as_tensor(batch_states, dtype=torch.float32).to(device)
+                # Use the agent's current argmax action for synthetic states.
+                # (Frozen actions would require recomputing each step; using
+                # current actions gives a continuous moving-target signal that
+                # works well in practice for the small synth fraction.)
+                with torch.no_grad():
+                    a_out, _ = agent.network(synth_obs)
+                    if cfg.action_type == "discrete":
+                        synth_acts = torch.argmax(a_out, dim=-1)
+                    else:
+                        synth_acts = a_out
+
+            if real_obs is not None and synth_obs is not None:
+                obs_cat = torch.cat([real_obs, synth_obs], dim=0)
+                act_cat = torch.cat([real_acts, synth_acts], dim=0)
+            elif real_obs is not None:
+                obs_cat, act_cat = real_obs, real_acts
+            elif synth_obs is not None:
+                obs_cat, act_cat = synth_obs, synth_acts
+            else:
+                # Nothing to forget on this step; skip.
+                continue
+
+            forget_batch = {
+                "observations": obs_cat,
+                "actions": act_cat,
+                "rewards": torch.zeros(len(obs_cat)).to(device),
+            }
+
+            retain_batch = None
+            if retain_indices:
+                retain_batch = sample_batch_from_trajectories(
+                    trajectories, retain_indices, batch_size, cfg.action_type, device,
+                )
+
+            # Stage 3: PROTECT-wrapped REVERSE step.
+            step_metrics = retain_protection.protected_update(
+                forget_batch, retain_batch, unlearning_method=unlearning_method,
+            )
+            step_metrics["n_real"] = n_real
+            step_metrics["n_synth"] = n_synth
 
         # Periodic evaluation
         if step % eval_frequency == 0:
