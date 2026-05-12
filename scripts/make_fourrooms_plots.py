@@ -46,6 +46,7 @@ GEOMETRY = {
         "forget_label": "bottom-right room",
         "obs_dim": 2838,
         "obs_encoding": "symbolic",
+        "fixed_goal_pos": (13, 3),
     },
     "empty8x8": {
         "grid_w": 8, "grid_h": 8,
@@ -54,6 +55,7 @@ GEOMETRY = {
         "forget_label": "bottom-left quadrant",
         "obs_dim": 150,
         "obs_encoding": "image",
+        "fixed_goal_pos": None,
     },
 }
 N_ACTIONS = 7  # MiniGrid: 0=left, 1=right, 2=forward, 3=pickup, 4=drop, 5=toggle, 6=done
@@ -75,12 +77,14 @@ def load_agent(ckpt_path: Path, obs_dim: int, n_actions: int) -> PPOAgent:
 def rollout_with_positions(
     agent: PPOAgent, env_id: str, num_episodes: int, max_steps: int = 200,
     deterministic: bool = False, seed: int = 0, obs_encoding: str = "image",
+    fixed_goal_pos: tuple = None,
 ) -> Tuple[np.ndarray, List[List[Tuple[int, int]]], List[float]]:
     """Returns: visit_counts (H, W) int, per-episode pos lists, returns list."""
     visits = np.zeros((GRID_H, GRID_W), dtype=np.int64)
     pos_lists: List[List[Tuple[int, int]]] = []
     returns: List[float] = []
-    env = make_env(env_id, seed=seed, obs_encoding=obs_encoding)
+    env = make_env(env_id, seed=seed, obs_encoding=obs_encoding,
+                   fixed_goal_pos=fixed_goal_pos)
     for ep in range(num_episodes):
         obs, _ = env.reset(seed=seed + ep)
         positions: List[Tuple[int, int]] = []
@@ -254,12 +258,13 @@ def main():
 
     obs_dim = geom["obs_dim"]
     obs_encoding = geom["obs_encoding"]
+    fixed_goal_pos = geom.get("fixed_goal_pos", None)
     for name, path in variants.items():
         print(f"  rolling out {name} from {path.name}...")
         agent = load_agent(path, obs_dim=obs_dim, n_actions=N_ACTIONS)
         visits, pos_lists, returns = rollout_with_positions(
             agent, args.env_id, args.num_episodes, seed=12345,
-            obs_encoding=obs_encoding,
+            obs_encoding=obs_encoding, fixed_goal_pos=fixed_goal_pos,
         )
         field = per_cell_argmax(agent, args.env_id, obs_dim=obs_dim)
         occupancies[name] = visits

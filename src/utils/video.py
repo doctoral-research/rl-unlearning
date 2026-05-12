@@ -54,10 +54,14 @@ def record_videos(
     out.mkdir(parents=True, exist_ok=True)
 
     from utils.env_wrappers import make_env
-    # Default to symbolic encoding for FourRooms-trained policies.
-    # NOTE: this only matters if the caller doesn't already pass it in.
+    # Default to symbolic encoding for FourRooms-trained policies and
+    # pin the goal so visualizations match what the policy was trained
+    # / evaluated against. NOTE: only matters if the caller doesn't
+    # already pass these in.
     obs_enc = "symbolic" if "FourRooms" in env_id else "image"
-    env = make_env(env_id, render_mode="rgb_array", obs_encoding=obs_enc)
+    fgp = (13, 3) if "FourRooms" in env_id else None
+    env = make_env(env_id, render_mode="rgb_array",
+                   obs_encoding=obs_enc, fixed_goal_pos=fgp)
     saved_paths = []
 
     for ep in range(num_videos):

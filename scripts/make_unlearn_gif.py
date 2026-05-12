@@ -38,9 +38,9 @@ from utils.env_wrappers import make_env  # noqa: E402
 
 GEOMETRY = {
     "fourrooms": {"env_id": "MiniGrid-FourRooms-v0", "obs_dim": 2838,
-                  "obs_encoding": "symbolic"},
+                  "obs_encoding": "symbolic", "fixed_goal_pos": (13, 3)},
     "empty8x8":  {"env_id": "MiniGrid-Empty-8x8-v0", "obs_dim": 150,
-                  "obs_encoding": "image"},
+                  "obs_encoding": "image", "fixed_goal_pos": None},
 }
 
 
@@ -75,9 +75,11 @@ def rollout_frames(
     env_id: str, ckpt_path: Path, forget_box: Tuple[int, int, int, int],
     seed: int = 0, max_steps: int = 60, deterministic: bool = False,
     obs_dim: int = 150, obs_encoding: str = "image",
+    fixed_goal_pos: tuple | None = None,
 ) -> List[np.ndarray]:
     env = make_env(env_id, seed=seed, render_mode="rgb_array",
-                   obs_encoding=obs_encoding)
+                   obs_encoding=obs_encoding,
+                   fixed_goal_pos=fixed_goal_pos)
     obs, _ = env.reset(seed=seed)
     agent = load_agent(ckpt_path, obs_dim=obs_dim)
 
@@ -141,6 +143,7 @@ def main():
             seed=args.seed + ep, max_steps=args.max_steps,
             deterministic=args.deterministic, obs_dim=geom["obs_dim"],
             obs_encoding=geom.get("obs_encoding", "image"),
+            fixed_goal_pos=geom.get("fixed_goal_pos", None),
         )
         all_frames.extend(frames)
 
