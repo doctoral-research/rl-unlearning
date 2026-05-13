@@ -63,8 +63,19 @@ class MLP(nn.Module):
 
 
 class ActorCritic(nn.Module):
-    """Actor-Critic network for on-policy RL."""
-    
+    """Actor-Critic network for on-policy RL.
+
+    Continuous-action policy supports two modes:
+    - Standard Gaussian (default): single learnable log_std vector, IID
+      noise sampled per step. Fails on envs like Pendulum where temporally-
+      correlated exploration is required.
+    - gSDE (Raffin et al. 2021, "Generalized State Dependent Exploration"):
+      noise = latent_sde @ noise_matrix, where noise_matrix ~ N(0, std^2)
+      is resampled every `sde_sample_freq` env steps (NOT every step), and
+      latent_sde = features from the shared MLP. Enables coherent
+      exploration trajectories.
+    """
+
     def __init__(
         self,
         observation_dim: int,
@@ -73,12 +84,15 @@ class ActorCritic(nn.Module):
         activation: str = "tanh",
         ortho_init: bool = True,
         action_type: str = "discrete",
+        use_sde: bool = False,
+        sde_log_std_init: float = -2.0,
     ):
         super().__init__()
-        
+
         self.action_type = action_type
         self.action_dim = action_dim
-        
+        self.use_sde = bool(use_sde) and action_type == "continuous"
+
         # Shared feature extractor (optional)
         self.shared = MLP(
             input_dim=observation_dim,
@@ -87,7 +101,7 @@ class ActorCritic(nn.Module):
             activation=activation,
             ortho_init=ortho_init,
         )
-        
+
         # Actor (policy) head
         if action_type == "discrete":
             self.actor = nn.Linear(hidden_dims[-1], action_dim)
@@ -95,14 +109,54 @@ class ActorCritic(nn.Module):
                 self.actor = layer_init(self.actor, std=0.01)
         else:  # continuous
             self.actor_mean = nn.Linear(hidden_dims[-1], action_dim)
-            self.actor_logstd = nn.Parameter(torch.zeros(1, action_dim))
             if ortho_init:
                 self.actor_mean = layer_init(self.actor_mean, std=0.01)
-        
+            if self.use_sde:
+                self._latent_sde_dim = hidden_dims[-1]
+                # log_std lives over (latent_sde_dim, action_dim) — full
+                # state-dependent diagonal covariance per Raffin 2021.
+                self.log_std = nn.Parameter(
+                    torch.ones(self._latent_sde_dim, action_dim) * sde_log_std_init,
+                )
+                # Exploration matrix: sampled noise weights, refreshed
+                # periodically via sample_sde_noise(). Registered as buffer
+                # so it moves with .to(device).
+                self.register_buffer(
+                    "exploration_matrix",
+                    torch.zeros(self._latent_sde_dim, action_dim),
+                )
+                self.sample_sde_noise(batch_size=1)
+            else:
+                self.actor_logstd = nn.Parameter(torch.zeros(1, action_dim))
+
         # Critic (value) head
         self.critic = nn.Linear(hidden_dims[-1], 1)
         if ortho_init:
             self.critic = layer_init(self.critic, std=1.0)
+
+    def sample_sde_noise(self, batch_size: int = 1) -> None:
+        """Resample the gSDE exploration matrix. Call every K env steps."""
+        if not self.use_sde:
+            return
+        with torch.no_grad():
+            std = torch.exp(self.log_std)
+            eps = torch.randn_like(std)
+            self.exploration_matrix.copy_(eps * std)
+
+    def _sde_action_and_logprob(self, features, action=None):
+        """gSDE: action = mean + features @ exploration_matrix, with a
+        Gaussian log-prob whose per-dim std is sqrt(features**2 @ std**2)."""
+        mean = self.actor_mean(features)
+        std_per_dim = torch.exp(self.log_std)  # (latent_dim, action_dim)
+        # State-dependent variance: (B, A)
+        variance = (features ** 2) @ (std_per_dim ** 2)
+        std = torch.sqrt(variance + 1e-6)
+        dist = torch.distributions.Normal(mean, std)
+        if action is None:
+            # Use the *current* exploration_matrix to sample (correlated noise)
+            noise = features @ self.exploration_matrix
+            action = mean + noise
+        return action, dist.log_prob(action).sum(-1), dist.entropy().sum(-1)
     
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Forward pass returning action logits/mean and value."""
@@ -130,24 +184,27 @@ class ActorCritic(nn.Module):
         """Get action, log probability, entropy, and value."""
         features = self.shared(x)
         value = self.critic(features)
-        
+
         if self.action_type == "discrete":
             logits = self.actor(features)
             probs = torch.distributions.Categorical(logits=logits)
-            
+
             if action is None:
                 action = probs.sample()
-            
+
             return action, probs.log_prob(action), probs.entropy(), value
+        elif self.use_sde:
+            action, log_prob, entropy = self._sde_action_and_logprob(features, action)
+            return action, log_prob, entropy, value
         else:
             action_mean = self.actor_mean(features)
             action_logstd = self.actor_logstd.expand_as(action_mean)
             action_std = torch.exp(action_logstd)
             probs = torch.distributions.Normal(action_mean, action_std)
-            
+
             if action is None:
                 action = probs.sample()
-            
+
             return action, probs.log_prob(action).sum(1), probs.entropy().sum(1), value
 
 

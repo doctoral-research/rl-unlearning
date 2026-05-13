@@ -63,7 +63,7 @@ def train(cfg: DictConfig):
         logger.info(f"WandB run: {wandb_run.url}")
     
     # Create environment (routes MiniGrid envs through the flat-pos wrapper)
-    from utils.env_wrappers import make_env
+    from utils.env_wrappers import make_env, ForgetMaskWrapper
     env = make_env(
         cfg.env_id, seed=cfg.seed,
         exploration_bonus=cfg.get("exploration_bonus", None),
@@ -72,7 +72,23 @@ def train(cfg: DictConfig):
         exploration_hash_scale=cfg.get("exploration_hash_scale", 1.0),
         obs_encoding=cfg.get("obs_encoding", "image"),
         fixed_goal_pos=cfg.get("fixed_goal_pos", None),
+        normalize_obs=cfg.get("normalize_obs", False),
     )
+
+    # Optional full-retrain oracle: wrap the env to terminate / zero-reward
+    # on forget-scenario entries. Training PPO under this wrapper from a
+    # random init produces the "from-scratch with hard constraint" oracle
+    # — the upper bound for axes 1 (forget) + 4 (relearn-resistance) at
+    # the maximum axis 3 (efficiency) cost.
+    oracle_mode = cfg.get("oracle_mode", None)
+    if oracle_mode:
+        from scenarios import ForgetScenario
+        scenario = ForgetScenario.from_config(cfg)
+        env = ForgetMaskWrapper(
+            env, scenario, mode=oracle_mode,
+            penalty=float(cfg.get("oracle_penalty", 10.0)),
+        )
+        logger.info(f"Oracle mode: {oracle_mode} on scenario {scenario.name}")
     
     # Create agent
     agent = PPOAgent(
@@ -82,6 +98,9 @@ def train(cfg: DictConfig):
         hidden_dims=cfg.network.hidden_dims,
         activation=cfg.network.activation,
         learning_rate=cfg.learning_rate,
+        use_sde=cfg.get("use_sde", False),
+        sde_sample_freq=cfg.get("sde_sample_freq", 4),
+        sde_log_std_init=cfg.get("sde_log_std_init", -2.0),
         gamma=cfg.gamma,
         gae_lambda=cfg.gae_lambda,
         clip_epsilon=cfg.clip_epsilon,

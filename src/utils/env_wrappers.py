@@ -154,6 +154,88 @@ def is_minigrid_env(env_id: str) -> bool:
     return env_id.startswith("MiniGrid-")
 
 
+class RunningMeanStd:
+    """Welford running mean/variance, vectorized across one obs vector."""
+
+    def __init__(self, shape: tuple, epsilon: float = 1e-4):
+        self.mean = np.zeros(shape, dtype=np.float64)
+        self.var = np.ones(shape, dtype=np.float64)
+        self.count = float(epsilon)
+
+    def update(self, x: np.ndarray) -> None:
+        x = np.asarray(x, dtype=np.float64)
+        batch_mean = x.mean(axis=0) if x.ndim > 1 else x
+        batch_var = x.var(axis=0) if x.ndim > 1 else np.zeros_like(x)
+        batch_count = float(x.shape[0]) if x.ndim > 1 else 1.0
+        delta = batch_mean - self.mean
+        tot = self.count + batch_count
+        new_mean = self.mean + delta * batch_count / tot
+        m_a = self.var * self.count
+        m_b = batch_var * batch_count
+        M2 = m_a + m_b + (delta ** 2) * self.count * batch_count / tot
+        self.mean = new_mean
+        self.var = M2 / tot
+        self.count = tot
+
+
+class NormalizeObservation(gym.ObservationWrapper):
+    """Standardize obs to zero mean / unit variance using a running estimate.
+
+    Standard recipe for envs whose obs dims live on wildly different
+    scales (Pendulum: cos_theta in [-1, 1], theta_dot in [-8, 8]). Without
+    normalization the network is dominated by the high-magnitude dim.
+    SB3-zoo and the original PPO paper both use this on continuous-control
+    benchmarks.
+
+    State is shared across env.reset() so the running estimate keeps
+    accumulating across episodes (the natural choice for on-policy RL).
+    """
+
+    def __init__(self, env: gym.Env, epsilon: float = 1e-8):
+        super().__init__(env)
+        self.epsilon = float(epsilon)
+        self.obs_rms = RunningMeanStd(self.observation_space.shape)
+
+    def observation(self, obs):
+        obs = np.asarray(obs, dtype=np.float64)
+        self.obs_rms.update(obs)
+        return ((obs - self.obs_rms.mean) /
+                np.sqrt(self.obs_rms.var + self.epsilon)).astype(np.float32)
+
+
+class ForgetMaskWrapper(gym.Wrapper):
+    """Hard-constraint env wrapper for the full-retrain oracle baseline.
+
+    Whenever the agent enters a forget-scenario state, this wrapper either
+    terminates the episode with a large penalty (``mode="terminate"``) or
+    zeros the reward there (``mode="zero_reward"``). Training PPO under
+    this wrapper from a random init yields a policy that has provably
+    *never* been reinforced in the forget region — the ground-truth
+    "fresh policy that didn't learn the forget behavior."
+
+    Used to compare against online unlearning methods on axes 1+4 (forget
+    effectiveness and durability) while paying the full axis-3 cost
+    (training from scratch). Standard machine-unlearning oracle.
+    """
+
+    def __init__(self, env: gym.Env, scenario, mode: str = "terminate",
+                 penalty: float = 10.0):
+        super().__init__(env)
+        self.scenario = scenario
+        self.mode = mode
+        self.penalty = float(penalty)
+
+    def step(self, action):
+        obs, reward, term, trunc, info = self.env.step(action)
+        if self.scenario.matches_state(np.asarray(obs)):
+            info["forget_violation"] = True
+            if self.mode == "terminate":
+                return obs, reward - self.penalty, True, trunc, info
+            if self.mode == "zero_reward":
+                return obs, 0.0, term, trunc, info
+        return obs, reward, term, trunc, info
+
+
 class TaxiDecode(gym.ObservationWrapper):
     """Expose Taxi-v3's `Discrete(500)` state as `[row, col, pass_loc, dest]`.
 
@@ -191,6 +273,7 @@ def make_env(
     exploration_hash_scale: float = 1.0,
     obs_encoding: str = "image",
     fixed_goal_pos: tuple | None = None,
+    normalize_obs: bool = False,
     **gym_kwargs,
 ) -> gym.Env:
     """Single entry point used across train/unlearn/evaluate.
@@ -217,6 +300,8 @@ def make_env(
     env = gym.make(env_id, **gym_kwargs)
     if env_id.startswith("Taxi"):
         env = TaxiDecode(env)
+    if normalize_obs:
+        env = NormalizeObservation(env)
     if exploration_bonus == "count_based":
         env = CountBasedExploration(
             env, beta=exploration_beta, anneal_steps=exploration_anneal_steps,

@@ -52,7 +52,11 @@ class PPOAgent:
             activation=activation,
             ortho_init=True,
             action_type=action_type,
+            use_sde=bool(kwargs.get("use_sde", False)),
+            sde_log_std_init=float(kwargs.get("sde_log_std_init", -2.0)),
         ).to(self.device)
+        self.sde_sample_freq = int(kwargs.get("sde_sample_freq", 4))
+        self._sde_step_counter = 0
         
         # Optimizer
         self.optimizer = optim.Adam(self.network.parameters(), lr=learning_rate, eps=1e-5)
@@ -60,6 +64,14 @@ class PPOAgent:
     def select_action(self, observation: np.ndarray, deterministic: bool = False) -> Tuple[np.ndarray, Dict]:
         """Select action given observation."""
         obs_tensor = torch.as_tensor(np.asarray(observation), dtype=torch.float32).unsqueeze(0).to(self.device)
+
+        # Resample the SDE exploration matrix every sde_sample_freq steps.
+        # This gates the temporally-correlated noise that makes Pendulum
+        # learnable.
+        if self.network.use_sde and not deterministic:
+            if self._sde_step_counter % self.sde_sample_freq == 0:
+                self.network.sample_sde_noise()
+            self._sde_step_counter += 1
 
         with torch.no_grad():
             if deterministic:
@@ -71,8 +83,16 @@ class PPOAgent:
                     log_prob = dist.log_prob(action)
                 else:
                     action = action_output  # mean is the deterministic action
-                    action_std = torch.exp(self.network.actor_logstd.expand_as(action_output))
-                    dist = torch.distributions.Normal(action_output, action_std)
+                    if self.network.use_sde:
+                        # Use last sampled std for log_prob bookkeeping
+                        feats = self.network.shared(obs_tensor)
+                        std_per_dim = torch.exp(self.network.log_std)
+                        variance = (feats ** 2) @ (std_per_dim ** 2)
+                        std = torch.sqrt(variance + 1e-6)
+                        dist = torch.distributions.Normal(action_output, std)
+                    else:
+                        action_std = torch.exp(self.network.actor_logstd.expand_as(action_output))
+                        dist = torch.distributions.Normal(action_output, action_std)
                     log_prob = dist.log_prob(action).sum(-1)
             else:
                 action, log_prob, _, value = self.network.get_action_and_value(obs_tensor)

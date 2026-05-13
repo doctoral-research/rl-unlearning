@@ -7,7 +7,19 @@ action_dim: 1
 action_type: continuous
 
 # Pendulum has dense reward = -(theta^2 + 0.1*theta_dot^2 + 0.001*a^2).
-# Converges with standard PPO in 200-500k steps.
+# Default PPO (gamma=0.99, lr=3e-4) gets stuck at ~-1300. SB3 rl-zoo
+# recipe uses gamma=0.9 (Pendulum is effectively a short-horizon task),
+# higher lr, and 1M+ timesteps. We mirror that here.
+gamma: 0.9
+learning_rate: 1.0e-3
+n_steps: 1024
+normalize_obs: true  # Pendulum has wildly different obs-dim scales
+# gSDE (Raffin 2021): temporally-correlated exploration. Required for
+# vanilla single-env PPO on Pendulum per SB3 rl-zoo.
+use_sde: true
+sde_sample_freq: 4
+sde_log_std_init: -2.0
+
 training:
   total_timesteps: 500_000
-  eval_frequency: 10_000
+  eval_frequency: 20_000
