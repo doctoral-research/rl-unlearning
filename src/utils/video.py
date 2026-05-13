@@ -54,12 +54,20 @@ def record_videos(
     out.mkdir(parents=True, exist_ok=True)
 
     from utils.env_wrappers import make_env
-    # Default to symbolic encoding for FourRooms-trained policies and
-    # pin the goal so visualizations match what the policy was trained
-    # / evaluated against. NOTE: only matters if the caller doesn't
-    # already pass these in.
-    obs_enc = "symbolic" if "FourRooms" in env_id else "image"
-    fgp = (13, 3) if "FourRooms" in env_id else None
+    # Default to symbolic encoding for MiniGrid envs (matches what
+    # current MiniGrid policies are trained with, except legacy Empty-8x8
+    # which uses image). Pin the FourRooms goal so visualizations match
+    # the pinned-goal training setup. NOTE: only matters if the caller
+    # doesn't already pass these in.
+    if "FourRooms" in env_id:
+        obs_enc = "symbolic"
+        fgp = (13, 3)
+    elif "MiniGrid-" in env_id and "Empty" not in env_id:
+        obs_enc = "symbolic"
+        fgp = None
+    else:
+        obs_enc = "image"
+        fgp = None
     env = make_env(env_id, render_mode="rgb_array",
                    obs_encoding=obs_enc, fixed_goal_pos=fgp)
     saved_paths = []

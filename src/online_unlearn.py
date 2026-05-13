@@ -136,6 +136,32 @@ def is_clipped_reversal_loss(
     return (ratio_clipped * log_probs).mean() - entropy.mean()
 
 
+def is_clipped_retain_loss(
+    agent, observations, actions, old_log_probs,
+    clip_ratio: float = 0.2, **_,
+):
+    """Mirror of is_clipped_reversal_loss with opposite sign.
+
+    Loss = -mean( clipped_ratio * log_pi_current(a|s) )
+
+    Pushes the current policy *toward* the actions taken at retain states
+    by the previous (closer-to-baseline) policy. Same PPO-style IS-clip
+    primitive as the forget side, just with the sign flipped to do gradient
+    descent on log-prob (= preserve the action) instead of ascent.
+
+    No entropy term: we don't want to encourage exploration at retain
+    states, we want to preserve the action distribution that was working.
+    """
+    if len(observations) == 0:
+        return torch.tensor(
+            0.0, device=next(agent.network.parameters()).device,
+        )
+    log_probs, _ = _policy_log_probs_entropy(agent, observations, actions)
+    ratio = (log_probs - old_log_probs).exp()
+    ratio_clipped = torch.clamp(ratio, 1.0 - clip_ratio, 1.0 + clip_ratio)
+    return -(ratio_clipped * log_probs).mean()
+
+
 # ---------------------------------------------------------------------------
 # Unlearning losses pluggable per --unlearn_method
 # ---------------------------------------------------------------------------
@@ -293,6 +319,20 @@ def online_unlearn(cfg: DictConfig):
         )
     target_kl = float(cfg.get("target_kl", 0.05))
 
+    # Optional retain-side replay (mirror of forget-side is_replay with
+    # opposite sign). On each rollout, stash retain transitions; during
+    # the update, sample and PUSH the policy toward those actions. Tests
+    # whether an explicit positive retain anchor helps under attack.
+    retain_replay = bool(cfg.get("retain_replay", False))
+    retain_buf = None
+    if retain_replay:
+        retain_buf = ForgetReplayBuffer(
+            capacity=int(cfg.get("retain_replay_capacity", 4096)),
+        )
+    retain_weight = float(cfg.get("retain_replay_weight", 1.0))
+    retain_substeps = int(cfg.get("retain_replay_substeps", 2))
+    retain_batch = int(cfg.get("retain_replay_batch_size", 256))
+
     # ---- Baseline eval (for retain stability reference) ----
     baseline_metrics = eval_agent(agent, eval_env, scenario, baseline_return=0.0,
                                    num_episodes=16, seed=10000)
@@ -349,6 +389,16 @@ def online_unlearn(cfg: DictConfig):
         if replay_buf is not None and n_forget > 0:
             for i in np.where(forget_mask)[0]:
                 replay_buf.add(buf_obs[i], buf_act[i], buf_logp[i])
+
+        # Retain-replay: stash this rollout's retain transitions too.
+        # Stored log_prob is from the *current* (drifted) policy at
+        # collection time; under aggressive forget pressure the policy
+        # may drift even on retain states, so keeping pre-drift retain
+        # samples around lets us pull it back.
+        if retain_buf is not None:
+            retain_mask = ~forget_mask
+            for i in np.where(retain_mask)[0]:
+                retain_buf.add(buf_obs[i], buf_act[i], buf_logp[i])
 
         # ---- Phase 3: PPO update on retain set + unlearning on forget set ----
         # Compute GAE on full rollout (retain rewards intact).
@@ -443,6 +493,33 @@ def online_unlearn(cfg: DictConfig):
                 )
                 agent.optimizer.step()
                 unlearn_loss_val = float(loss.item())
+
+        # Optional retain-replay step. Same IS-clip primitive as the
+        # forget side, opposite sign: pull the policy toward retain
+        # actions that the baseline (or earlier policy) took. Run AFTER
+        # the unlearning step so the retain anchor acts as a corrective.
+        retain_loss_val = 0.0
+        retain_replay_size = 0 if retain_buf is None else len(retain_buf)
+        if retain_buf is not None and len(retain_buf) > 0:
+            for _ in range(retain_substeps):
+                sample = retain_buf.sample(retain_batch)
+                if sample is None:
+                    break
+                r_obs, r_act, r_logp = sample
+                r_obs_t = torch.as_tensor(r_obs, dtype=torch.float32).to(device)
+                r_act_t = torch.as_tensor(r_act).to(device)
+                r_logp_t = torch.as_tensor(r_logp, dtype=torch.float32).to(device)
+                agent.optimizer.zero_grad()
+                r_loss = retain_weight * is_clipped_retain_loss(
+                    agent, r_obs_t, r_act_t, old_log_probs=r_logp_t,
+                )
+                if r_loss.requires_grad:
+                    r_loss.backward()
+                    torch.nn.utils.clip_grad_norm_(
+                        agent.network.parameters(), agent.max_grad_norm,
+                    )
+                    agent.optimizer.step()
+                    retain_loss_val = float(r_loss.item())
 
         # ---- Phase 4: eval ----
         rec = {

@@ -1,0 +1,26 @@
+name: avoid_R
+description: >
+  Forget visiting the R cell (taxi_row=0, taxi_col=0). R is one of the
+  four pickup/dropoff locations in Taxi-v3. About 1 in 4 episodes places
+  the passenger at R, and 1 in 4 places the destination at R. So the
+  baseline policy regularly drives the taxi to R; this scenario forces
+  the policy to avoid that cell entirely. Reward-aligned forget: the
+  optimal-task pull is strong, so penalty methods should be brittle.
+env_id: Taxi-v3
+match_mode: proportion
+match_threshold: 0.05
+
+# obs: [taxi_row, taxi_col, pass_loc, dest_idx]
+groups:
+  - name: at_R
+    conditions:
+      - dim: 0
+        dim_name: taxi_row
+        op: "=="
+        value: 0
+        target: state
+      - dim: 1
+        dim_name: taxi_col
+        op: "=="
+        value: 0
+        target: state

@@ -1,0 +1,23 @@
+# @package _global_
+env_name: taxi
+env_id: Taxi-v3
+# Obs = [taxi_row, taxi_col, pass_loc, dest_idx] via TaxiDecode wrapper.
+observation_dim: 4
+action_dim: 6
+action_type: discrete
+
+# Taxi has sparse rewards (+20 dropoff, -1 step, -10 illegal). Vanilla
+# PPO and PPO+count-based both fail (mean reward -200 for all evals).
+# Solution: Intrinsic Curiosity Module (Pathak et al. 2017). This is the
+# canonical recipe for Taxi+PPO per zap-thamm/PPO-Taxi-v3 (HF) and the
+# Pathak/Burda curiosity line of work.
+use_icm: true
+icm_eta: 1.0
+icm_beta: 0.2
+icm_feature_dim: 32
+icm_hidden: 64
+icm_lr: 1e-3
+
+training:
+  total_timesteps: 2_000_000
+  eval_frequency: 20_000

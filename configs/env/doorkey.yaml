@@ -1,0 +1,22 @@
+# @package _global_
+env_name: doorkey
+env_id: MiniGrid-DoorKey-8x8-v0
+# Obs = [agent_x, agent_y, direction, symbolic flat obs] via MiniGridFlatPos.
+# Symbolic encoding flatobs dim is 2835 for MiniGrid 7x7 partial view; with
+# the (x, y, dir) prefix = 2838.
+observation_dim: 2838
+action_dim: 7
+action_type: discrete
+obs_encoding: symbolic
+
+# DoorKey-8x8 is multi-stage sparse: pickup-key, open-door, reach-goal.
+# Vanilla PPO + symbolic obs got 0.0 reward across 1M steps. Same recipe
+# as FourRooms: count-based exploration on the (x, y, dir) prefix.
+exploration_bonus: count_based
+exploration_beta: 0.05
+exploration_anneal_steps: 1_500_000
+exploration_hash_scale: 1.0
+
+training:
+  total_timesteps: 2_000_000
+  eval_frequency: 20_000

@@ -1,0 +1,22 @@
+# @package _global_
+env_name: mountaincar
+env_id: MountainCar-v0
+# Obs = [position, velocity]; position in [-1.2, 0.6], velocity in [-0.07, 0.07].
+observation_dim: 2
+action_dim: 3
+action_type: discrete
+
+# MountainCar reward is -1/step until goal; the agent rarely stumbles on
+# the goal during random exploration. Vanilla PPO + count-based both
+# failed (mean reward -200 for all evals). Same fix as Taxi:
+# Intrinsic Curiosity Module (Pathak 2017).
+use_icm: true
+icm_eta: 0.5
+icm_beta: 0.2
+icm_feature_dim: 32
+icm_hidden: 64
+icm_lr: 1e-3
+
+training:
+  total_timesteps: 1_500_000
+  eval_frequency: 20_000

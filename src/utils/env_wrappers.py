@@ -81,18 +81,21 @@ class CountBasedExploration(gym.Wrapper):
 
     def __init__(
         self, env: gym.Env, beta: float = 0.05, hash_dims: int = 3,
-        anneal_steps: int = 0,
+        anneal_steps: int = 0, hash_scale: float = 1.0,
     ):
         super().__init__(env)
         self._beta = float(beta)
         self._hash_dims = int(hash_dims)
         self._anneal_steps = int(anneal_steps)
+        self._hash_scale = float(hash_scale)
         self._global_step = 0
         self._counts: dict[tuple, int] = {}
 
     def _key(self, obs: np.ndarray) -> tuple:
         flat = np.asarray(obs).reshape(-1)
-        return tuple(int(round(v)) for v in flat[: self._hash_dims])
+        return tuple(
+            int(round(v * self._hash_scale)) for v in flat[: self._hash_dims]
+        )
 
     def _current_beta(self) -> float:
         if self._anneal_steps <= 0:
@@ -151,11 +154,41 @@ def is_minigrid_env(env_id: str) -> bool:
     return env_id.startswith("MiniGrid-")
 
 
+class TaxiDecode(gym.ObservationWrapper):
+    """Expose Taxi-v3's `Discrete(500)` state as `[row, col, pass_loc, dest]`.
+
+    Taxi-v3 encodes the state as
+        s = ((taxi_row * 5 + taxi_col) * 5 + pass_loc) * 4 + dest_idx.
+    Returning the 4-tuple as the observation lets the PPO MLP learn a
+    Q function over a tractable input AND lets dim-based ForgetScenarios
+    reference (row, col, pass_loc, dest) directly. The integer-state form
+    would force the network through an embedding and force scenarios to
+    decode bit-fiddled ints themselves.
+    """
+
+    def __init__(self, env: gym.Env):
+        super().__init__(env)
+        self.observation_space = gym.spaces.Box(
+            low=np.array([0, 0, 0, 0], dtype=np.float32),
+            high=np.array([4, 4, 4, 3], dtype=np.float32),
+            dtype=np.float32,
+        )
+
+    def observation(self, obs):
+        s = int(obs)
+        dest = s % 4
+        pass_loc = (s // 4) % 5
+        col = (s // 20) % 5
+        row = (s // 100) % 5
+        return np.array([row, col, pass_loc, dest], dtype=np.float32)
+
+
 def make_env(
     env_id: str, seed: int | None = None,
     exploration_bonus: str | None = None,
     exploration_beta: float = 0.05,
     exploration_anneal_steps: int = 0,
+    exploration_hash_scale: float = 1.0,
     obs_encoding: str = "image",
     fixed_goal_pos: tuple | None = None,
     **gym_kwargs,
@@ -182,6 +215,13 @@ def make_env(
             **gym_kwargs,
         )
     env = gym.make(env_id, **gym_kwargs)
+    if env_id.startswith("Taxi"):
+        env = TaxiDecode(env)
+    if exploration_bonus == "count_based":
+        env = CountBasedExploration(
+            env, beta=exploration_beta, anneal_steps=exploration_anneal_steps,
+            hash_scale=exploration_hash_scale,
+        )
     if seed is not None:
         env.reset(seed=seed)
     return env
