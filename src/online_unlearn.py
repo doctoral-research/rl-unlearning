@@ -195,10 +195,52 @@ def no_op_loss(agent, observations, actions, **_):
     return torch.tensor(0.0, device=next(agent.network.parameters()).device)
 
 
+def _policy_log_probs_from_net(network, action_type, observations, actions):
+    """Like _policy_log_probs_entropy but takes a raw network (used for
+    the frozen baseline in NPO). Returns log_probs only."""
+    logits, _ = network(observations)
+    if action_type == "discrete":
+        dist = torch.distributions.Categorical(logits=logits)
+        return dist.log_prob(actions)
+    action_std = torch.exp(network.actor_logstd.expand_as(logits))
+    dist = torch.distributions.Normal(logits, action_std)
+    return dist.log_prob(actions).sum(-1)
+
+
+def npo_loss(agent, observations, actions, old_log_probs=None,
+             baseline_net=None, beta: float = 0.1, **_):
+    """Negative Preference Optimization (Zhang et al. 2024).
+
+    DPO without the preferred-y term: forget data is treated as
+    "dispreferred" relative to a frozen reference policy.
+
+        L_NPO = -(2/beta) * log_sigmoid( -beta * (log pi(a|s) - log pi_ref(a|s)) )
+
+    Gradient pushes log pi(a|s) DOWN relative to log pi_ref(a|s), but the
+    sigmoid envelope keeps the update bounded (no catastrophic collapse
+    like raw gradient ascent / Strategy Inversion). Designed for the
+    LLM-unlearning setting in the original paper; here we port it to
+    on-policy RL forget transitions, using the frozen baseline policy
+    as pi_ref.
+    """
+    if len(observations) == 0:
+        return torch.tensor(0.0, device=next(agent.network.parameters()).device)
+    if baseline_net is None:
+        raise ValueError("npo_loss requires a frozen baseline_net (pi_ref)")
+    log_probs_cur, _ = _policy_log_probs_entropy(agent, observations, actions)
+    with torch.no_grad():
+        log_probs_ref = _policy_log_probs_from_net(
+            baseline_net, agent.action_type, observations, actions,
+        )
+    log_ratio = log_probs_cur - log_probs_ref
+    return -(2.0 / beta) * torch.nn.functional.logsigmoid(-beta * log_ratio).mean()
+
+
 UNLEARN_METHODS = {
     "gradient_reversal": gradient_reversal_loss,
     "no_op": no_op_loss,
     "is_replay": is_clipped_reversal_loss,
+    "npo": npo_loss,
 }
 
 
@@ -325,13 +367,25 @@ def online_unlearn(cfg: DictConfig):
     unlearn_weight = float(cfg.get("unlearn_weight", 0.5))
 
     # The proposed method (is_replay) uses a ring buffer of past
-    # forget transitions to survive the chicken-and-egg.
+    # forget transitions to survive the chicken-and-egg. NPO uses the
+    # same buffer mechanism but with a different loss function.
     replay_buf = None
-    if method_name == "is_replay":
+    if method_name in ("is_replay", "npo"):
         replay_buf = ForgetReplayBuffer(
             capacity=int(cfg.get("replay_capacity", 4096)),
         )
     target_kl = float(cfg.get("target_kl", 0.05))
+    npo_beta = float(cfg.get("npo_beta", 0.1))
+
+    # NPO requires a frozen reference policy. If kl_anchor is already
+    # active baseline_net is reused; otherwise instantiate one here.
+    if method_name == "npo" and baseline_net is None:
+        from copy import deepcopy
+        baseline_net = deepcopy(agent.network).to(device)
+        for p in baseline_net.parameters():
+            p.requires_grad_(False)
+        baseline_net.eval()
+        logger.info("NPO: instantiated frozen baseline policy (pi_ref)")
 
     # Optional retain-side replay (mirror of forget-side is_replay with
     # opposite sign). On each rollout, stash retain transitions; during
@@ -346,6 +400,17 @@ def online_unlearn(cfg: DictConfig):
     retain_weight = float(cfg.get("retain_replay_weight", 1.0))
     retain_substeps = int(cfg.get("retain_replay_substeps", 2))
     retain_batch = int(cfg.get("retain_replay_batch_size", 256))
+
+    # Optional Lagrangian-PPO baseline (safe-RL framing).
+    # Constraint: E[1(in_forget)] <= threshold. The dual variable `lam`
+    # adapts per rollout based on observed forget violation rate.
+    # When enabled, the rollout reward is shaped as r' = r - lam * 1(in_forget),
+    # i.e. an *adaptive* version of negative_reward_penalty.
+    lagrangian = bool(cfg.get("lagrangian", False))
+    lag_lam = float(cfg.get("lagrangian_lambda_init", 0.1))
+    lag_threshold = float(cfg.get("lagrangian_threshold", 0.05))
+    lag_dual_lr = float(cfg.get("lagrangian_dual_lr", 0.05))
+    lag_lam_max = float(cfg.get("lagrangian_lambda_max", 100.0))
 
     # ---- Baseline eval (for retain stability reference) ----
     baseline_metrics = eval_agent(agent, eval_env, scenario, baseline_return=0.0,
@@ -397,6 +462,16 @@ def online_unlearn(cfg: DictConfig):
         neg_pen = float(cfg.get("negative_reward_penalty", 0.0))
         if neg_pen > 0 and n_forget > 0:
             buf_rew = buf_rew - neg_pen * forget_mask.astype(np.float32)
+
+        # Phase 2c: Lagrangian-PPO baseline. Same shape as neg_reward but
+        # with an *adaptive* multiplier driven by constraint violation.
+        if lagrangian:
+            if n_forget > 0:
+                buf_rew = buf_rew - lag_lam * forget_mask.astype(np.float32)
+            # Dual update: lam_{t+1} = max(0, lam_t + lr * (violation - threshold))
+            violation = float(forget_frac - lag_threshold)
+            lag_lam = float(max(0.0, min(lag_lam_max,
+                                         lag_lam + lag_dual_lr * violation)))
 
         # For is_replay: add new on-policy forget transitions to the buffer.
         # Each entry stores the log-prob at collection time for IS correction.
@@ -457,7 +532,7 @@ def online_unlearn(cfg: DictConfig):
 
         if method_name == "no_op":
             pass  # control: nothing to do
-        elif method_name == "is_replay" and replay_buf is not None and len(replay_buf) > 0:
+        elif method_name in ("is_replay", "npo") and replay_buf is not None and len(replay_buf) > 0:
             # Multi-step optimisation against the buffer. Stop early if
             # the policy drifts past target_kl from where the buffer
             # entries were collected (bounded-KL step).
@@ -482,6 +557,7 @@ def online_unlearn(cfg: DictConfig):
                 agent.optimizer.zero_grad()
                 loss = unlearn_weight * unlearn_loss_fn(
                     agent, s_obs_t, s_act_t, old_log_probs=s_logp_t,
+                    baseline_net=baseline_net, beta=npo_beta,
                 )
                 if loss.requires_grad:
                     loss.backward()
