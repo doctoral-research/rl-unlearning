@@ -84,9 +84,9 @@ class PPOAgent:
                 else:
                     action = action_output  # mean is the deterministic action
                     if self.network.use_sde:
-                        # Use last sampled std for log_prob bookkeeping
+                        # Use bounded SDE std for log_prob bookkeeping
                         feats = self.network.shared(obs_tensor)
-                        std_per_dim = torch.exp(self.network.log_std)
+                        std_per_dim = self.network._sde_std()
                         variance = (feats ** 2) @ (std_per_dim ** 2)
                         std = torch.sqrt(variance + 1e-6)
                         dist = torch.distributions.Normal(action_output, std)

@@ -134,12 +134,21 @@ class ActorCritic(nn.Module):
         if ortho_init:
             self.critic = layer_init(self.critic, std=1.0)
 
+    def _sde_std(self):
+        """Bounded std for gSDE. SB3's `expln` transform: std grows linearly
+        for log_std > 0 instead of exponentially. Keeps the noise scale
+        from blowing up during training (the failure mode we hit on
+        HalfCheetah where action magnitudes diverged)."""
+        below = torch.exp(self.log_std)
+        above = self.log_std + 1.0  # linear for log_std > 0
+        return torch.where(self.log_std <= 0.0, below, above)
+
     def sample_sde_noise(self, batch_size: int = 1) -> None:
         """Resample the gSDE exploration matrix. Call every K env steps."""
         if not self.use_sde:
             return
         with torch.no_grad():
-            std = torch.exp(self.log_std)
+            std = self._sde_std()
             eps = torch.randn_like(std)
             self.exploration_matrix.copy_(eps * std)
 
@@ -147,7 +156,7 @@ class ActorCritic(nn.Module):
         """gSDE: action = mean + features @ exploration_matrix, with a
         Gaussian log-prob whose per-dim std is sqrt(features**2 @ std**2)."""
         mean = self.actor_mean(features)
-        std_per_dim = torch.exp(self.log_std)  # (latent_dim, action_dim)
+        std_per_dim = self._sde_std()  # (latent_dim, action_dim), bounded
         # State-dependent variance: (B, A)
         variance = (features ** 2) @ (std_per_dim ** 2)
         std = torch.sqrt(variance + 1e-6)

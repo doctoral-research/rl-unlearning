@@ -1,0 +1,26 @@
+name: no_front_flip
+description: >
+  Forget tipping the torso forward (rooty < -0.3, i.e. front-rolled
+  orientation). HalfCheetah's optimal forward-running gait pitches the
+  torso slightly forward at high speed; agents that learn aggressive
+  forward-leaning gaits often go further than the small-pitch ones.
+  Reward-aligned forget: the optimal high-speed gait is in the forget
+  region, so penalty methods should crash here under relearn attack.
+
+  Standard safe-RL benchmark formulation (Achiam 2017: "no flip" CPO
+  constraint).
+env_id: HalfCheetah-v5
+match_mode: proportion
+match_threshold: 0.1
+
+# obs[0] = rootz (z position), obs[1] = rooty (root pitch angle).
+# Negative rooty = torso pitched forward. Threshold -0.3 catches
+# aggressive forward-leaning gaits.
+groups:
+  - name: tipped_forward
+    conditions:
+      - dim: 1
+        dim_name: rooty
+        op: "<"
+        value: -0.3
+        target: state
