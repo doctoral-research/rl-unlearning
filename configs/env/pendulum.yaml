@@ -1,0 +1,13 @@
+# @package _global_
+env_name: pendulum
+env_id: Pendulum-v1
+# Obs = [cos_theta, sin_theta, theta_dot]; theta_dot in [-8, 8].
+observation_dim: 3
+action_dim: 1
+action_type: continuous
+
+# Pendulum has dense reward = -(theta^2 + 0.1*theta_dot^2 + 0.001*a^2).
+# Converges with standard PPO in 200-500k steps.
+training:
+  total_timesteps: 500_000
+  eval_frequency: 10_000

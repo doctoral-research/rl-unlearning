@@ -1,0 +1,22 @@
+name: avoid_left
+description: >
+  Forget swinging through the left half (sin_theta < 0). Pendulum is
+  symmetric: the optimal swing-up policy uses both halves. After
+  unlearning, the agent should swing up via the right half only.
+  Reward-aligned: the natural path goes through the forget region, so
+  PPO under a relearn attack has a clear gradient toward re-introducing
+  the left-half swing. Tests Brittle Unlearning on a continuous-action
+  control env.
+env_id: Pendulum-v1
+match_mode: proportion
+match_threshold: 0.1
+
+# obs: [cos_theta, sin_theta, theta_dot]
+groups:
+  - name: left_half
+    conditions:
+      - dim: 1
+        dim_name: sin_theta
+        op: "<"
+        value: 0.0
+        target: state

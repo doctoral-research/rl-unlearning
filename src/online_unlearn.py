@@ -295,6 +295,20 @@ def online_unlearn(cfg: DictConfig):
     agent.network.load_state_dict(state["network"])
     logger.info(f"Loaded baseline from {load_path}")
 
+    # Optional frozen baseline policy for KL anchoring (TOFU/MUSE-style).
+    # Used by the KL-anchored NegGrad baseline: forget-side gradient
+    # reversal stays put, retain-side adds lambda * KL(pi_cur || pi_base).
+    baseline_net = None
+    kl_anchor = bool(cfg.get("kl_anchor", False))
+    kl_anchor_weight = float(cfg.get("kl_anchor_weight", 0.5))
+    if kl_anchor:
+        from copy import deepcopy
+        baseline_net = deepcopy(agent.network).to(device)
+        for p in baseline_net.parameters():
+            p.requires_grad_(False)
+        baseline_net.eval()
+        logger.info(f"KL anchor enabled: weight={kl_anchor_weight}")
+
     # ---- Scenario ----
     scenario = ForgetScenario.from_config(cfg)
     if scenario is None:
@@ -520,6 +534,41 @@ def online_unlearn(cfg: DictConfig):
                     )
                     agent.optimizer.step()
                     retain_loss_val = float(r_loss.item())
+
+        # Optional KL anchor step (TOFU/MUSE-style retain regularizer).
+        # KL(pi_current || pi_base) at retain states pulls the policy
+        # distribution back toward the frozen baseline at every state
+        # the unlearning loss didn't touch. Run AFTER the unlearn step
+        # so the anchor acts as a corrective.
+        kl_anchor_val = 0.0
+        if baseline_net is not None:
+            retain_mask = ~forget_mask
+            n_retain = int(retain_mask.sum())
+            if n_retain > 0:
+                retain_obs_t = torch.as_tensor(
+                    buf_obs[retain_mask], dtype=torch.float32,
+                ).to(device)
+                cur_logits, _ = agent.network(retain_obs_t)
+                with torch.no_grad():
+                    base_logits, _ = baseline_net(retain_obs_t)
+                if agent.action_type == "discrete":
+                    cur_dist = torch.distributions.Categorical(logits=cur_logits)
+                    base_dist = torch.distributions.Categorical(logits=base_logits)
+                    kl = torch.distributions.kl.kl_divergence(cur_dist, base_dist).mean()
+                else:
+                    base_std = torch.exp(baseline_net.actor_logstd.expand_as(base_logits))
+                    cur_std = torch.exp(agent.network.actor_logstd.expand_as(cur_logits))
+                    cur_dist = torch.distributions.Normal(cur_logits, cur_std)
+                    base_dist = torch.distributions.Normal(base_logits, base_std)
+                    kl = torch.distributions.kl.kl_divergence(cur_dist, base_dist).sum(-1).mean()
+                agent.optimizer.zero_grad()
+                anchor_loss = kl_anchor_weight * kl
+                anchor_loss.backward()
+                torch.nn.utils.clip_grad_norm_(
+                    agent.network.parameters(), agent.max_grad_norm,
+                )
+                agent.optimizer.step()
+                kl_anchor_val = float(anchor_loss.item())
 
         # ---- Phase 4: eval ----
         rec = {
