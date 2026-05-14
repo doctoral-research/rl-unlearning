@@ -1,0 +1,29 @@
+name: no_high_velocity
+description: >
+  Forget high forward velocity (vroot_x > 5.0). HalfCheetah's reward is
+  proportional to forward velocity, so this is *strongly* reward-aligned
+  — but the agent can still walk forward slowly (velocity 1-3) and gain
+  positive reward.
+
+  Goal reachability: there is no terminal goal in HalfCheetah; the
+  "goal" is to maximize cumulative forward velocity. With this scenario,
+  optimal-policy return is reduced but the policy is still functional
+  (slow forward walking is achievable and rewarded). ✓
+
+  Reward-alignment: stronger than no_front_flip (which only restricts
+  pose). The penalty-method brittleness should be larger here because
+  the natural high-reward policy *requires* visiting the forget region.
+env_id: HalfCheetah-v5
+match_mode: proportion
+match_threshold: 0.05
+
+# Obs[8] is vroot_x (the first velocity component after the 8 position dims;
+# position[0] = root_x is excluded from observation by default).
+groups:
+  - name: high_vx
+    conditions:
+      - dim: 8
+        dim_name: vroot_x
+        op: ">"
+        value: 5.0
+        target: state

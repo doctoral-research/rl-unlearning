@@ -14,6 +14,34 @@ def layer_init(layer: nn.Module, std: float = np.sqrt(2), bias_const: float = 0.
     return layer
 
 
+class ConvEncoder(nn.Module):
+    """Atari-style CNN encoder for 64x64x3 pixel observations.
+
+    Used by Procgen / Atari-like envs. The output_dim matches the MLP
+    hidden_dim so the rest of ActorCritic doesn't need to know it's a
+    pixel env vs a flat-vector env.
+    """
+
+    def __init__(self, output_dim: int = 512):
+        super().__init__()
+        self.conv = nn.Sequential(
+            layer_init(nn.Conv2d(3, 32, kernel_size=8, stride=4)), nn.ReLU(),
+            layer_init(nn.Conv2d(32, 64, kernel_size=4, stride=2)), nn.ReLU(),
+            layer_init(nn.Conv2d(64, 64, kernel_size=3, stride=1)), nn.ReLU(),
+            nn.Flatten(),
+        )
+        # For 64x64 input the conv output is 64*4*4 = 1024
+        self.fc = nn.Sequential(
+            layer_init(nn.Linear(1024, output_dim)), nn.ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        # Accept (B, H, W, C) and permute to (B, C, H, W)
+        if x.dim() == 4 and x.shape[-1] in (1, 3, 4):
+            x = x.permute(0, 3, 1, 2).contiguous()
+        return self.fc(self.conv(x))
+
+
 class MLP(nn.Module):
     """Multi-layer perceptron."""
     
@@ -86,21 +114,31 @@ class ActorCritic(nn.Module):
         action_type: str = "discrete",
         use_sde: bool = False,
         sde_log_std_init: float = -2.0,
+        tanh_squash: bool = False,
+        action_scale: float = 1.0,
+        use_conv: bool = False,
     ):
         super().__init__()
 
         self.action_type = action_type
         self.action_dim = action_dim
         self.use_sde = bool(use_sde) and action_type == "continuous"
+        self.tanh_squash = bool(tanh_squash) and action_type == "continuous"
+        self.action_scale = float(action_scale)
+        self.use_conv = bool(use_conv)
 
-        # Shared feature extractor (optional)
-        self.shared = MLP(
-            input_dim=observation_dim,
-            output_dim=hidden_dims[-1],
-            hidden_dims=hidden_dims[:-1],
-            activation=activation,
-            ortho_init=ortho_init,
-        )
+        # Shared feature extractor: ConvEncoder for pixel envs (Procgen,
+        # Atari), MLP for flat-vector envs (everything else).
+        if self.use_conv:
+            self.shared = ConvEncoder(output_dim=hidden_dims[-1])
+        else:
+            self.shared = MLP(
+                input_dim=observation_dim,
+                output_dim=hidden_dims[-1],
+                hidden_dims=hidden_dims[:-1],
+                activation=activation,
+                ortho_init=ortho_init,
+            )
 
         # Actor (policy) head
         if action_type == "discrete":
@@ -154,7 +192,13 @@ class ActorCritic(nn.Module):
 
     def _sde_action_and_logprob(self, features, action=None):
         """gSDE: action = mean + features @ exploration_matrix, with a
-        Gaussian log-prob whose per-dim std is sqrt(features**2 @ std**2)."""
+        Gaussian log-prob whose per-dim std is sqrt(features**2 @ std**2).
+
+        With tanh_squash, the raw Gaussian sample is passed through tanh
+        before being returned, with the log-prob corrected via the
+        change-of-variables Jacobian. Standard SAC-style trick that keeps
+        actions bounded without the gradient-killing effect of hard clip.
+        """
         mean = self.actor_mean(features)
         std_per_dim = self._sde_std()  # (latent_dim, action_dim), bounded
         # State-dependent variance: (B, A)
@@ -162,10 +206,29 @@ class ActorCritic(nn.Module):
         std = torch.sqrt(variance + 1e-6)
         dist = torch.distributions.Normal(mean, std)
         if action is None:
-            # Use the *current* exploration_matrix to sample (correlated noise)
+            # Sample the pre-squash u from the gSDE distribution
             noise = features @ self.exploration_matrix
-            action = mean + noise
-        return action, dist.log_prob(action).sum(-1), dist.entropy().sum(-1)
+            u = mean + noise
+        else:
+            # Recover pre-squash u from the squashed-and-scaled action
+            if self.tanh_squash:
+                a_unscaled = (action / self.action_scale).clamp(-0.999, 0.999)
+                u = torch.atanh(a_unscaled)
+            else:
+                u = action
+        log_prob = dist.log_prob(u).sum(-1)
+        if self.tanh_squash:
+            squashed = torch.tanh(u)
+            # log-det Jacobian of tanh + action scaling
+            #   a = scale * tanh(u) => da/du = scale * (1 - tanh^2(u))
+            log_prob = log_prob - (
+                torch.log(1.0 - squashed ** 2 + 1e-6).sum(-1)
+                + self.action_dim * float(np.log(self.action_scale))
+            )
+            out_action = (squashed * self.action_scale) if action is None else action
+        else:
+            out_action = u
+        return out_action, log_prob, dist.entropy().sum(-1)
     
     def forward(self, x: torch.Tensor) -> Tuple[torch.Tensor, torch.Tensor]:
         """Forward pass returning action logits/mean and value."""

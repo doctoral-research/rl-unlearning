@@ -104,6 +104,12 @@ def relearn_attack(cfg: DictConfig):
         n_epochs=cfg.get("n_epochs", 5),
         batch_size=cfg.get("batch_size", 64),
         action_type=cfg.action_type,
+        use_sde=cfg.get("use_sde", False),
+        sde_sample_freq=cfg.get("sde_sample_freq", 4),
+        sde_log_std_init=cfg.get("sde_log_std_init", -2.0),
+        tanh_squash=cfg.get("tanh_squash", False),
+        action_scale=cfg.get("action_scale", 1.0),
+        use_conv=cfg.get("use_conv", False),
     )
     state = torch.load(cfg.unlearned_checkpoint, map_location=str(device))
     agent.network.load_state_dict(state["network"])

@@ -54,6 +54,9 @@ class PPOAgent:
             action_type=action_type,
             use_sde=bool(kwargs.get("use_sde", False)),
             sde_log_std_init=float(kwargs.get("sde_log_std_init", -2.0)),
+            tanh_squash=bool(kwargs.get("tanh_squash", False)),
+            action_scale=float(kwargs.get("action_scale", 1.0)),
+            use_conv=bool(kwargs.get("use_conv", False)),
         ).to(self.device)
         self.sde_sample_freq = int(kwargs.get("sde_sample_freq", 4))
         self._sde_step_counter = 0

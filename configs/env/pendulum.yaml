@@ -18,7 +18,9 @@ normalize_obs: true  # Pendulum has wildly different obs-dim scales
 # vanilla single-env PPO on Pendulum per SB3 rl-zoo.
 use_sde: true
 sde_sample_freq: 4
-sde_log_std_init: -2.0
+sde_log_std_init: 0.0   # was -2 (too little noise); SB3 default for continuous control
+tanh_squash: true       # bounded actions without gradient-killing hard clip
+action_scale: 2.0       # Pendulum action range is [-2, 2], not [-1, 1] like HalfCheetah
 
 training:
   total_timesteps: 500_000

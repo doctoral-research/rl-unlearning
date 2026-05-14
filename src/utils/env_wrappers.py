@@ -154,6 +154,54 @@ def is_minigrid_env(env_id: str) -> bool:
     return env_id.startswith("MiniGrid-")
 
 
+class ProcgenAdapter:
+    """Make procgen's ProcgenEnv look like a gymnasium VectorEnv.
+
+    procgen.ProcgenEnv is natively vectorized (num_envs param) but uses
+    the old gym 4-tuple step API and returns a Dict obs space. This
+    adapter:
+      - exposes single_observation_space / single_action_space attrs
+      - returns obs as a flat (N, 64, 64, 3) float32 tensor in [0, 1]
+      - converts 4-tuple step output to gymnasium 5-tuple
+    """
+
+    def __init__(self, env_name: str = "coinrun", num_envs: int = 8,
+                 num_levels: int = 0, start_level: int = 0,
+                 distribution_mode: str = "easy"):
+        import procgen
+        self._env = procgen.ProcgenEnv(
+            num_envs=num_envs, env_name=env_name,
+            num_levels=num_levels, start_level=start_level,
+            distribution_mode=distribution_mode,
+        )
+        self.num_envs = num_envs
+        self.single_observation_space = gym.spaces.Box(
+            low=0.0, high=1.0, shape=(64, 64, 3), dtype=np.float32,
+        )
+        self.observation_space = gym.spaces.Box(
+            low=0.0, high=1.0, shape=(num_envs, 64, 64, 3), dtype=np.float32,
+        )
+        self.single_action_space = gym.spaces.Discrete(15)
+        self.action_space = gym.spaces.MultiDiscrete([15] * num_envs)
+
+    def reset(self, seed=None):
+        obs = self._env.reset()
+        rgb = obs["rgb"].astype(np.float32) / 255.0
+        return rgb, {}
+
+    def step(self, action):
+        obs, reward, done, info = self._env.step(np.asarray(action, dtype=np.int32))
+        rgb = obs["rgb"].astype(np.float32) / 255.0
+        # Old gym `done` covers terminated+truncated; procgen episodes end
+        # on level completion or death so we treat all as terminations.
+        terminated = done.astype(bool)
+        truncated = np.zeros_like(done, dtype=bool)
+        return rgb, reward.astype(np.float32), terminated, truncated, info
+
+    def close(self):
+        self._env.close()
+
+
 class RunningMeanStd:
     """Welford running mean/variance, vectorized across one obs vector."""
 

@@ -1,0 +1,32 @@
+name: avoid_outer_third
+description: >
+  Forget cart positions outside the center third of the track:
+  cells with |x| > 0.3. The trained baseline already mostly stays
+  centered (mean x = -0.06, std 0.19) but does drift out to ±0.6
+  occasionally, giving ~13% of steps in the forget region naturally.
+
+  Goal reachability: yes (pole-balancing is achievable while keeping
+  cart in |x| <= 0.3; the trained policy stays in this range most
+  of the time already).
+  Reward-aligned: yes (CartPole rewards every balanced step regardless
+  of position, so PPO under attack will want to use the wider range
+  for easier balancing).
+env_id: CartPole-v1
+match_mode: proportion
+match_threshold: 0.10
+
+groups:
+  - name: outer_right
+    conditions:
+      - dim: 0
+        dim_name: cart_position
+        op: ">"
+        value: 0.3
+        target: state
+  - name: outer_left
+    conditions:
+      - dim: 0
+        dim_name: cart_position
+        op: "<"
+        value: -0.3
+        target: state

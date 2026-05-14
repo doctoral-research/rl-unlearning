@@ -1,0 +1,25 @@
+name: avoid_turn_left
+description: >
+  Forget the TURN_LEFT action (action=0 in MiniGrid). The trained
+  baseline uses both turn_left (1 step to rotate left) and turn_right
+  (1 step to rotate right) efficiently — they are symmetric atomic
+  rotations. After unlearning, the agent must use 3× turn_right to
+  mimic a turn_left, lengthening episodes.
+
+  Goal reachability: ✓ (3 right-turns = 1 left-turn, same final
+  orientation). Reward-aligned: reward decreases with episode length,
+  so the agent has incentive to re-acquire turn_left under attack.
+
+  Action-axis forget on a navigation env (different from fourrooms
+  avoid_turn_left_in_BR which was conditional on state).
+env_id: MiniGrid-Empty-8x8-v0
+match_mode: any_step
+
+groups:
+  - name: turn_left_action
+    conditions:
+      - dim: 0
+        dim_name: action
+        op: "=="
+        value: 0
+        target: action

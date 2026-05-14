@@ -17,6 +17,8 @@ n_steps: 2048
 normalize_obs: true  # MuJoCo envs benefit from obs normalization
 use_sde: true        # Standard for MuJoCo continuous control
 sde_sample_freq: 4
+sde_log_std_init: 0.0  # SB3 default for HalfCheetah (was -2 = too little noise)
+tanh_squash: true      # bounded actions without gradient-killing hard clip
 
 training:
   total_timesteps: 1_500_000

@@ -96,15 +96,32 @@ def train_vec(cfg: DictConfig):
     eval_freq = int(cfg.training.eval_frequency)
     action_bounds = None  # set below for continuous envs
 
-    # Vectorized training envs (different seeds per sub-env)
-    env = SyncVectorEnv(
-        [_make_env_fn(cfg, cfg.seed + i) for i in range(num_envs)],
-    )
-    # Single-env for eval (separate, doesn't share obs-norm state with training)
-    eval_env = make_env(
-        cfg.env_id, seed=cfg.seed + 99999,
-        normalize_obs=cfg.get("normalize_obs", False),
-    )
+    # Vectorized training envs. Procgen is natively vectorized via its
+    # own ProcgenAdapter; everything else uses gymnasium's SyncVectorEnv.
+    if cfg.env_id == "procgen":
+        from utils.env_wrappers import ProcgenAdapter
+        env = ProcgenAdapter(
+            env_name=cfg.get("procgen_env", "coinrun"),
+            num_envs=num_envs,
+            num_levels=cfg.get("procgen_num_levels", 0),
+            distribution_mode=cfg.get("procgen_distribution_mode", "easy"),
+        )
+        # Eval uses a single procgen env
+        eval_env = ProcgenAdapter(
+            env_name=cfg.get("procgen_env", "coinrun"),
+            num_envs=1,
+            num_levels=cfg.get("procgen_num_levels", 0),
+            distribution_mode=cfg.get("procgen_distribution_mode", "easy"),
+        )
+    else:
+        env = SyncVectorEnv(
+            [_make_env_fn(cfg, cfg.seed + i) for i in range(num_envs)],
+        )
+        # Single-env for eval (separate, doesn't share obs-norm state with training)
+        eval_env = make_env(
+            cfg.env_id, seed=cfg.seed + 99999,
+            normalize_obs=cfg.get("normalize_obs", False),
+        )
     if cfg.action_type == "continuous":
         a_space = env.single_action_space
         action_bounds = (
@@ -132,9 +149,15 @@ def train_vec(cfg: DictConfig):
         use_sde=cfg.get("use_sde", False),
         sde_sample_freq=cfg.get("sde_sample_freq", 4),
         sde_log_std_init=cfg.get("sde_log_std_init", -2.0),
+        tanh_squash=cfg.get("tanh_squash", False),
+        action_scale=cfg.get("action_scale", 1.0),
+        use_conv=cfg.get("use_conv", False),
     )
 
     ret_rms = RunningRMS()
+    ckpt_dir = Path(cfg.training.checkpoint_dir)
+    ckpt_dir.mkdir(parents=True, exist_ok=True)
+    best_eval = -float("inf")  # Track best eval; save best_model.pt accordingly
 
     obs, _ = env.reset(seed=cfg.seed)
     global_step = 0
@@ -218,25 +241,56 @@ def train_vec(cfg: DictConfig):
         # Eval
         if global_step >= next_eval:
             ev_returns = []
+            is_procgen = hasattr(eval_env, "_env") and "Procgen" in type(eval_env).__name__
             for ep in range(8):
-                e_obs, _ = eval_env.reset(seed=cfg.seed * 7919 + ep)
+                if is_procgen:
+                    e_obs, _ = eval_env.reset()
+                else:
+                    e_obs, _ = eval_env.reset(seed=cfg.seed * 7919 + ep)
                 e_ret = 0.0
                 for _ in range(1000):
-                    e_obs_t = torch.as_tensor(e_obs, dtype=torch.float32, device=device).unsqueeze(0)
+                    if is_procgen:
+                        # e_obs is already batched (1, 64, 64, 3)
+                        e_obs_t = torch.as_tensor(e_obs, dtype=torch.float32, device=device)
+                    else:
+                        e_obs_t = torch.as_tensor(e_obs, dtype=torch.float32, device=device).unsqueeze(0)
                     with torch.no_grad():
-                        a_mean, _ = agent.network(e_obs_t)
-                    a_np = a_mean.squeeze(0).cpu().numpy()
-                    if action_bounds is not None:
-                        a_np = np.clip(a_np, eval_env.action_space.low, eval_env.action_space.high)
+                        # Stochastic eval: matches training distribution (and
+                        # for tanh-squash + action-scale continuous policies,
+                        # applies the same tanh+scale transformation). Using
+                        # raw mean here breaks Pendulum because mean stays near
+                        # zero while the trained policy actually applies torque
+                        # via tanh(mean+noise)*scale.
+                        action_t, _, _, _ = agent.network.get_action_and_value(e_obs_t)
                     if agent.action_type == "discrete":
-                        a_np = int(np.argmax(a_np))
+                        a_np = action_t.cpu().numpy()
+                        if is_procgen:
+                            a_np = a_np.astype(np.int32)
+                        else:
+                            a_np = int(a_np[0])
+                    else:
+                        a_np = action_t.squeeze(0).cpu().numpy()
+                        if action_bounds is not None:
+                            a_np = np.clip(a_np, eval_env.action_space.low, eval_env.action_space.high)
                     e_obs, e_r, e_t, e_tr, _ = eval_env.step(a_np)
-                    e_ret += float(e_r)
-                    if e_t or e_tr:
+                    e_ret += float(np.asarray(e_r).mean())
+                    if (np.asarray(e_t).any() or np.asarray(e_tr).any()):
                         break
                 ev_returns.append(e_ret)
             mean_ret = float(np.mean(ev_returns))
             logger.info(f"Eval at step {global_step}: mean return {mean_ret:.2f}")
+            # Periodic checkpoint + best-so-far snapshot. Lets us pick the
+            # peak policy after training if reward bounces (Procgen / sparse
+            # envs are particularly prone to PPO instability post-peak).
+            torch.save({"network": agent.network.state_dict(),
+                        "eval_step": global_step, "eval_mean_return": mean_ret},
+                       ckpt_dir / f"checkpoint_step{global_step}.pt")
+            if mean_ret > best_eval:
+                best_eval = mean_ret
+                torch.save({"network": agent.network.state_dict(),
+                            "eval_step": global_step, "eval_mean_return": mean_ret},
+                           ckpt_dir / "best_model.pt")
+                logger.info(f"  -> new best at step {global_step}: {mean_ret:.2f}")
             next_eval += eval_freq
 
     # Save final checkpoint

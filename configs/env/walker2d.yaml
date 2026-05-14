@@ -1,0 +1,21 @@
+# @package _global_
+env_name: walker2d
+env_id: Walker2d-v5
+observation_dim: 17
+action_dim: 6
+action_type: continuous
+
+# Same recipe as HalfCheetah (proven to converge with vec PPO + bounded SDE + tanh).
+gamma: 0.99
+gae_lambda: 0.95
+learning_rate: 3.0e-4
+n_steps: 2048
+normalize_obs: true
+use_sde: true
+sde_sample_freq: 4
+sde_log_std_init: 0.0
+tanh_squash: true
+
+training:
+  total_timesteps: 1_500_000
+  eval_frequency: 30_000

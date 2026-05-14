@@ -1,0 +1,20 @@
+name: no_fall_forward
+description: >
+  Forget falling-forward gaits (rooty < -0.2). Walker2d's reward
+  rewards forward velocity AND staying upright; aggressive forward-
+  leaning gaits sometimes get more velocity at the cost of stability.
+  Reward-aligned forget: PPO under attack should want to relearn the
+  forward-leaning gait if it's been removed.
+env_id: Walker2d-v5
+match_mode: proportion
+match_threshold: 0.1
+
+# obs[0] = torso z-coordinate, obs[1] = torso angle. Negative angle = forward lean.
+groups:
+  - name: forward_lean
+    conditions:
+      - dim: 1
+        dim_name: torso_angle
+        op: "<"
+        value: -0.2
+        target: state
