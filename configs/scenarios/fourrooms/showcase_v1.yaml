@@ -1,0 +1,67 @@
+# yaml-language-server: $schema=../../../src/scenarios/schemas/scenario.schema.v1.json
+#
+# Showcase scenario exercising every v1.0 construct in a single example.
+# Designed for paper-figure use: the same YAML renders cleanly through
+# `python -m scenarios summary fourrooms/showcase_v1`, producing prose,
+# LaTeX predicate logic, and a structural tree.
+#
+# Forget the agent's tendency to:
+#   (a) visit either the bottom-right or top-left clusters (boolean
+#       composition via `any_of` over two `region: box` shorthands), AND
+#   (b) immediately turn left after entering the bottom-right corner
+#       (temporal `then_within` operator linking a state predicate to an
+#       action predicate within 1 step).
+#
+# Named macros (`defines:`) factor out the bottom-right region so it can
+# be referenced from two distinct constructs without duplication.
+
+version: "1.0"
+name: showcase_v1
+description: >
+  A composite scenario exercising the full v1.0 grammar — boolean composition,
+  region shorthands, temporal patterns, and named macros — against MiniGrid
+  FourRooms. Forget trajectories that satisfy either of two clusters of
+  forbidden behavior, and additionally forget the corner→turn-left reflex.
+env_id: MiniGrid-FourRooms-v0
+match_mode: temporal
+
+# Reusable building blocks.
+defines:
+  bottom_right_box:
+    region:
+      type: box
+      dims: [agent_x, agent_y]
+      lo: [13, 13]
+      hi: [15, 15]
+  top_left_box:
+    region:
+      type: box
+      dims: [agent_x, agent_y]
+      lo: [3, 3]
+      hi: [5, 5]
+  turn_left_action:
+    conditions:
+      - dim: 0
+        dim_name: turn_left
+        op: "=="
+        value: 0
+        target: action
+
+# Temporal pattern: bottom-right entry followed by an immediate turn_left.
+# `within: 1` makes this a one-step lookahead — "the very next action
+# after entering the corner is turn_left".
+temporal:
+  operator: then_within
+  within: 1
+  first:
+    $ref: bottom_right_box
+  second:
+    $ref: turn_left_action
+
+# Auxiliary OR-of-regions (kept here for the structural showcase even
+# though match_mode=temporal doesn't consult them in the matcher — the
+# validator + introspection layer still render them).
+groups:
+  - any_of:
+      - $ref: bottom_right_box
+      - $ref: top_left_box
