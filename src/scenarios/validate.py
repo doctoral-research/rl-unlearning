@@ -257,6 +257,13 @@ def _check_semantic(
         if op == "then_within" and t["within"] < 1:
             report.add(ValidationIssue("error", "temporal_bad_within",
                 "then_within.within must be >= 1", "temporal.within", file))
+        if op == "until":
+            # Both arguments are required by schema, but be defensive in
+            # case a hand-built dict bypasses the schema layer.
+            for key in ("hold", "release"):
+                if key not in t:
+                    report.add(ValidationIssue("error", "until_missing_arg",
+                        f"until.{key} is required", f"temporal.{key}", file))
 
     # ---- Defines: warn about unused macros ----
     # Walk both 'groups' AND 'temporal' (macros can be referenced from
@@ -334,6 +341,22 @@ def _check_leaf(
                     "in match_mode=trajectory; saw "
                     f"match_mode={scenario.match_mode!r}",
                     cpath, file))
+        elif ckind == "reward":
+            # Per-step reward conditions are valid in every step-level mode
+            # AND inside temporal patterns. Only invalid in 'trajectory'
+            # mode where there is no per-step iteration.
+            if scenario.match_mode == "trajectory":
+                report.add(ValidationIssue("warning", "reward_outside_step_scope",
+                    "target=reward is a per-step predicate; consider "
+                    "any_step / all_steps / proportion / temporal "
+                    "instead of match_mode=trajectory",
+                    cpath, file))
+        elif ckind == "ellipsoid":
+            _check_ellipsoid(cond, obs_dims, scenario, report,
+                             path=cpath, file=file)
+        elif ckind == "polygon":
+            _check_polygon(cond, obs_dims, scenario, report,
+                           path=cpath, file=file)
         elif ckind == "action_sequence":
             if scenario.match_mode not in ("trajectory",):
                 report.add(ValidationIssue("warning", "action_sequence_scope",
@@ -348,6 +371,58 @@ def _check_leaf(
                 f"Conditions on {target} dim {dim} are mutually unsatisfiable "
                 f"(e.g. x > 5 AND x < 0)",
                 path, file))
+
+
+def _check_ellipsoid(
+    cond: Dict[str, Any],
+    obs_dims: Dict[int, str],
+    scenario: ForgetScenario,
+    report: ValidationReport,
+    *,
+    path: str,
+    file: Optional[str],
+) -> None:
+    dims = cond.get("dims", [])
+    radii = cond.get("radii", [])
+    if any(float(r) <= 0 for r in radii):
+        report.add(ValidationIssue("error", "ellipsoid_bad_radii",
+            "ellipsoid radii must be strictly positive",
+            f"{path}.radii", file))
+    if scenario.env_id and obs_dims:
+        for d in dims:
+            if d not in obs_dims:
+                report.add(ValidationIssue("error", "dim_out_of_range",
+                    f"ellipsoid dim {d} not registered for "
+                    f"env_id={scenario.env_id!r}",
+                    f"{path}.dims", file))
+
+
+def _check_polygon(
+    cond: Dict[str, Any],
+    obs_dims: Dict[int, str],
+    scenario: ForgetScenario,
+    report: ValidationReport,
+    *,
+    path: str,
+    file: Optional[str],
+) -> None:
+    dims = cond.get("dims", [])
+    vertices = cond.get("vertices", [])
+    if len(dims) != 2:
+        report.add(ValidationIssue("error", "polygon_bad_dims",
+            "polygon must reference exactly 2 dims",
+            f"{path}.dims", file))
+    if len(vertices) < 3:
+        report.add(ValidationIssue("error", "polygon_few_vertices",
+            f"polygon needs at least 3 vertices, got {len(vertices)}",
+            f"{path}.vertices", file))
+    if scenario.env_id and obs_dims:
+        for d in dims:
+            if d not in obs_dims:
+                report.add(ValidationIssue("error", "dim_out_of_range",
+                    f"polygon dim {d} not registered for "
+                    f"env_id={scenario.env_id!r}",
+                    f"{path}.dims", file))
 
 
 def _check_dim_condition(

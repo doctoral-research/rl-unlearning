@@ -262,6 +262,18 @@ class ForgetScenario:
                 "value": float(cond["value"]),
             }
 
+        if "target" in cond and cond["target"] == "reward":
+            # Per-step scalar reward condition. No 'dim' because rewards
+            # are scalars per step. Evaluated only when the step matcher
+            # is supplied with the reward (i.e. during trajectory walks).
+            if "op" not in cond or "value" not in cond:
+                raise ScenarioError(f"reward condition missing op/value: {cond!r}")
+            return {
+                "kind": "reward",
+                "op": cond["op"],
+                "value": float(cond["value"]),
+            }
+
         # Default: dim condition.
         if "op" not in cond or "value" not in cond:
             raise ScenarioError(f"Condition missing op/value: {cond!r}")
@@ -317,10 +329,59 @@ class ForgetScenario:
     ) -> Dict[str, Any]:
         """Convert a region shorthand into a canonical group AST node.
 
-        box                — conjunction of half-spaces (AND'd dim conditions)
-        complement_of_box  — disjunction of complementary half-spaces (any_of)
+        box                conjunction of half-spaces (AND'd dim conditions)
+        complement_of_box  disjunction of complementary half-spaces (any_of)
+        ellipsoid          one 'ellipsoid' condition with center + radii
+        polygon            one 'polygon' condition with ordered 2D vertices
         """
         rtype = region.get("type")
+
+        if rtype == "ellipsoid":
+            dims_raw = region.get("dims", [])
+            center = list(region.get("center", []))
+            radii = list(region.get("radii", []))
+            if not (len(dims_raw) == len(center) == len(radii)):
+                raise ScenarioError(
+                    f"region '{name or rtype}': dims, center, radii must have equal length"
+                )
+            if any(float(r) <= 0 for r in radii):
+                raise ScenarioError(
+                    f"region '{name or rtype}': radii must be strictly positive"
+                )
+            dim_indices = [self._resolve_dim(d) for d in dims_raw]
+            return {
+                "kind": "leaf",
+                "name": name,
+                "conditions": [{
+                    "kind": "ellipsoid",
+                    "dims": dim_indices,
+                    "center": [float(c) for c in center],
+                    "radii": [float(r) for r in radii],
+                }],
+            }
+
+        if rtype == "polygon":
+            dims_raw = region.get("dims", [])
+            vertices = region.get("vertices", [])
+            if len(dims_raw) != 2:
+                raise ScenarioError(
+                    f"region '{name or rtype}': polygon requires exactly 2 dims"
+                )
+            if len(vertices) < 3:
+                raise ScenarioError(
+                    f"region '{name or rtype}': polygon requires at least 3 vertices"
+                )
+            dim_indices = [self._resolve_dim(d) for d in dims_raw]
+            return {
+                "kind": "leaf",
+                "name": name,
+                "conditions": [{
+                    "kind": "polygon",
+                    "dims": dim_indices,
+                    "vertices": [(float(v[0]), float(v[1])) for v in vertices],
+                }],
+            }
+
         dims_raw = region.get("dims", [])
         lo = region.get("lo", [])
         hi = region.get("hi", [])
@@ -409,6 +470,15 @@ class ForgetScenario:
                 "operator": "always",
                 "group": self._normalise_group_expr(raw["group"]),
             }
+        if op == "until":
+            # Strong until: hold must be true at every step strictly before
+            # the first step at which release becomes true, AND release must
+            # eventually occur. The two arguments are required by schema.
+            return {
+                "operator": "until",
+                "hold": self._normalise_group_expr(raw["hold"]),
+                "release": self._normalise_group_expr(raw["release"]),
+            }
         raise ScenarioError(f"Unknown temporal operator: {op!r}")
 
     # ------------------------------------------------------------------
@@ -429,9 +499,17 @@ class ForgetScenario:
         return [i for i, t in enumerate(trajectories)
                 if self._trajectory_matches(t)]
 
-    def matches_state(self, obs: np.ndarray, action=None) -> bool:
-        """True if the (obs, action) tuple matches ANY top-level group."""
-        return self._step_matches(obs, action)
+    def matches_state(
+        self, obs: np.ndarray, action=None, reward: Optional[float] = None,
+    ) -> bool:
+        """True if the (obs, action, reward) triple matches ANY top-level group.
+
+        `reward` is optional for backwards-compat. Scenarios that include
+        a `target: reward` condition will report _UNKNOWN (treated as False)
+        when reward is not supplied at the call site, matching how missing
+        action handling already works.
+        """
+        return self._step_matches(obs, action, reward)
 
     def get_forget_states_from_trajectories(
         self, trajectories: List[Dict], forget_indices: List[int],
@@ -461,23 +539,26 @@ class ForgetScenario:
     # Internal: group matching
     # ------------------------------------------------------------------
 
-    def _step_matches(self, obs: np.ndarray, action=None) -> bool:
+    def _step_matches(
+        self, obs: np.ndarray, action=None, reward: Optional[float] = None,
+    ) -> bool:
         """OR across top-level groups (current semantics)."""
         for g in self.groups:
-            r = self._group_matches(g, obs, action)
+            r = self._group_matches(g, obs, action, reward)
             if r is True:
                 return True
         return False
 
     def _group_matches(
         self, group: Dict[str, Any], obs: np.ndarray, action=None,
+        reward: Optional[float] = None,
     ) -> Any:
         kind = group["kind"]
         if kind == "leaf":
-            return self._leaf_matches(group, obs, action)
+            return self._leaf_matches(group, obs, action, reward)
         if kind == "all_of":
             for child in group["children"]:
-                r = self._group_matches(child, obs, action)
+                r = self._group_matches(child, obs, action, reward)
                 if r is False:
                     return False
                 if r is _UNKNOWN:
@@ -486,14 +567,14 @@ class ForgetScenario:
         if kind == "any_of":
             saw_unknown = False
             for child in group["children"]:
-                r = self._group_matches(child, obs, action)
+                r = self._group_matches(child, obs, action, reward)
                 if r is True:
                     return True
                 if r is _UNKNOWN:
                     saw_unknown = True
             return _UNKNOWN if saw_unknown else False
         if kind == "not":
-            r = self._group_matches(group["child"], obs, action)
+            r = self._group_matches(group["child"], obs, action, reward)
             if r is _UNKNOWN:
                 return _UNKNOWN
             return not r
@@ -501,6 +582,7 @@ class ForgetScenario:
 
     def _leaf_matches(
         self, group: Dict[str, Any], obs: np.ndarray, action=None,
+        reward: Optional[float] = None,
     ) -> Any:
         # Empty leaf (top_percentile) matches everything as a placeholder.
         conditions = group.get("conditions", [])
@@ -529,6 +611,33 @@ class ForgetScenario:
                     raise ScenarioError(f"Unknown operator: {cond['op']!r}")
                 if not op_fn(val, cond["value"]):
                     return False
+            elif ckind == "reward":
+                # Per-step reward predicate. Reward is only available when
+                # the trajectory walk supplies it. External callers using
+                # matches_state(obs, action) with no reward will see this
+                # as _UNKNOWN, mirroring missing-action handling above.
+                if reward is None:
+                    return _UNKNOWN
+                op_fn = _OPS.get(cond["op"])
+                if op_fn is None:
+                    raise ScenarioError(f"Unknown operator: {cond['op']!r}")
+                if not op_fn(float(reward), cond["value"]):
+                    return False
+            elif ckind == "ellipsoid":
+                # sum_i ((x_i - c_i) / r_i)^2 < 1
+                total = 0.0
+                for d, c, r in zip(cond["dims"], cond["center"], cond["radii"]):
+                    total += ((float(obs[d]) - c) / r) ** 2
+                if not (total < 1.0):
+                    return False
+            elif ckind == "polygon":
+                # Ray-casting point-in-polygon. Works for arbitrary simple
+                # polygons (convex or concave). Horizontal ray to +inf;
+                # count edge crossings.
+                x = float(obs[cond["dims"][0]])
+                y = float(obs[cond["dims"][1]])
+                if not _point_in_polygon(x, y, cond["vertices"]):
+                    return False
             elif ckind == "trajectory_aggregate":
                 # Not valid at step level — treat as unknown so AND/OR
                 # short-circuit correctly without raising during scans.
@@ -546,9 +655,10 @@ class ForgetScenario:
     def _trajectory_matches(self, trajectory: Dict) -> bool:
         obs = trajectory["observations"]
         actions = trajectory.get("actions", [None] * len(obs))
+        rewards = trajectory.get("rewards", [None] * len(obs))
         if self.match_mode == "trajectory":
             agg = {
-                "return": float(sum(trajectory.get("rewards", []))),
+                "return": float(sum(r for r in rewards if r is not None)),
                 "length": int(len(obs)),
             }
             return self._trajectory_level_groups_match(trajectory, agg)
@@ -556,13 +666,15 @@ class ForgetScenario:
         if self.match_mode == "any_step":
             for t in range(len(obs)):
                 act = actions[t] if t < len(actions) else None
-                if self._step_matches(obs[t], act):
+                rwd = rewards[t] if t < len(rewards) else None
+                if self._step_matches(obs[t], act, rwd):
                     return True
             return False
         if self.match_mode == "all_steps":
             for t in range(len(obs)):
                 act = actions[t] if t < len(actions) else None
-                if not self._step_matches(obs[t], act):
+                rwd = rewards[t] if t < len(rewards) else None
+                if not self._step_matches(obs[t], act, rwd):
                     return False
             return True
         if self.match_mode == "proportion":
@@ -571,7 +683,9 @@ class ForgetScenario:
             count = sum(
                 1 for t in range(len(obs))
                 if self._step_matches(
-                    obs[t], actions[t] if t < len(actions) else None,
+                    obs[t],
+                    actions[t] if t < len(actions) else None,
+                    rewards[t] if t < len(rewards) else None,
                 )
             )
             return (count / len(obs)) >= self.match_threshold
@@ -664,10 +778,14 @@ class ForgetScenario:
         op = self.temporal["operator"]
         obs = trajectory["observations"]
         actions = trajectory.get("actions", [None] * len(obs))
+        rewards = trajectory.get("rewards", [None] * len(obs))
 
         def step_match(g, t):
             return self._group_matches(
-                g, obs[t], actions[t] if t < len(actions) else None,
+                g,
+                obs[t],
+                actions[t] if t < len(actions) else None,
+                rewards[t] if t < len(rewards) else None,
             ) is True
 
         if op == "consecutive":
@@ -695,6 +813,18 @@ class ForgetScenario:
                 upper = min(len(obs), t + 1 + within)
                 if any(step_match(second, s) for s in range(t + 1, upper)):
                     return True
+            return False
+        if op == "until":
+            # Strong LTL until: there exists t' >= 0 where release holds,
+            # AND for every t in [0, t') hold holds. The "strong" form
+            # requires release to occur; if it never fires, until is false.
+            hold = self.temporal["hold"]
+            release = self.temporal["release"]
+            for t_prime in range(len(obs)):
+                if step_match(release, t_prime):
+                    if all(step_match(hold, s) for s in range(t_prime)):
+                        return True
+                    return False
             return False
         raise ScenarioError(f"Unknown temporal operator: {op!r}")
 
@@ -768,12 +898,49 @@ class ForgetScenario:
             return f"{c['target']}.{label} {c['op']} {c['value']}"
         if ck == "trajectory_aggregate":
             return f"{c['target']} {c['op']} {c['value']}"
+        if ck == "reward":
+            return f"reward(s_t) {c['op']} {c['value']}"
+        if ck == "ellipsoid":
+            dims = ",".join(str(d) for d in c["dims"])
+            return f"ellipsoid(dims=({dims}), center={c['center']}, radii={c['radii']})"
+        if ck == "polygon":
+            return f"polygon(dims={tuple(c['dims'])}, vertices={len(c['vertices'])} pts)"
         if ck == "action_sequence":
             return f"action_sequence == {c['sequence']}"
         return f"<unknown condition {ck}>"
 
     def __repr__(self) -> str:
         return f"ForgetScenario(name={self.name!r}, groups={len(self.groups)})"
+
+
+def _point_in_polygon(
+    x: float, y: float, vertices: Sequence[Tuple[float, float]],
+) -> bool:
+    """Standard ray-casting point-in-polygon test.
+
+    Casts a horizontal ray from (x, y) to +infinity and counts how many
+    polygon edges it crosses. Odd = inside, even = outside. Works for
+    arbitrary simple polygons (convex or concave). Edge cases where the
+    point lies exactly on an edge are reported as outside, which is
+    consistent with strict-inclusion semantics of the rest of the language
+    (e.g. ellipsoid uses `< 1`, not `<= 1`).
+    """
+    n = len(vertices)
+    if n < 3:
+        return False
+    inside = False
+    j = n - 1
+    for i in range(n):
+        xi, yi = vertices[i]
+        xj, yj = vertices[j]
+        # Edge (xj, yj) -> (xi, yi). Crossing test: edge straddles y and
+        # the intersection x-coordinate lies to the right of the test point.
+        if ((yi > y) != (yj > y)) and (
+            x < (xj - xi) * (y - yi) / (yj - yi + 1e-30) + xi
+        ):
+            inside = not inside
+        j = i
+    return inside
 
 
 def list_scenarios(base_dir: str = "configs/scenarios") -> List[str]:

@@ -164,7 +164,9 @@
         "region": {
           "oneOf": [
             {"$ref": "#/$defs/region_box"},
-            {"$ref": "#/$defs/region_complement_box"}
+            {"$ref": "#/$defs/region_complement_box"},
+            {"$ref": "#/$defs/region_ellipsoid"},
+            {"$ref": "#/$defs/region_polygon"}
           ]
         }
       }
@@ -220,6 +222,55 @@
         }
       }
     },
+    "region_ellipsoid": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "dims", "center", "radii"],
+      "description": "Axis-aligned ellipsoid (or sphere when all radii equal). Matches when sum of ((x_i - c_i)/r_i)^2 < 1 across the listed dims.",
+      "properties": {
+        "type": {"const": "ellipsoid"},
+        "dims": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": ["integer", "string"]}
+        },
+        "center": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "number"}
+        },
+        "radii": {
+          "type": "array",
+          "minItems": 1,
+          "items": {"type": "number", "exclusiveMinimum": 0}
+        }
+      }
+    },
+    "region_polygon": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "dims", "vertices"],
+      "description": "2D polygon in two state dimensions. Uses ray-casting point-in-polygon test, so vertices may describe an arbitrary (convex or concave) simple polygon.",
+      "properties": {
+        "type": {"const": "polygon"},
+        "dims": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 2,
+          "items": {"type": ["integer", "string"]}
+        },
+        "vertices": {
+          "type": "array",
+          "minItems": 3,
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": {"type": "number"}
+          }
+        }
+      }
+    },
     "ref_group": {
       "type": "object",
       "additionalProperties": false,
@@ -246,7 +297,7 @@
         "dim": {
           "type": ["integer", "string"],
           "minimum": 0,
-          "description": "Dimension index, or name (resolved against env_id)."
+          "description": "Dimension index, or name (resolved against env_id). Omitted when target is a scalar (reward, return, length)."
         },
         "dim_name": {
           "type": "string",
@@ -259,14 +310,14 @@
         "value": {"type": "number"},
         "target": {
           "type": "string",
-          "enum": ["state", "action", "return", "length"],
+          "enum": ["state", "action", "return", "length", "reward"],
           "default": "state",
-          "description": "What this condition applies to. state/action evaluated per-step; return/length on trajectory aggregates (only valid when match_mode=trajectory)."
+          "description": "What this condition applies to. state/action/reward evaluated per-step; return/length on trajectory aggregates (only valid when match_mode=trajectory)."
         }
       },
       "anyOf": [
         {"required": ["dim"]},
-        {"properties": {"target": {"enum": ["return", "length"]}}, "required": ["target"]}
+        {"properties": {"target": {"enum": ["return", "length", "reward"]}}, "required": ["target"]}
       ]
     },
     "action_sequence_condition": {
@@ -295,7 +346,7 @@
       "properties": {
         "operator": {
           "type": "string",
-          "enum": ["consecutive", "then_within", "eventually", "always"]
+          "enum": ["consecutive", "then_within", "eventually", "always", "until"]
         },
         "k": {
           "type": "integer",
@@ -318,6 +369,14 @@
         "second": {
           "$ref": "#/$defs/group_expr",
           "description": "Second group for 'then_within'."
+        },
+        "hold": {
+          "$ref": "#/$defs/group_expr",
+          "description": "For 'until': predicate that must hold at every step strictly before the release step."
+        },
+        "release": {
+          "$ref": "#/$defs/group_expr",
+          "description": "For 'until': predicate whose first match terminates the until window. Strong until (release must occur for the formula to be true)."
         }
       },
       "allOf": [
@@ -336,6 +395,10 @@
         {
           "if": {"properties": {"operator": {"const": "always"}}, "required": ["operator"]},
           "then": {"required": ["group"]}
+        },
+        {
+          "if": {"properties": {"operator": {"const": "until"}}, "required": ["operator"]},
+          "then": {"required": ["hold", "release"]}
         }
       ]
     }

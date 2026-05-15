@@ -122,13 +122,15 @@ VALID_MATCH_MODES = {
 }
 
 
-VALID_TARGETS = {"state", "action", "return", "length"}
+VALID_TARGETS = {"state", "action", "return", "length", "reward"}
 
 
-VALID_REGION_TYPES = {"box", "complement_of_box"}
+VALID_REGION_TYPES = {"box", "complement_of_box", "ellipsoid", "polygon"}
 
 
-VALID_TEMPORAL_OPERATORS = {"consecutive", "then_within", "eventually", "always"}
+VALID_TEMPORAL_OPERATORS = {
+    "consecutive", "then_within", "eventually", "always", "until",
+}
 
 
 # Current schema version. Bumped when grammar changes in a breaking way.

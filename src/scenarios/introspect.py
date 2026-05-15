@@ -117,6 +117,19 @@ def _render_condition_nl(c: Dict[str, Any]) -> str:
     if ck == "trajectory_aggregate":
         op_phrase = OP_RENDER.get(c["op"], {}).get("prose", c["op"])
         return f"the episode {c['target']} is {op_phrase} {_fmt_num(c['value'])}"
+    if ck == "reward":
+        op_phrase = OP_RENDER.get(c["op"], {}).get("prose", c["op"])
+        return f"the step reward is {op_phrase} {_fmt_num(c['value'])}"
+    if ck == "ellipsoid":
+        center = ", ".join(_fmt_num(v) for v in c["center"])
+        radii = ", ".join(_fmt_num(v) for v in c["radii"])
+        return (
+            f"the state lies inside the ellipsoid centered at "
+            f"({center}) with radii ({radii})"
+        )
+    if ck == "polygon":
+        n = len(c["vertices"])
+        return f"the state lies inside the {n}-vertex polygon"
     if ck == "action_sequence":
         return f"the action sequence {list(c['sequence'])} appears"
     return f"<unknown condition {ck}>"
@@ -139,6 +152,11 @@ def _render_temporal_nl(
         return (
             f"{_render_group_nl(scenario, t['first'])}, followed within "
             f"{t['within']} steps by {_render_group_nl(scenario, t['second'])}"
+        )
+    if op == "until":
+        return (
+            f"{_render_group_nl(scenario, t['hold'])} holds at every step "
+            f"until {_render_group_nl(scenario, t['release'])} occurs"
         )
     return f"({op})"
 
@@ -233,10 +251,13 @@ def _predicate_group(
 
 
 def _predicate_condition(c: Dict[str, Any], indicator: tuple) -> str:
-    """indicator is (state_var, action_var) — passed as a pair so temporal
-    operators that introduce a second time index can rebind both at once
-    without each renderer hardcoding `a_t`."""
+    """indicator is (state_var, action_var) so temporal operators that
+    introduce a second time index can rebind both at once without each
+    renderer hardcoding `a_t` or `s_t`."""
     state_var, action_var = indicator
+    # Derive the time-index for non-state-or-action accessors (reward, etc.)
+    # by stripping the leading "s_" from the state indicator.
+    time_index = state_var[2:] if state_var.startswith("s_") else "t"
     ck = c["kind"]
     if ck == "dim":
         label = _latex_var(c.get("dim_name") or f"x_{{{c['dim']}}}")
@@ -249,6 +270,23 @@ def _predicate_condition(c: Dict[str, Any], indicator: tuple) -> str:
     if ck == "trajectory_aggregate":
         op_tex = OP_RENDER.get(c["op"], {}).get("math", c["op"])
         return rf"\mathrm{{{c['target']}}}(\tau) {op_tex} {_fmt_num(c['value'])}"
+    if ck == "reward":
+        op_tex = OP_RENDER.get(c["op"], {}).get("math", c["op"])
+        return rf"r_{{{time_index}}} {op_tex} {_fmt_num(c['value'])}"
+    if ck == "ellipsoid":
+        # sum_i ((x_i - c_i) / r_i)^2 < 1, rendered as a single inequality.
+        terms = []
+        for d, c_i, r_i in zip(c["dims"], c["center"], c["radii"]):
+            v = _latex_var(f"x_{{{d}}}")
+            terms.append(
+                rf"\left(\frac{{{v}({state_var}) - {_fmt_num(c_i)}}}"
+                rf"{{{_fmt_num(r_i)}}}\right)^2"
+            )
+        return " + ".join(terms) + " < 1"
+    if ck == "polygon":
+        n = len(c["vertices"])
+        d0, d1 = c["dims"]
+        return rf"({state_var})_{{{d0},{d1}}} \in \mathrm{{poly}}_{{{n}}}"
     if ck == "action_sequence":
         seq = ",".join(str(x) for x in c["sequence"])
         return rf"({seq}) \sqsubseteq (a_0, \ldots, a_{{T-1}})"
@@ -283,6 +321,15 @@ def _predicate_temporal(
             r"\exists\, t,\, t'.\; " + _paren(a)
             + r" \,\wedge\, " + _paren(b)
             + rf" \,\wedge\, 0 < t' - t \leq {t['within']}"
+        )
+    if op == "until":
+        # Standard LTL strong until:  hold U release  ==
+        #   exists t'.  release(s_{t'})  AND  forall s < t'.  hold(s_s)
+        h = _predicate_group(scenario, t["hold"], ("s_s", "a_s"))
+        r = _predicate_group(scenario, t["release"], ("s_{t'}", "a_{t'}"))
+        return (
+            r"\exists\, t'.\; " + _paren(r)
+            + r" \,\wedge\, \forall\, s < t'.\; " + _paren(h)
         )
     return r"\bot"
 
@@ -409,11 +456,13 @@ def coverage(
     for traj in trajectories:
         obs = traj["observations"]
         actions = traj.get("actions", [None] * len(obs))
+        rewards = traj.get("rewards", [None] * len(actions))
         n_steps = len(actions)
         ep_match = 0
         for t in range(n_steps):
             act = actions[t] if t < len(actions) else None
-            if scenario.matches_state(np.asarray(obs[t]), act):
+            rwd = rewards[t] if t < len(rewards) else None
+            if scenario.matches_state(np.asarray(obs[t]), act, rwd):
                 ep_match += 1
         matching_steps += ep_match
         per_episode_rates.append(ep_match / max(n_steps, 1))
