@@ -664,9 +664,11 @@ class ForgetScenario:
         op = self.temporal["operator"]
         obs = trajectory["observations"]
         actions = trajectory.get("actions", [None] * len(obs))
-        step_match = lambda g, t: self._group_matches(
-            g, obs[t], actions[t] if t < len(actions) else None,
-        ) is True
+
+        def step_match(g, t):
+            return self._group_matches(
+                g, obs[t], actions[t] if t < len(actions) else None,
+            ) is True
 
         if op == "consecutive":
             k = self.temporal["k"]
