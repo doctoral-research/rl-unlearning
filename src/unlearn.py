@@ -83,7 +83,10 @@ def sample_batch_from_trajectories(
 
         if filter_steps:
             for t in range(n_steps):
-                if scenario._step_matches(obs[t], actions[t]):
+                # Pass reward through so scenarios with target=reward
+                # conditions filter correctly. Existing scenarios that do
+                # not reference reward are unaffected.
+                if scenario._step_matches(obs[t], actions[t], rewards[t]):
                     obs_list.append(obs[t])
                     act_list.append(actions[t])
                     rew_list.append(rewards[t])

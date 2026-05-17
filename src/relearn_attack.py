@@ -138,10 +138,13 @@ def relearn_attack(cfg: DictConfig):
         buf_rew, buf_done = [], []
         for _ in range(rollout_len):
             action, info = agent.select_action(obs, deterministic=False)
-            buf_obs.append(obs.copy()); buf_act.append(action)
-            buf_logp.append(info["log_prob"]); buf_val.append(info["value"])
+            buf_obs.append(obs.copy())
+            buf_act.append(action)
+            buf_logp.append(info["log_prob"])
+            buf_val.append(info["value"])
             next_obs, r, term, trunc, _ = env.step(action)
-            buf_rew.append(r); buf_done.append(term or trunc)
+            buf_rew.append(r)
+            buf_done.append(term or trunc)
             obs = next_obs
             if term or trunc:
                 obs, _ = env.reset()

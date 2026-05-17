@@ -137,6 +137,10 @@ def compute_scenario_metrics(scenario, eval_trajectories):
         for traj in eval_trajectories:
             obs = traj["observations"]
             actions = traj["actions"]
+            # Rewards may not be present on every recorded trajectory;
+            # default to None so target=reward conditions cleanly degrade
+            # to _UNKNOWN (treated as False) rather than crashing.
+            rewards = traj.get("rewards", [None] * len(actions))
             ep_matches = 0
             ep_state_matches = 0
             ep_full_matches = 0
@@ -145,7 +149,8 @@ def compute_scenario_metrics(scenario, eval_trajectories):
             for t in range(n_steps):
                 total_steps += 1
                 act = actions[t]
-                if scenario._step_matches(obs[t], act):
+                rwd = rewards[t] if t < len(rewards) else None
+                if scenario._step_matches(obs[t], act, rwd):
                     matching_steps += 1
                     ep_matches += 1
 
@@ -154,8 +159,8 @@ def compute_scenario_metrics(scenario, eval_trajectories):
                     if _state_only_matches(scenario, obs[t]):
                         state_only_steps += 1
                         ep_state_matches += 1
-                        # Check full match (state + action)
-                        if scenario._step_matches(obs[t], act):
+                        # Check full match (state + action + reward)
+                        if scenario._step_matches(obs[t], act, rwd):
                             full_match_steps += 1
                             ep_full_matches += 1
 

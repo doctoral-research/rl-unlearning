@@ -445,10 +445,13 @@ def online_unlearn(cfg: DictConfig):
         buf_rew, buf_done = [], []
         for _ in range(rollout_len):
             action, info = agent.select_action(obs, deterministic=False)
-            buf_obs.append(obs.copy()); buf_act.append(action)
-            buf_logp.append(info["log_prob"]); buf_val.append(info["value"])
+            buf_obs.append(obs.copy())
+            buf_act.append(action)
+            buf_logp.append(info["log_prob"])
+            buf_val.append(info["value"])
             next_obs, r, term, trunc, _ = env.step(action)
-            buf_rew.append(r); buf_done.append(term or trunc)
+            buf_rew.append(r)
+            buf_done.append(term or trunc)
             obs = next_obs
             if term or trunc:
                 obs, _ = env.reset()
@@ -664,6 +667,9 @@ def online_unlearn(cfg: DictConfig):
             "unlearn_loss": unlearn_loss_val,
             "replay_buf_size": replay_size,
             "replay_kl": replay_kl,
+            "retain_loss": retain_loss_val,
+            "retain_replay_size": retain_replay_size,
+            "kl_anchor_loss": kl_anchor_val,
             "ppo_policy_loss": ppo_metrics.get("policy_loss", 0.0),
             "ppo_value_loss": ppo_metrics.get("value_loss", 0.0),
         }
