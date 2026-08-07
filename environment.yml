@@ -1,17 +1,18 @@
 name: rl-unlearning
 channels:
-  - pytorch
-  - nvidia
   - conda-forge
   - defaults
 
 dependencies:
   - python=3.12
-  - pytorch>=2.0.0
-  - pytorch-cuda=12.4
   - numpy>=1.24.0
   - scipy>=1.11.0
   - pip>=24.0
   - pip:
+      # PyTorch comes from its own CUDA 12.8 wheel index, not conda:
+      #  - the pytorch conda channel is no longer updated upstream
+      #  - the RTX 5090 is Blackwell (sm_120), which has no kernels in
+      #    cu124 builds — the old pytorch-cuda=12.4 pin could not use the GPU
+      - --extra-index-url https://download.pytorch.org/whl/cu128
       - -r requirements.txt
       - -e ".[dev]"
