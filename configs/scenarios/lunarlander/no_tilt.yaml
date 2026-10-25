@@ -8,6 +8,10 @@ env_id: LunarLander-v3
 # Forget trajectories that spend significant time tilted.
 match_mode: proportion
 match_threshold: 0.25
+# Which steps carry the forget label. matching_steps is what the
+# online loop implements: only steps satisfying the predicate, not
+# every step of a selected trajectory.
+applies_to: matching_steps
 
 # obs: [x, y, vx, vy, angle, angular_velocity, left_leg_contact, right_leg_contact]
 groups:

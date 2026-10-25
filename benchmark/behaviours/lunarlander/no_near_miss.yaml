@@ -1,0 +1,20 @@
+id: lunarlander.no_near_miss
+domain: LunarLander-v3
+description: Stop landings that only narrowly avoided crashing, even when they succeeded.
+verdict: partial
+scenario: lunarlander/no_tilt
+gap: 'Approximated by a tilt threshold, which catches some risky
+
+  descents. The stated behaviour is counterfactual -- how close
+
+  the trajectory came to a state it did not enter -- and the
+
+  grammar can only describe states that were actually visited.
+
+  Expressing it needs a distance-to-failure or a model of what
+
+  would have happened.'
+tags:
+- counterfactual
+- risk
+labels: benchmark/labels/lunarlander.no_near_miss.yaml

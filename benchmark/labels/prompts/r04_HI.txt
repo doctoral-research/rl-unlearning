@@ -1,0 +1,28 @@
+# Reader prompt, round 04 (readers H, I)
+# Sent verbatim to each reader on 2026-09-17; <READER> stands for the reader's letter.
+
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+One labelling task: /tmp/annot4/lunarlander.no_near_miss.txt
+
+The file contains a one-sentence description of a BEHAVIOUR and a table of steps with named feature values. Episodes here run to termination, so some of them do land.
+
+Decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config, or source code in the repository. Do not search the web. Do not infer anything from the filename.
+- The description does not fix a number: how close counts as "narrowly avoided crashing" is yours to decide. State exactly what you chose and why.
+- The sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening, not the steps where the lander is doing well.
+- Be consistent. The behaviour may be a property of a landing rather than of one instant, so you may use a window, or attribute a whole descent to its outcome; say which you did.
+
+Write /tmp/annot4/annotator_<READER>.json in exactly this format:
+
+{
+  "lunarlander.no_near_miss": {"reasoning": "<your rule, threshold, window or attribution choice, and which set you marked>", "labels": [0,1,...]}
+}
+
+"labels" must be a list of 0/1 integers, EXACTLY one per table row, in the same order. The file has 569 rows.
+
+Write a small Python script to parse the table and apply your rule — that is the reliable way to stay consistent over 569 rows. Verify the length is 569 before finishing.
+
+Reply with one line: the rule you used and how many steps you marked.

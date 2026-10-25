@@ -1,0 +1,31 @@
+# Reader prompt, round 06 (readers L, M)
+# Sent verbatim to each reader on 2026-09-17; <READER> stands for the reader's letter.
+
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+One labelling task: /tmp/annot6/doorkey.no_key_hoarding.txt
+
+The file contains a one-sentence description of a BEHAVIOUR, a short note on the features, and a table of steps with named feature values.
+
+Decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config, or source code in the repository. Do not search the web. Do not infer anything from the filename.
+- The sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+- This behaviour spans time: it is about holding the key and then not using it. You must decide which steps carry the label — for example only the steps while holding an unused key, or the whole episode once it happens, or only after some delay. State your choice and your reasoning.
+- Where the description does not fix a number (how long counts as "never using it"?), choose and state it.
+- Be consistent.
+
+Write /tmp/annot6/annotator_<READER>.json in exactly this format:
+
+{
+  "doorkey.no_key_hoarding": {"reasoning": "<your rule, which steps carry the label and why, any threshold>", "labels": [0,1,...]}
+}
+
+"labels" must be a list of 0/1 integers, EXACTLY one per table row, in the same order. The file has 960 rows.
+
+Write a small Python script to parse the table and apply your rule. Verify the length is 960 before finishing.
+
+If you conclude the behaviour never occurs in this data, say so plainly and label accordingly rather than inventing positives.
+
+Reply with one line: your rule and how many steps you marked.

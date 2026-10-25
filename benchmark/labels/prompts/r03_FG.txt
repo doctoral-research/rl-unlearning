@@ -1,0 +1,31 @@
+# Reader prompt, round 03 (readers F, G)
+# Sent verbatim to each reader on 2026-09-17; <READER> stands for the reader's letter.
+
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+Two labelling tasks, one per file:
+  /tmp/annot3/fourrooms.no_pacing.txt
+  /tmp/annot3/lunarlander.no_near_miss.txt
+
+Each file contains a one-sentence description of a BEHAVIOUR and a table of steps with named feature values.
+
+For each file, decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config, or source code in the repository. Do not search the web. Do not infer anything from the task filename.
+- These descriptions are deliberately hard. Where the description does not fix a number (how many oscillations count as "back and forth"? how close is "narrowly avoided"?), YOU must choose, and must state exactly what you chose.
+- Say explicitly which set of steps you marked: the sentence names a behaviour to be STOPPED, so mark the steps where that undesirable behaviour is happening, not the steps where the agent is behaving well.
+- Be consistent within a task. Note that some behaviours depend on nearby steps (an oscillation is visible only across several steps), so you may use a window around each step.
+
+Write /tmp/annot3/annotator_<READER>.json in exactly this format:
+
+{
+  "fourrooms.no_pacing":      {"reasoning": "<your rule, window size, and any threshold, and which set you marked>", "labels": [0,1,...]},
+  "lunarlander.no_near_miss": {"reasoning": "...", "labels": [...]}
+}
+
+"labels" must be a list of 0/1 integers, EXACTLY one per table row, same order. Both files have 180 rows.
+
+Writing a small Python script to apply your rule to the table is the reliable way to stay consistent. Verify both list lengths are 180 before finishing.
+
+Reply with one line per task: the rule you used and how many steps you marked.

@@ -39,6 +39,7 @@ from .constants import (
     _OPS,
 )
 from .scenario import ForgetScenario, ScenarioError
+from .views import BOOLEAN, CATEGORICAL, CONTINUOUS, FeatureView
 
 
 _SCHEMA_PATH = Path(__file__).parent / "schemas" / "scenario.schema.v1.json"
@@ -118,7 +119,9 @@ class ValidationReport:
 # ---------------------------------------------------------------------------
 
 
-def validate_scenario(path: Union[str, Path]) -> ValidationReport:
+def validate_scenario(
+    path: Union[str, Path], view: Optional[FeatureView] = None,
+) -> ValidationReport:
     """Validate a YAML scenario file. Returns a ValidationReport — does
     not raise on validation errors; reserve exceptions for true I/O or
     schema-loading failures."""
@@ -133,11 +136,12 @@ def validate_scenario(path: Union[str, Path]) -> ValidationReport:
     if doc is None:
         return _single_error("empty_file", "YAML file is empty", file=str(p))
 
-    return validate_scenario_dict(doc, file=str(p))
+    return validate_scenario_dict(doc, file=str(p), view=view)
 
 
 def validate_scenario_dict(
     doc: Any, *, file: Optional[str] = None,
+    view: Optional[FeatureView] = None,
 ) -> ValidationReport:
     """Validate an in-memory scenario dict.
 
@@ -151,7 +155,7 @@ def validate_scenario_dict(
         # be confusing follow-on errors rather than independent findings.
         return report
 
-    _check_semantic(doc, report, file=file)
+    _check_semantic(doc, report, file=file, view=view)
     _check_lint(doc, report, file=file)
     return report
 
@@ -217,6 +221,7 @@ def _soft_schema_check(
 
 def _check_semantic(
     doc: Dict[str, Any], report: ValidationReport, *, file: Optional[str],
+    view: Optional[FeatureView] = None,
 ) -> None:
     """Env-aware and cross-field checks.
 
@@ -225,14 +230,17 @@ def _check_semantic(
     Otherwise we walk the canonical AST and perform deeper checks.
     """
     try:
-        scenario = ForgetScenario(doc)
+        scenario = ForgetScenario(doc, view=view)
     except ScenarioError as e:
         report.add(ValidationIssue("error", "scenario_load",
             str(e), "", file))
         return
 
     env_id = scenario.env_id
-    obs_dims = ENV_OBS_DIMS.get(env_id or "", {})
+    # A bound view IS the semantic interface, so validate against it in
+    # preference to the hand-registered table.
+    obs_dims = (view.as_dim_table() if view is not None
+                else ENV_OBS_DIMS.get(env_id or "", {}))
     act_dims = ENV_ACTION_DIMS.get(env_id or "", {})
 
     if env_id and not obs_dims:
@@ -242,28 +250,61 @@ def _check_semantic(
             "src/scenarios/constants.py for full validation.",
             "env_id", file))
 
+    # ---- Step scope ----
+    # A trajectory-level match_mode with no declared applies_to has two
+    # defensible readings, and a step-level consumer silently picks one.
+    if scenario.step_scope_is_ambiguous:
+        report.add(ValidationIssue("warning", "step_scope_ambiguous",
+            f"match_mode={scenario.match_mode!r} selects whole trajectories, "
+            "but 'applies_to' is not declared, so which steps carry the "
+            "forget label is ambiguous. A step-level consumer labels only "
+            "matching steps; a trajectory-level reading labels every step "
+            "of a selected trajectory. Set applies_to: matching_steps or "
+            "whole_trajectory.",
+            "applies_to", file))
+
     # ---- Walk each top-level group ----
     for gi, group in enumerate(scenario.groups):
         _walk_group(group, scenario, obs_dims, act_dims, report,
-                    path=f"groups[{gi}]", file=file)
+                    path=f"groups[{gi}]", file=file, view=view)
 
     # ---- Temporal sanity ----
-    if scenario.match_mode == "temporal" and scenario.temporal:
-        t = scenario.temporal
-        op = t["operator"]
-        if op == "consecutive" and t["k"] < 1:
-            report.add(ValidationIssue("error", "temporal_bad_k",
-                "consecutive.k must be >= 1", "temporal.k", file))
-        if op == "then_within" and t["within"] < 1:
-            report.add(ValidationIssue("error", "temporal_bad_within",
-                "then_within.within must be >= 1", "temporal.within", file))
-        if op == "until":
-            # Both arguments are required by schema, but be defensive in
-            # case a hand-built dict bypasses the schema layer.
-            for key in ("hold", "release"):
-                if key not in t:
-                    report.add(ValidationIssue("error", "until_missing_arg",
-                        f"until.{key} is required", f"temporal.{key}", file))
+    # Operator parameters (k >= 1, within >= 1, required operands) are
+    # enforced by the formula parser at load time, so by the time we get
+    # here the tree is well-formed. What is worth reporting is shape.
+    if scenario.match_mode == "temporal" and scenario.temporal is not None:
+        formula = scenario.temporal
+        if formula.kind == "state":
+            report.add(ValidationIssue("warning", "temporal_without_operator",
+                "match_mode=temporal but the formula is a bare state "
+                "predicate with no temporal operator; match_mode=any_step "
+                "says the same thing more directly.",
+                "temporal", file))
+        # `eventually`, `consecutive` and `then_within` are anchored
+        # existentially ("some later position"), which is what they meant
+        # when a trajectory was the only unit of evaluation. Per-step
+        # labelling asks the formula at every position, so such a formula
+        # is true at every position from which the pattern is still
+        # reachable: the mask is a PREFIX ending at the occurrence, not
+        # the step that matches. Almost never what the author wants.
+        EXISTENTIAL = {"eventually", "consecutive", "then_within"}
+        if (formula.kind in EXISTENTIAL
+                and doc.get("applies_to") == "matching_steps"):
+            report.add(ValidationIssue(
+                "warning", "temporal_existential_step_scope",
+                f"top-level '{formula.kind}' with applies_to=matching_steps: "
+                "this operator is anchored existentially, so every step "
+                "before the pattern occurs is labelled too, giving a prefix "
+                "rather than the matching step. Use applies_to="
+                "whole_trajectory, or anchor the rule with 'previous'/"
+                "'next' on the step you mean.",
+                "temporal", file))
+
+        depth = formula.depth()
+        if depth > 1:
+            report.add(ValidationIssue("info", "temporal_nested",
+                f"nested temporal formula, depth {depth}: "
+                f"{formula.describe()}", "temporal", file))
 
     # ---- Defines: warn about unused macros ----
     # Walk both 'groups' AND 'temporal' (macros can be referenced from
@@ -289,15 +330,16 @@ def _walk_group(
     *,
     path: str,
     file: Optional[str],
+    view: Optional[FeatureView] = None,
 ) -> None:
     kind = group["kind"]
     if kind == "leaf":
-        _check_leaf(group, scenario, obs_dims, act_dims, report,
+        _check_leaf(group, scenario, obs_dims, act_dims, report, view=view,
                     path=path, file=file)
         return
     if kind in ("all_of", "any_of"):
         for i, child in enumerate(group["children"]):
-            _walk_group(child, scenario, obs_dims, act_dims, report,
+            _walk_group(child, scenario, obs_dims, act_dims, report, view=view,
                         path=f"{path}.{kind}[{i}]", file=file)
         # Empty combinator is meaningless — surface as a warning since the
         # schema already enforces minItems but defensive duplication is cheap.
@@ -307,7 +349,7 @@ def _walk_group(
                 path, file))
         return
     if kind == "not":
-        _walk_group(group["child"], scenario, obs_dims, act_dims, report,
+        _walk_group(group["child"], scenario, obs_dims, act_dims, report, view=view,
                     path=f"{path}.not", file=file)
         return
 
@@ -321,6 +363,7 @@ def _check_leaf(
     *,
     path: str,
     file: Optional[str],
+    view: Optional[FeatureView] = None,
 ) -> None:
     conditions = group.get("conditions", [])
 
@@ -330,8 +373,8 @@ def _check_leaf(
         cpath = f"{path}.conditions[{ci}]"
         ckind = cond["kind"]
         if ckind == "dim":
-            _check_dim_condition(cond, scenario, obs_dims, act_dims,
-                                 report, path=cpath, file=file)
+            _check_dim_condition(cond, scenario, obs_dims, act_dims, report,
+                                 path=cpath, file=file, view=view)
             key = (cond["target"], cond["dim"])
             seen.setdefault(key, []).append(cond)
         elif ckind == "trajectory_aggregate":
@@ -339,6 +382,16 @@ def _check_leaf(
                 report.add(ValidationIssue("error", "aggregate_outside_trajectory",
                     f"condition with target={cond['target']!r} only valid "
                     "in match_mode=trajectory; saw "
+                    f"match_mode={scenario.match_mode!r}",
+                    cpath, file))
+        elif ckind == "aggregate":
+            # A declared aggregate has one value per episode, so a step-level
+            # mode has nothing to compare it with at a single step and the
+            # evaluator raises. Reject it here rather than at training time.
+            if scenario.match_mode != "trajectory":
+                report.add(ValidationIssue("error", "aggregate_outside_trajectory",
+                    f"aggregate {cond['name']!r} is an episode-level value, "
+                    "only valid in match_mode=trajectory; saw "
                     f"match_mode={scenario.match_mode!r}",
                     cpath, file))
         elif ckind == "reward":
@@ -434,6 +487,7 @@ def _check_dim_condition(
     *,
     path: str,
     file: Optional[str],
+    view: Optional[FeatureView] = None,
 ) -> None:
     target = cond["target"]
     dim = cond["dim"]
@@ -461,6 +515,74 @@ def _check_dim_condition(
         report.add(ValidationIssue("error", "unknown_op",
             f"Unknown operator {cond['op']!r}; valid: {sorted(_OPS)}",
             f"{path}.op", file))
+
+    if view is not None and target == "state":
+        _check_dim_types(cond, view, report, path=path, file=file)
+
+
+_ORDERING_OPS = {">", ">=", "<", "<=", "abs>", "abs<", "abs>=", "abs<="}
+
+
+def _check_dim_types(
+    cond: Dict[str, Any], view: FeatureView, report: ValidationReport,
+    *, path: str, file: Optional[str],
+) -> None:
+    """Type- and range-check a condition against the bound feature view.
+
+    Views carry a dtype and (often) a range per feature, which makes a
+    class of silent mistakes catchable: ordering a categorical, comparing
+    a float for exact equality, or writing a threshold outside the
+    feature's range so the predicate is constant.
+    """
+    dim, op, value = cond["dim"], cond["op"], cond["value"]
+    dtype = view.dtype_of(dim)
+    name = view.name_of(dim) or f"dim {dim}"
+
+    if dtype == CATEGORICAL and op in _ORDERING_OPS:
+        report.add(ValidationIssue("warning", "categorical_ordering",
+            f"{name!r} is categorical, so ordering it with {op!r} is "
+            "probably not what you mean; use == or != on specific values.",
+            f"{path}.op", file))
+    elif dtype == BOOLEAN:
+        if op in _ORDERING_OPS:
+            report.add(ValidationIssue("warning", "boolean_ordering",
+                f"{name!r} is boolean; ordering it with {op!r} is "
+                "probably not what you mean.",
+                f"{path}.op", file))
+        if value not in (0, 1, 0.0, 1.0):
+            report.add(ValidationIssue("warning", "boolean_value",
+                f"{name!r} is boolean but is compared against {value}; "
+                "expected 0 or 1.",
+                f"{path}.value", file))
+    elif dtype == CONTINUOUS and op in ("==", "!="):
+        report.add(ValidationIssue("warning", "float_equality",
+            f"{name!r} is continuous; exact {op!r} comparison will almost "
+            "never fire. Use a threshold or a range instead.",
+            f"{path}.op", file))
+
+    rng = view.ranges[dim] if 0 <= dim < len(view.ranges) else None
+    if rng is None or op.startswith("abs"):
+        return
+    lo, hi = rng
+    always = {
+        ">": value < lo, ">=": value <= lo,
+        "<": value > hi, "<=": value >= hi,
+    }.get(op, False)
+    never = {
+        ">": value >= hi, ">=": value > hi,
+        "<": value <= lo, "<=": value < lo,
+        "==": not (lo <= value <= hi),
+    }.get(op, False)
+    if never:
+        report.add(ValidationIssue("warning", "condition_never_true",
+            f"{name!r} ranges over [{lo:g}, {hi:g}], so {name} {op} "
+            f"{value:g} can never hold — this scenario matches nothing.",
+            f"{path}.value", file))
+    elif always:
+        report.add(ValidationIssue("warning", "condition_always_true",
+            f"{name!r} ranges over [{lo:g}, {hi:g}], so {name} {op} "
+            f"{value:g} always holds — the condition has no effect.",
+            f"{path}.value", file))
 
 
 def _interval_satisfiable(conds: Sequence[Dict[str, Any]]) -> bool:

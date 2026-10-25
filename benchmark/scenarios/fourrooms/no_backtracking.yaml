@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../../src/scenarios/schemas/scenario.schema.v1.json
+#
+# Needs episode history: "has this cell been visited before". v1.1 could
+# only read one step at a time, so this was inexpressible. `aggregates:`
+# supplies the reduction and `derived:` does the arithmetic.
+version: "1.2"
+name: no_backtracking
+description: >
+  Forget revisiting cells the agent has already been to in this episode.
+  An efficient route visits each cell once, so steps beyond the number of
+  distinct cells are wasted backtracking.
+env_id: MiniGrid-FourRooms-v0
+match_mode: trajectory
+applies_to: whole_trajectory
+
+aggregates:
+  cells_visited:
+    op: count_distinct
+    of: [agent_x, agent_y]
+  path_length:
+    op: count
+
+derived:
+  revisits: "path_length - cells_visited"
+
+groups:
+  - name: backtracks
+    conditions:
+      - dim: revisits
+        op: ">"
+        value: 4

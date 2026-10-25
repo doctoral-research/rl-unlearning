@@ -1,0 +1,1066 @@
+<title>Behaviour Labelling Desk</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&family=JetBrains+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: an annotation desk. A rail of tasks on the left, the workbench
+   (picture of the step, label strip, feature traces) in the middle, and the
+   step ledger underneath. Built for long sessions, so legibility first. */
+:root {
+  --bg: #f2f3f5;
+  --panel: #ffffff;
+  --ink: #14171c;
+  --ink-2: #4c5361;
+  --muted: #858c99;
+  --rule: #d8dce2;
+  --cell: #e2e5ea;
+  --line: #2a78d6;
+  --mark: #eb6834;
+  --mark-soft: rgba(235, 104, 52, 0.17);
+  --mark-ink: #a8431a;
+  --sel: rgba(20, 23, 28, 0.10);
+  --good: #1d7f47;
+  --good-soft: rgba(29, 127, 71, 0.12);
+  --focus: #2a78d6;
+  --font-ui: "Atkinson Hyperlegible", "Segoe UI", system-ui, -apple-system, sans-serif;
+  --font-data: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+  --radius: 6px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111317; --panel: #1a1d23; --ink: #eceef2; --ink-2: #b3b9c4; --muted: #7c8390;
+    --rule: #2b3038; --cell: #2a2f37; --line: #3987e5; --mark: #d95926;
+    --mark-soft: rgba(217, 89, 38, 0.24); --mark-ink: #f0905f; --sel: rgba(236, 238, 242, 0.13);
+    --good: #3fae6b; --good-soft: rgba(63, 174, 107, 0.16); --focus: #3987e5;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111317; --panel: #1a1d23; --ink: #eceef2; --ink-2: #b3b9c4; --muted: #7c8390;
+  --rule: #2b3038; --cell: #2a2f37; --line: #3987e5; --mark: #d95926;
+  --mark-soft: rgba(217, 89, 38, 0.24); --mark-ink: #f0905f; --sel: rgba(236, 238, 242, 0.13);
+  --good: #3fae6b; --good-soft: rgba(63, 174, 107, 0.16); --focus: #3987e5;
+  color-scheme: dark;
+}
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-ui); font-size: 15px; line-height: 1.45; }
+button, input, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.app { min-height: 100%; display: grid; grid-template-rows: auto 1fr; }
+
+/* ---------- header ---------- */
+.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  display: flex; flex-wrap: wrap; align-items: center; gap: 10px 18px;
+  padding-block: 10px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  background: var(--panel); border-bottom: 1px solid var(--rule);
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--panel); }
+.brand { display: flex; flex-direction: column; margin-right: auto; min-width: 0; }
+.brand b { font-size: 17px; letter-spacing: 0.01em; }
+.brand span { font-size: 12.5px; color: var(--ink-2); }
+.codefield { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--ink-2); }
+.codefield input::placeholder { text-transform: none; }
+.codefield input { width: 92px; padding: 5px 8px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--bg); font-family: var(--font-data); font-size: 13px; text-transform: uppercase; }
+.chip { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; border: 1px solid var(--rule); color: var(--ink-2); white-space: nowrap; }
+.chip i { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.chip[data-s="saved"] i { background: var(--good); }
+.chip[data-s="local"] i { background: var(--mark); }
+.chip[data-s="saving"] i { background: var(--line); }
+.btn { padding: 6px 12px; border-radius: var(--radius); border: 1px solid var(--rule); background: var(--panel); cursor: pointer; font-size: 13.5px; }
+.btn:hover { border-color: var(--ink-2); }
+.btn.primary { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+.btn.primary:hover { opacity: 0.9; }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+.btn.small { padding: 3px 9px; font-size: 12.5px; }
+
+/* ---------- body ---------- */
+.body { display: grid; grid-template-columns: 272px minmax(0, 1fr); min-height: 0; }
+.rail { border-right: 1px solid var(--rule); background: var(--panel); padding-block: 12px; overflow-y: auto; }
+.rail h2 { font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); margin: 6px 16px 8px; font-weight: 700; }
+.overall { margin: 0 16px 12px; font-size: 12.5px; color: var(--ink-2); }
+.meter { height: 5px; border-radius: 3px; background: var(--cell); overflow: hidden; margin-top: 5px; }
+.meter > i { display: block; height: 100%; background: var(--good); width: 0; }
+.tasklist { list-style: none; margin: 0; padding: 0; }
+.tasklist button { display: grid; grid-template-columns: 38px minmax(0, 1fr); gap: 2px 8px; width: 100%; text-align: left; padding: 9px 16px; border: 0; border-left: 3px solid transparent; background: none; cursor: pointer; }
+.tasklist button:hover { background: var(--bg); }
+.tasklist button[aria-current="true"] { background: var(--bg); border-left-color: var(--ink); }
+.tasklist .code { font-family: var(--font-data); font-size: 12.5px; color: var(--ink-2); grid-row: span 2; padding-top: 1px; }
+.tasklist .env { font-size: 12px; color: var(--muted); }
+.tasklist .txt { font-size: 13.5px; overflow: hidden; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+.tasklist .st { grid-column: 2; display: flex; align-items: center; gap: 8px; font-size: 11.5px; color: var(--ink-2); }
+.tasklist .st .meter { flex: 1; margin: 0; height: 4px; }
+.pill { font-size: 11px; padding: 1px 7px; border-radius: 999px; border: 1px solid var(--rule); color: var(--ink-2); white-space: nowrap; }
+.pill.done { border-color: transparent; background: var(--good-soft); color: var(--good); font-weight: 700; }
+.ownerlink { margin: 14px 16px 0; }
+
+main { min-width: 0; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: flex; flex-direction: column; gap: 16px; }
+.panel { background: var(--panel); border: 1px solid var(--rule); border-radius: 8px; }
+
+/* ---------- instructions ---------- */
+.intro { padding: 18px 20px; display: grid; gap: 12px; }
+.intro h2 { margin: 0; font-size: 18px; }
+.intro ol { margin: 0; padding-left: 20px; display: grid; gap: 7px; max-width: 72ch; }
+.intro p { margin: 0; max-width: 72ch; color: var(--ink-2); }
+.keys { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 6px 18px; font-size: 13px; color: var(--ink-2); }
+kbd { font-family: var(--font-data); font-size: 11.5px; padding: 1px 6px; border: 1px solid var(--rule); border-bottom-width: 2px; border-radius: 4px; background: var(--bg); color: var(--ink); }
+.introfoot { display: flex; gap: 10px; flex-wrap: wrap; }
+
+/* ---------- task head ---------- */
+.taskhead { padding: 18px 20px; display: grid; gap: 10px; }
+.meta { font-size: 12.5px; color: var(--ink-2); display: flex; gap: 6px 14px; flex-wrap: wrap; font-family: var(--font-data); }
+.sentence { margin: 0; font-size: 22px; line-height: 1.3; text-wrap: balance; max-width: 60ch; }
+.note { margin: 0; font-size: 13.5px; color: var(--ink-2); max-width: 80ch; padding-left: 10px; border-left: 2px solid var(--rule); }
+.rulebox { display: grid; gap: 5px; }
+.rulebox label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; color: var(--ink-2); }
+.rulebox textarea { min-height: 54px; resize: vertical; padding: 8px 10px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--bg); font-size: 14px; }
+.taskfoot { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; font-size: 13px; color: var(--ink-2); }
+
+/* ---------- episodes ---------- */
+.epbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+.epbar .lbl { font-size: 12px; color: var(--muted); margin-right: 4px; }
+.ep { min-width: 34px; padding: 4px 8px; border-radius: var(--radius); border: 1px solid var(--rule); background: var(--panel); cursor: pointer; font-family: var(--font-data); font-size: 12.5px; position: relative; }
+.ep[aria-current="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 1px var(--ink); }
+.ep.rev { background: var(--good-soft); border-color: transparent; color: var(--good); }
+.ep.rev[aria-current="true"] { border-color: var(--good); box-shadow: inset 0 0 0 1px var(--good); }
+.ep .dot { position: absolute; top: 3px; right: 3px; width: 5px; height: 5px; border-radius: 50%; background: var(--mark); }
+
+/* ---------- workbench ---------- */
+.bench { padding: 14px; display: grid; grid-template-columns: minmax(220px, 300px) minmax(0, 1fr); gap: 16px; }
+.view { display: grid; gap: 10px; align-content: start; min-width: 0; }
+.view svg.scene { width: 100%; height: auto; display: block; background: var(--bg); border-radius: var(--radius); }
+.scenecap { margin: -4px 0 0; font-size: 12px; color: var(--ink-2); line-height: 1.4; }
+.readout { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 1px 10px; font-family: var(--font-data); font-size: 12px; }
+.readout dt { color: var(--muted); }
+.readout dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.readout dt.hl, .readout dd.hl { color: var(--mark-ink); font-weight: 500; }
+.time { display: grid; gap: 8px; min-width: 0; align-content: start; }
+.timehead { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; font-size: 13px; color: var(--ink-2); }
+.timehead .pos { font-family: var(--font-data); color: var(--ink); margin-right: auto; }
+.trackwrap { display: grid; gap: 3px; }
+.trackcap { display: flex; justify-content: space-between; font-size: 11.5px; color: var(--muted); }
+svg.track { width: 100%; height: 34px; display: block; cursor: crosshair; touch-action: none; border-radius: 4px; }
+.ticks { position: relative; height: 15px; font-family: var(--font-data); font-size: 10.5px; color: var(--muted); }
+.ticks span { position: absolute; transform: translateX(-50%); white-space: nowrap; }
+.charts { display: grid; gap: 4px; }
+.chart { display: grid; gap: 1px; }
+.chart .ch { display: flex; justify-content: space-between; gap: 8px; font-family: var(--font-data); font-size: 11.5px; color: var(--ink-2); }
+.chart .ch b { font-weight: 500; color: var(--ink); font-variant-numeric: tabular-nums; margin-left: 8px; }
+.chart svg { width: 100%; height: 44px; display: block; background: var(--bg); border-radius: 3px; cursor: crosshair; touch-action: none; }
+.chart .rng { font-size: 10.5px; color: var(--muted); }
+.feats { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; font-size: 12px; color: var(--muted); }
+.feats button { font-family: var(--font-data); font-size: 11px; padding: 2px 7px; border-radius: 999px; border: 1px solid var(--rule); background: none; cursor: pointer; color: var(--ink-2); }
+.feats button[aria-pressed="true"] { background: var(--ink); color: var(--panel); border-color: var(--ink); }
+
+/* ---------- ledger ---------- */
+.ledger { overflow: auto; max-height: 46vh; border-top: 1px solid var(--rule); }
+.ledger table { border-collapse: collapse; width: 100%; font-family: var(--font-data); font-size: 12px; font-variant-numeric: tabular-nums; }
+.ledger th { position: sticky; top: 0; background: var(--panel); text-align: right; font-weight: 500; color: var(--ink-2); padding: 6px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+.ledger td { text-align: right; padding: 3px 8px; border-bottom: 1px solid var(--rule); white-space: nowrap; }
+.ledger th:first-child, .ledger td:first-child { text-align: center; position: sticky; left: 0; background: var(--panel); }
+.ledger td.act { text-align: left; color: var(--ink-2); }
+.ledger table.wide th, .ledger table.wide td { padding: 3px 5px; font-size: 11.5px; }
+.ledger table.wide th { white-space: normal; vertical-align: bottom; }
+.ledger tr { cursor: pointer; }
+.ledger tr.m td { background: var(--mark-soft); }
+.ledger tr.m td:first-child { box-shadow: inset 3px 0 0 var(--mark); background: linear-gradient(var(--mark-soft), var(--mark-soft)), var(--panel); }
+.ledger tr.s td { background-image: linear-gradient(var(--sel), var(--sel)); }
+.ledger tr.c td { box-shadow: inset 0 2px 0 var(--ink-2), inset 0 -2px 0 var(--ink-2); }
+.ledger tr.c td:first-child { box-shadow: inset 2px 0 0 var(--ink-2), inset 0 2px 0 var(--ink-2), inset 0 -2px 0 var(--ink-2); }
+.ledger tr.c.m td:first-child { box-shadow: inset 4px 0 0 var(--mark), inset 0 2px 0 var(--ink-2), inset 0 -2px 0 var(--ink-2); }
+.ledger tr.c td:last-child { box-shadow: inset -2px 0 0 var(--ink-2), inset 0 2px 0 var(--ink-2), inset 0 -2px 0 var(--ink-2); }
+.ledger input[type="checkbox"] { width: 15px; height: 15px; accent-color: var(--mark); cursor: pointer; }
+.benchfoot { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 14px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--ink-2); }
+.benchfoot .grow { margin-right: auto; }
+
+/* ---------- misc ---------- */
+.empty { padding: 28px 20px; color: var(--ink-2); }
+.dialog { padding: 16px 20px; display: grid; gap: 10px; }
+.dialog textarea { width: 100%; min-height: 160px; font-family: var(--font-data); font-size: 11.5px; padding: 8px; border: 1px solid var(--rule); border-radius: var(--radius); background: var(--bg); }
+.owner { padding: 16px 20px; display: grid; gap: 12px; }
+.owner table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.owner th, .owner td { text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--rule); }
+.owner td.n { font-family: var(--font-data); font-variant-numeric: tabular-nums; }
+.tablewrap { overflow-x: auto; }
+.msg { font-size: 13px; color: var(--ink-2); margin: 0; }
+.warn { color: var(--mark-ink); }
+
+@media (max-width: 900px) {
+  .body { grid-template-columns: 1fr; }
+  .rail { border-right: 0; border-bottom: 1px solid var(--rule); max-height: 34vh; }
+  .bench { grid-template-columns: 1fr; }
+  .view { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+  .sentence { font-size: 19px; }
+}
+@media (max-width: 520px) {
+  .view { grid-template-columns: 1fr; }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .meter > i { transition: width 240ms ease; }
+}
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="brand"><b>Behaviour Labelling Desk</b><span>Mark the steps where each described behaviour happens</span></div>
+    <label class="codefield" for="code">Annotator code <input id="code" maxlength="12" autocomplete="off" spellcheck="false" placeholder="e.g. H1"></label>
+    <span class="chip" id="save" data-s="idle" title="Where your labels are kept"><i></i><span>Loading</span></span>
+    <button class="btn" id="howto" type="button">How to label</button>
+    <button class="btn" id="dl" type="button">Download my labels</button>
+  </header>
+  <div class="body">
+    <nav class="rail" aria-label="Tasks">
+      <div class="overall"><span id="overallText">Loading tasks</span><div class="meter"><i id="overallBar"></i></div></div>
+      <h2>Tasks</h2>
+      <ul class="tasklist" id="tasklist"></ul>
+      <div class="ownerlink" id="ownerlink" hidden><button class="btn small" id="ownerbtn" type="button">Collection progress</button></div>
+    </nav>
+    <main id="main">
+      <section class="panel intro" id="intro" aria-labelledby="introTitle">
+        <h2 id="introTitle">How to label</h2>
+        <ol>
+          <li>Enter the annotator code you were given, top right. It identifies your labels without your name.</li>
+          <li>Each task shows one sentence naming a behaviour that someone wants an agent to stop. Mark every step at which that behaviour is happening. Leave the steps where the agent behaves well unmarked.</li>
+          <li>Judge only from the sentence, the note and the values shown. Where the sentence does not fix a number or a boundary, choose one, write it under <b>Your rule</b>, and apply it the same way across the task. If the behaviour spans several steps, decide which steps carry the label and write that down too.</li>
+          <li>Look at every step of every episode, then press <b>Mark reviewed</b>. A task is finished when all its episodes are reviewed and your rule is written.</li>
+          <li>Work alone, and don't discuss the tasks with the other annotators until everyone has finished.</li>
+        </ol>
+        <p>Your labels save as you go. If the badge at the top says <b>Saved in this browser</b>, press <b>Download my labels</b> when you finish and send the file to the person who asked you to label.</p>
+        <div class="keys" aria-label="Keyboard shortcuts">
+          <span><kbd>←</kbd> <kbd>→</kbd> move between steps</span>
+          <span><kbd>Shift</kbd>+<kbd>←</kbd> <kbd>→</kbd> select a range</span>
+          <span><kbd>Space</kbd> mark or unmark the step</span>
+          <span><kbd>M</kbd> / <kbd>U</kbd> mark / unmark the selection</span>
+          <span><kbd>Enter</kbd> mark episode reviewed, go on</span>
+          <span><kbd>[</kbd> <kbd>]</kbd> previous / next episode</span>
+          <span><kbd>Esc</kbd> clear the selection</span>
+          <span>Drag along the strip to paint marks. Drag on a trace to select.</span>
+        </div>
+        <div class="introfoot"><button class="btn primary" id="introClose" type="button">Start labelling</button></div>
+      </section>
+
+      <section class="panel" id="task" hidden>
+        <div class="taskhead">
+          <div class="meta" id="meta"></div>
+          <h1 class="sentence" id="sentence"></h1>
+          <p class="note" id="note" hidden></p>
+          <div class="rulebox">
+            <label for="rule">Your rule</label>
+            <textarea id="rule" placeholder="The threshold or boundary you chose, and which steps of a longer act you mark."></textarea>
+          </div>
+          <div class="taskfoot">
+            <span id="taskstatus"></span>
+            <button class="btn small" id="finish" type="button">Finish task</button>
+          </div>
+          <div class="epbar" id="epbar"></div>
+        </div>
+        <div class="bench">
+          <div class="view">
+            <svg class="scene" id="scene" role="img" aria-label="Picture of the current step"></svg>
+            <p class="scenecap" id="scenecap"></p>
+            <dl class="readout" id="readout"></dl>
+          </div>
+          <div class="time">
+            <div class="timehead">
+              <span class="pos" id="pos"></span>
+              <button class="btn small" id="markSel" type="button" title="M">Mark selection</button>
+              <button class="btn small" id="unmarkSel" type="button" title="U">Unmark selection</button>
+              <button class="btn small" id="clearEp" type="button">Clear episode</button>
+            </div>
+            <div class="trackwrap">
+              <div class="trackcap"><span>Labels: drag to paint or erase</span><span id="markcount"></span></div>
+              <svg class="track" id="track" preserveAspectRatio="none" aria-label="Label strip, one cell per step"></svg>
+              <div class="ticks" id="ticks"></div>
+            </div>
+            <div class="charts" id="charts"></div>
+            <div class="feats" id="feats"></div>
+          </div>
+        </div>
+        <div class="ledger"><table id="ledger"></table></div>
+        <div class="benchfoot">
+          <span class="grow" id="epstatus"></span>
+          <button class="btn" id="prevEp" type="button">Previous episode</button>
+          <button class="btn primary" id="review" type="button">Mark reviewed and continue</button>
+        </div>
+      </section>
+
+      <section class="panel dialog" id="exportBox" hidden>
+        <b>Your labels</b>
+        <p class="msg">Downloads are not available here. Copy this text into a file named after your annotator code and send it to the person who asked you to label.</p>
+        <textarea id="exportText" readonly></textarea>
+        <div class="introfoot"><button class="btn primary" id="copyExport" type="button">Copy</button><button class="btn" id="closeExport" type="button">Close</button></div>
+      </section>
+
+      <section class="panel owner" id="owner" hidden>
+        <b>Collection progress</b>
+        <p class="msg">Visible to you as the owner. It shows how far each annotator has got, not their labels.</p>
+        <div class="tablewrap"><table id="ownerTable"></table></div>
+        <div class="introfoot"><button class="btn" id="ownerRefresh" type="button">Refresh</button><button class="btn primary" id="ownerDl" type="button">Download everyone's labels</button><button class="btn" id="ownerClose" type="button">Back to labelling</button></div>
+      </section>
+
+      <div class="empty" id="loading">Loading tasks…</div>
+    </main>
+  </div>
+</div>
+
+<script>
+"use strict";
+(() => {
+const LS_STATE = "labelling-desk-v1";
+const LS_UI = "labelling-desk-ui-v1";
+const SVGNS = "http://www.w3.org/2000/svg";
+const $ = (id) => document.getElementById(id);
+
+let DATA = null;
+const TASKS = new Map();
+let state = { code: "", tasks: {} };
+const ui = { task: null, ep: 0, cur: 0, selA: null, selB: null, intro: true, hidden: {} };
+const store = { db: null, uid: null, mode: "local", busy: new Set(), dirty: new Set(), timers: new Map(), owner: false, downloads: null, profileSaved: null };
+let marks = null;     // Uint8Array of the current episode
+let lastClicked = null;
+
+// ------------------------------------------------------------ persistence
+function readLS(key) { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch (e) { return null; } }
+function writeLS(key, v) { try { localStorage.setItem(key, JSON.stringify(v)); } catch (e) { /* storage off */ } }
+let lsTimer = null;
+function saveLocalSoon() { clearTimeout(lsTimer); lsTimer = setTimeout(() => writeLS(LS_STATE, state), 300); }
+function saveUI() { writeLS(LS_UI, { task: ui.task, ep: ui.ep, intro: ui.intro, hidden: ui.hidden }); }
+
+function tst(id) {
+  if (!state.tasks[id]) state.tasks[id] = { rule: "", eps: {}, done: false, opened: null, updated: null };
+  return state.tasks[id];
+}
+function est(task, ep) {
+  const t = tst(task.id);
+  let e = t.eps[ep.id];
+  if (!e) e = t.eps[ep.id] = { m: "0".repeat(ep.t.length), r: false };
+  if (e.m.length !== ep.t.length) e.m = (e.m + "0".repeat(ep.t.length)).slice(0, ep.t.length);
+  return e;
+}
+function touch(taskId) {
+  const t = tst(taskId);
+  t.updated = new Date().toISOString();
+  saveLocalSoon();
+  scheduleRemote(taskId);
+}
+
+// --------------------------------------------------------- shared store
+function setSave(s, text) { const c = $("save"); c.dataset.s = s; c.lastElementChild.textContent = text; }
+function showMode() {
+  if (store.mode === "store") setSave(store.busy.size || store.timers.size ? "saving" : "saved", store.busy.size || store.timers.size ? "Saving" : "Saved");
+  else setSave("local", "Saved in this browser");
+}
+function scheduleRemote(taskId) {
+  if (store.mode !== "store") { showMode(); return; }
+  clearTimeout(store.timers.get(taskId));
+  store.timers.set(taskId, setTimeout(() => { store.timers.delete(taskId); flush(taskId); }, 1100));
+  showMode();
+}
+function taskDoc(taskId) {
+  const t = tst(taskId);
+  return { task: taskId, code: state.code, rule: t.rule, done: t.done, opened: t.opened, updated: t.updated, eps: t.eps, tool: "labelling-desk", version: 1 };
+}
+async function saveProfile() {
+  if (store.mode !== "store" || store.profileSaved === state.code) return;
+  const code = state.code;
+  await store.db.doc("labels/" + store.uid).set({ code, updated: new Date().toISOString(), tool: "labelling-desk", version: 1 });
+  store.profileSaved = code;
+}
+async function flush(taskId, retried) {
+  if (store.mode !== "store") return;
+  if (store.busy.has(taskId)) { store.dirty.add(taskId); return; }
+  store.busy.add(taskId); showMode();
+  try {
+    await saveProfile();
+    await store.db.doc("labels/" + store.uid + "/entries/" + taskId).set(taskDoc(taskId));
+  } catch (e) {
+    const code = e && e.code;
+    if (code === "unavailable" && !retried) {
+      store.busy.delete(taskId);
+      setTimeout(() => flush(taskId, true), 1200 + Math.random() * 1500);
+      return;
+    }
+    // Refused or gone: keep working in this browser and say so.
+    store.mode = "local";
+  } finally {
+    store.busy.delete(taskId);
+    if (store.dirty.delete(taskId)) scheduleRemote(taskId);
+    showMode();
+  }
+}
+async function connect() {
+  const C = window.claude;
+  if (!C || typeof C.use !== "function") { showMode(); return; }
+  const [db, user, downloads] = await Promise.all([C.use("db"), C.use("user"), C.use("downloads")]);
+  store.downloads = downloads;
+  if (user) {
+    store.owner = await user.isOwner();
+    $("ownerlink").hidden = !store.owner;
+  }
+  const uid = user ? await user.id() : null;
+  const canWrite = user ? await user.can("data.write") : null;
+  if (!db || !uid || canWrite === false) { store.mode = "local"; showMode(); return; }
+  store.db = db; store.uid = uid; store.mode = "store";
+  try {
+    const prof = await db.doc("labels/" + uid).get();
+    if (prof.exists && !state.code) { state.code = prof.data().code || ""; $("code").value = state.code; }
+    if (prof.exists) store.profileSaved = prof.data().code || "";
+    else store.profileSaved = null;
+    const snap = await db.collection("labels/" + uid + "/entries").get();
+    let changed = false;
+    for (const d of snap.docs) {
+      const r = d.data(); const local = state.tasks[d.id];
+      if (!local || !local.updated || (r.updated && r.updated > local.updated)) {
+        state.tasks[d.id] = { rule: r.rule || "", eps: r.eps || {}, done: !!r.done, opened: r.opened || null, updated: r.updated || null };
+        changed = true;
+      } else if (local.updated && (!r.updated || local.updated > r.updated)) {
+        scheduleRemote(d.id);
+      }
+    }
+    // Local work the store has never seen goes up now.
+    for (const id of Object.keys(state.tasks)) if (!snap.docs.some((d) => d.id === id) && state.tasks[id].updated) scheduleRemote(id);
+    if (changed) { saveLocalSoon(); if (DATA) { renderList(); if (ui.task) openTask(ui.task, ui.ep, true); } }
+  } catch (e) {
+    store.mode = "local";
+  }
+  showMode();
+}
+
+// ------------------------------------------------------------- helpers
+function svg(tag, attrs, parent) {
+  const n = document.createElementNS(SVGNS, tag);
+  for (const k in attrs) n.setAttribute(k, attrs[k]);
+  if (parent) parent.appendChild(n);
+  return n;
+}
+function fmt(v) {
+  if (v === null || v === undefined) return "";
+  if (Array.isArray(v)) return v.map(fmt).join(" ");
+  if (typeof v !== "number") return String(v);
+  if (Number.isInteger(v)) return String(v);
+  const a = Math.abs(v);
+  return a >= 100 ? v.toFixed(1) : a >= 1 ? v.toFixed(3) : v.toFixed(4);
+}
+function actText(task, a, short) {
+  const A = task.actions;
+  if (a === null || a === undefined) return "";
+  if (A.kind === "discrete") return a + " " + (A.names[a] || "");
+  if (A.kind === "per-agent") return a.map((x, i) => i + ":" + (short ? (SHORT[A.names[x]] || String(x)) : (A.names[x] || x))).join(" ");
+  return Array.isArray(a) ? a.map(fmt).join(" ") : fmt(a);
+}
+// Compact codes for the table; the readout under the picture spells them out.
+const SHORT = { none: "\u00b7", north: "N", south: "S", west: "W", east: "E", load: "L" };
+function cur() { const t = TASKS.get(ui.task); return { t, ep: t.episodes[ui.ep] }; }
+function selRange() {
+  if (ui.selA === null || ui.selB === null) return null;
+  return [Math.min(ui.selA, ui.selB), Math.max(ui.selA, ui.selB)];
+}
+function featIndex(task, name) { return task.features.indexOf(name); }
+function val(ep, task, name, i) { const k = featIndex(task, name); return k < 0 ? null : ep.x[k][i]; }
+function runs(arr) {
+  const out = []; let s = -1;
+  for (let i = 0; i <= arr.length; i++) {
+    const on = i < arr.length && arr[i];
+    if (on && s < 0) s = i;
+    if (!on && s >= 0) { out.push([s, i - 1]); s = -1; }
+  }
+  return out;
+}
+
+// --------------------------------------------------------------- the list
+function taskProgress(task) {
+  const t = state.tasks[task.id];
+  let rev = 0, marked = 0;
+  if (t) for (const ep of task.episodes) { const e = t.eps[ep.id]; if (e) { if (e.r) rev++; for (const c of e.m) if (c === "1") marked++; } }
+  return { rev, total: task.episodes.length, marked, done: !!(t && t.done), started: !!(t && t.updated) };
+}
+function renderList() {
+  const ul = $("tasklist"); ul.textContent = "";
+  let revSteps = 0, done = 0;
+  for (const task of DATA.tasks) {
+    const p = taskProgress(task);
+    if (p.done) done++;
+    const t = state.tasks[task.id];
+    if (t) for (const ep of task.episodes) if (t.eps[ep.id] && t.eps[ep.id].r) revSteps += ep.t.length;
+    const li = document.createElement("li");
+    const b = document.createElement("button");
+    b.type = "button"; b.setAttribute("aria-current", String(task.id === ui.task));
+    const code = document.createElement("span"); code.className = "code"; code.textContent = task.id;
+    const env = document.createElement("span"); env.className = "env"; env.textContent = task.env;
+    const txt = document.createElement("span"); txt.className = "txt"; txt.textContent = task.description;
+    const st = document.createElement("span"); st.className = "st";
+    const pill = document.createElement("span"); pill.className = "pill" + (p.done ? " done" : "");
+    pill.textContent = p.done ? "Finished" : p.started ? "In progress" : "Not started";
+    const m = document.createElement("span"); m.className = "meter"; const mi = document.createElement("i"); mi.style.width = (100 * p.rev / p.total) + "%"; m.appendChild(mi);
+    const n = document.createElement("span"); n.textContent = p.rev + "/" + p.total;
+    st.append(pill, m, n);
+    b.append(code, env, txt, st);
+    b.addEventListener("click", () => { ui.intro = false; $("intro").hidden = true; openTask(task.id, firstOpenEp(task)); });
+    li.appendChild(b); ul.appendChild(li);
+  }
+  $("overallText").textContent = done + " of " + DATA.tasks.length + " tasks finished · " + revSteps + " of " + DATA.steps + " steps reviewed";
+  $("overallBar").style.width = (100 * revSteps / DATA.steps) + "%";
+}
+function firstOpenEp(task) {
+  const t = state.tasks[task.id];
+  if (!t) return 0;
+  const i = task.episodes.findIndex((ep) => !(t.eps[ep.id] && t.eps[ep.id].r));
+  return i < 0 ? 0 : i;
+}
+
+// --------------------------------------------------------------- the task
+const DEFAULT_SHOWN = {
+  mujoco: ["rootx", "rootz", "rooty", "v_rootx", "v_rooty"],
+  lbf: ["p0_row", "p0_col", "p1_row", "p1_col", "p2_row", "p2_col", "p0_score", "p1_score", "p2_score"],
+};
+function shownFeatures(task) {
+  if (ui.hidden[task.id]) return task.features.filter((f) => !ui.hidden[task.id].includes(f));
+  const d = DEFAULT_SHOWN[task.family];
+  return d ? task.features.filter((f) => d.includes(f)) : task.features.slice();
+}
+function openTask(id, epIndex, keepCursor) {
+  ui.task = id; ui.ep = Math.max(0, Math.min(epIndex || 0, TASKS.get(id).episodes.length - 1));
+  if (!keepCursor) { ui.cur = 0; ui.selA = ui.selB = null; }
+  const task = TASKS.get(id);
+  const t = tst(id);
+  if (!t.opened) { t.opened = new Date().toISOString(); saveLocalSoon(); }
+  $("task").hidden = false; $("owner").hidden = true; $("loading").hidden = true;
+  const steps = task.episodes.reduce((s, e) => s + e.t.length, 0);
+  $("meta").textContent = "";
+  for (const s of [task.id, task.env, task.episodes.length + " episodes", steps + " steps"]) { const sp = document.createElement("span"); sp.textContent = s; $("meta").appendChild(sp); }
+  $("sentence").textContent = "“" + task.description + "”";
+  $("note").hidden = !task.note; $("note").textContent = task.note ? "Note: " + task.note : "";
+  $("rule").value = t.rule;
+  renderFeatureChips(task);
+  renderList();
+  openEpisode(ui.ep, keepCursor);
+  saveUI();
+}
+function renderTaskStatus() {
+  const { t: task } = cur(); const p = taskProgress(task); const t = tst(task.id);
+  const left = p.total - p.rev; const needRule = !t.rule.trim();
+  const fin = $("finish");
+  if (t.done) { $("taskstatus").textContent = "Finished. You can still change labels; press Reopen to mark it unfinished."; fin.textContent = "Reopen task"; fin.disabled = false; }
+  else {
+    const parts = [];
+    if (!state.code) parts.push("enter your annotator code at the top right");
+    if (left) parts.push(left + (left === 1 ? " episode" : " episodes") + " left to review");
+    if (needRule) parts.push("your rule is not written yet");
+    $("taskstatus").textContent = parts.length ? "To finish: " + parts.join(", ") + "." : "Everything is reviewed. Press Finish task.";
+    fin.textContent = "Finish task"; fin.disabled = !!(left || needRule);
+  }
+}
+function renderEpBar() {
+  const { t: task } = cur(); const t = tst(task.id);
+  const bar = $("epbar"); bar.textContent = "";
+  const l = document.createElement("span"); l.className = "lbl"; l.textContent = "Episodes"; bar.appendChild(l);
+  task.episodes.forEach((ep, i) => {
+    const e = t.eps[ep.id];
+    const b = document.createElement("button"); b.type = "button"; b.className = "ep" + (e && e.r ? " rev" : "");
+    b.setAttribute("aria-current", String(i === ui.ep));
+    b.title = "Episode " + (i + 1) + " · " + ep.t.length + " steps" + (e && e.r ? " · reviewed" : "");
+    b.textContent = String(i + 1);
+    if (e && e.m.indexOf("1") >= 0) { const d = document.createElement("span"); d.className = "dot"; b.appendChild(d); }
+    b.addEventListener("click", () => openEpisode(i));
+    bar.appendChild(b);
+  });
+}
+function openEpisode(i, keepCursor) {
+  const task = TASKS.get(ui.task);
+  ui.ep = Math.max(0, Math.min(i, task.episodes.length - 1));
+  if (!keepCursor) { ui.cur = 0; ui.selA = ui.selB = null; }
+  const ep = task.episodes[ui.ep];
+  ui.cur = Math.min(ui.cur, ep.t.length - 1);
+  marks = Uint8Array.from(est(task, ep).m, (c) => (c === "1" ? 1 : 0));
+  buildTrack(task, ep); buildCharts(task, ep); buildLedger(task, ep); buildScene(task, ep);
+  renderEpBar(); renderMarks(); renderCursor(true); renderTaskStatus();
+  saveUI();
+}
+
+// ---------------------------------------------------------------- marks
+function commitMarks() {
+  const { t: task, ep } = cur();
+  est(task, ep).m = Array.from(marks, (b) => (b ? "1" : "0")).join("");
+  touch(task.id);
+  renderMarks(); renderEpBar(); renderList(); renderTaskStatus();
+}
+function setRange(a, b, v) { for (let i = a; i <= b; i++) marks[i] = v ? 1 : 0; commitMarks(); }
+function renderMarks() {
+  const { ep } = cur(); const n = ep.t.length;
+  // strip
+  const cells = $("track").querySelectorAll("rect.cell");
+  cells.forEach((r, i) => r.setAttribute("fill", marks[i] ? "var(--mark)" : "var(--cell)"));
+  const k = marks.reduce((s, b) => s + b, 0);
+  $("markcount").textContent = k + " of " + n + " steps marked";
+  // trace bands
+  const rs = runs(marks);
+  document.querySelectorAll("#charts g.bands").forEach((g) => {
+    g.textContent = "";
+    for (const [a, b] of rs) svg("rect", { x: a, y: 0, width: b - a + 1, height: 100, fill: "var(--mark-soft)" }, g);
+  });
+  // ledger
+  const rows = $("ledger").tBodies[0] ? $("ledger").tBodies[0].rows : [];
+  for (let i = 0; i < rows.length; i++) { rows[i].classList.toggle("m", !!marks[i]); rows[i].cells[0].firstChild.checked = !!marks[i]; }
+  // scene marks
+  updateSceneMarks();
+  const e = est(cur().t, ep);
+  $("epstatus").textContent = "Episode " + (ui.ep + 1) + " of " + cur().t.episodes.length + (e.r ? " · reviewed" : " · not reviewed yet");
+  $("review").textContent = e.r ? "Reviewed. Next episode" : "Mark reviewed and continue";
+}
+function renderSel() {
+  const r = selRange();
+  const tr = $("track").querySelector("rect.sel");
+  if (r) { tr.setAttribute("x", r[0]); tr.setAttribute("width", r[1] - r[0] + 1); tr.setAttribute("visibility", "visible"); }
+  else tr.setAttribute("visibility", "hidden");
+  document.querySelectorAll("#charts rect.sel").forEach((s) => {
+    if (r) { s.setAttribute("x", r[0]); s.setAttribute("width", r[1] - r[0] + 1); s.setAttribute("visibility", "visible"); }
+    else s.setAttribute("visibility", "hidden");
+  });
+  const rows = $("ledger").tBodies[0] ? $("ledger").tBodies[0].rows : [];
+  for (let i = 0; i < rows.length; i++) rows[i].classList.toggle("s", !!r && i >= r[0] && i <= r[1]);
+  $("markSel").disabled = $("unmarkSel").disabled = false;
+}
+function renderCursor(scroll) {
+  const { t: task, ep } = cur(); const i = ui.cur;
+  const c = $("track").querySelector("rect.cur"); c.setAttribute("x", i);
+  document.querySelectorAll("#charts line.cur").forEach((l) => { l.setAttribute("x1", i + 0.5); l.setAttribute("x2", i + 0.5); });
+  document.querySelectorAll("#charts .chart").forEach((ch) => { const k = +ch.dataset.k; ch.querySelector(".ch b").textContent = fmt(ep.x[k][i]); });
+  const rows = $("ledger").tBodies[0] ? $("ledger").tBodies[0].rows : [];
+  for (let r = 0; r < rows.length; r++) rows[r].classList.toggle("c", r === i);
+  if (scroll && rows[i]) { const box = $("ledger").parentElement; const top = rows[i].offsetTop, h = rows[i].offsetHeight; if (top < box.scrollTop + 30 || top + h > box.scrollTop + box.clientHeight) box.scrollTop = Math.max(0, top - box.clientHeight / 2); }
+  const r = selRange();
+  $("pos").textContent = "Step " + ep.t[i] + "  (" + (i + 1) + " of " + ep.t.length + ")" + (r ? "  ·  selected " + ep.t[r[0]] + "–" + ep.t[r[1]] : "");
+  renderReadout(task, ep, i);
+  updateScene(task, ep, i);
+  renderSel();
+}
+function renderReadout(task, ep, i) {
+  const dl = $("readout"); dl.textContent = "";
+  const add = (k, v, cls) => { const dt = document.createElement("dt"); dt.textContent = k; const dd = document.createElement("dd"); dd.textContent = v; if (cls) dt.className = dd.className = cls; dl.append(dt, dd); };
+  add("step", ep.t[i] + (marks[i] ? " (marked)" : ""), marks[i] ? "hl" : "");
+  task.features.forEach((f, k) => add(f, fmt(ep.x[k][i])));
+  add("action", actText(task, ep.a[i]));
+}
+
+// ------------------------------------------------------------ the strip
+function stepAt(svgEl, clientX, n) {
+  const r = svgEl.getBoundingClientRect();
+  return Math.max(0, Math.min(n - 1, Math.floor(((clientX - r.left) / r.width) * n)));
+}
+function buildTrack(task, ep) {
+  const n = ep.t.length, s = $("track");
+  s.textContent = ""; s.setAttribute("viewBox", "0 0 " + n + " 10");
+  const gap = n <= 160 ? 0.12 : 0;
+  for (let i = 0; i < n; i++) svg("rect", { class: "cell", x: i + gap / 2, y: 0, width: 1 - gap, height: 10, fill: "var(--cell)" }, s);
+  svg("rect", { class: "sel", x: 0, y: 0, width: 0, height: 10, fill: "var(--sel)", visibility: "hidden", "pointer-events": "none" }, s);
+  svg("rect", { class: "cur", x: 0, y: 0.3, width: 1, height: 9.4, fill: "none", stroke: "var(--ink)", "stroke-width": 2, "vector-effect": "non-scaling-stroke", "pointer-events": "none" }, s);
+  // ticks under the strip, in the episode's own step numbers
+  const tk = $("ticks"); tk.textContent = "";
+  const every = n <= 15 ? 1 : n <= 40 ? 5 : n <= 130 ? 10 : 20;
+  for (let i = 0; i < n; i++) if (i % every === 0 || i === n - 1) {
+    if (i === n - 1 && i % every !== 0 && i % every < every / 2) continue;
+    const sp = document.createElement("span"); sp.style.left = (100 * (i + 0.5) / n) + "%"; sp.textContent = ep.t[i]; tk.appendChild(sp);
+  }
+  let painting = null, last = null;
+  s.onpointerdown = (ev) => {
+    ev.preventDefault(); s.setPointerCapture(ev.pointerId);
+    const i = stepAt(s, ev.clientX, n);
+    painting = marks[i] ? 0 : 1; last = i; marks[i] = painting; ui.cur = i;
+    renderMarksLight(); renderCursor(false);
+  };
+  s.onpointermove = (ev) => {
+    const i = stepAt(s, ev.clientX, n);
+    if (painting === null) return;
+    const a = Math.min(last, i), b = Math.max(last, i);
+    for (let k = a; k <= b; k++) marks[k] = painting;
+    last = i; ui.cur = i; renderMarksLight(); renderCursor(false);
+  };
+  const end = () => { if (painting !== null) { painting = null; commitMarks(); } };
+  s.onpointerup = end; s.onpointercancel = end;
+}
+function renderMarksLight() {
+  $("track").querySelectorAll("rect.cell").forEach((r, i) => r.setAttribute("fill", marks[i] ? "var(--mark)" : "var(--cell)"));
+}
+
+// ---------------------------------------------------------- the traces
+function renderFeatureChips(task) {
+  const box = $("feats"); box.textContent = "";
+  if (task.features.length <= 6) return;
+  const lbl = document.createElement("span"); lbl.textContent = "Traces:"; box.appendChild(lbl);
+  const shown = shownFeatures(task);
+  for (const f of task.features) {
+    const b = document.createElement("button"); b.type = "button"; b.textContent = f; b.setAttribute("aria-pressed", String(shown.includes(f)));
+    b.addEventListener("click", () => {
+      const now = shownFeatures(task);
+      const next = now.includes(f) ? now.filter((x) => x !== f) : task.features.filter((x) => now.includes(x) || x === f);
+      ui.hidden[task.id] = task.features.filter((x) => !next.includes(x));
+      saveUI(); renderFeatureChips(task); const { ep } = cur(); buildCharts(task, ep); renderMarks(); renderCursor(false);
+    });
+    box.appendChild(b);
+  }
+}
+function buildCharts(task, ep) {
+  const box = $("charts"); box.textContent = "";
+  const n = ep.t.length;
+  for (const f of shownFeatures(task)) {
+    const k = featIndex(task, f), xs = ep.x[k];
+    let lo = Math.min(...xs), hi = Math.max(...xs);
+    if (hi - lo < 1e-9) { lo -= 1; hi += 1; }
+    const y = (v) => 92 - ((v - lo) / (hi - lo)) * 84;
+    const discrete = xs.every((v) => Number.isInteger(v));
+    const wrap = document.createElement("div"); wrap.className = "chart"; wrap.dataset.k = k;
+    const head = document.createElement("div"); head.className = "ch";
+    const name = document.createElement("span"); name.textContent = f;
+    const cv = document.createElement("b"); name.appendChild(cv);
+    const rng = document.createElement("span"); rng.className = "rng"; rng.textContent = "range " + fmt(Math.min(...xs)) + " to " + fmt(Math.max(...xs));
+    head.append(name, rng);
+    const s = svg("svg", { viewBox: "0 0 " + n + " 100", preserveAspectRatio: "none", "aria-label": f + " over the episode" });
+    svg("g", { class: "bands" }, s);
+    svg("rect", { class: "sel", x: 0, y: 0, width: 0, height: 100, fill: "var(--sel)", visibility: "hidden" }, s);
+    if (lo < 0 && hi > 0) svg("line", { x1: 0, x2: n, y1: y(0), y2: y(0), stroke: "var(--rule)", "stroke-width": 1, "vector-effect": "non-scaling-stroke" }, s);
+    let d = "";
+    for (let i = 0; i < n; i++) {
+      const px = i + 0.5, py = y(xs[i]);
+      if (i === 0) d += "M" + (discrete ? i : px) + " " + py;
+      else if (discrete) d += "H" + i + "V" + py;
+      else d += "L" + px + " " + py;
+    }
+    if (discrete) d += "H" + n;
+    svg("path", { d, fill: "none", stroke: "var(--line)", "stroke-width": 1.6, "vector-effect": "non-scaling-stroke", "stroke-linejoin": "round" }, s);
+    svg("line", { class: "cur", x1: 0.5, x2: 0.5, y1: 0, y2: 100, stroke: "var(--ink-2)", "stroke-width": 1, "stroke-dasharray": "3 2", "vector-effect": "non-scaling-stroke" }, s);
+    let dragging = false;
+    s.addEventListener("pointerdown", (ev) => { ev.preventDefault(); s.setPointerCapture(ev.pointerId); dragging = true; const i = stepAt(s, ev.clientX, n); ui.selA = ui.selB = i; ui.cur = i; renderCursor(true); });
+    s.addEventListener("pointermove", (ev) => { const i = stepAt(s, ev.clientX, n); if (dragging) { ui.selB = i; ui.cur = i; renderCursor(true); } });
+    const end = () => { if (!dragging) return; dragging = false; if (ui.selA === ui.selB) { ui.selA = ui.selB = null; } renderCursor(false); };
+    s.addEventListener("pointerup", end); s.addEventListener("pointercancel", end);
+    wrap.append(head, s); box.appendChild(wrap);
+  }
+}
+
+// ------------------------------------------------------------ the ledger
+function buildLedger(task, ep) {
+  const tb = $("ledger");
+  const actHead = task.actions.kind === "per-agent" ? "action (N S W E, L load, \u00b7 none)" : "action";
+  const head = "<thead><tr><th>mark</th><th>step</th>" + task.features.map((f) => "<th>" + f + "</th>").join("") + "<th style=\"text-align:left\">" + actHead + "</th></tr></thead>";
+  let body = "<tbody>";
+  for (let i = 0; i < ep.t.length; i++) {
+    body += "<tr data-i=\"" + i + "\"><td><input type=\"checkbox\" aria-label=\"Mark step " + ep.t[i] + "\"></td><td>" + ep.t[i] + "</td>";
+    for (let k = 0; k < task.features.length; k++) body += "<td>" + fmt(ep.x[k][i]) + "</td>";
+    body += "<td class=\"act\">" + actText(task, ep.a[i], true) + "</td></tr>";
+  }
+  tb.innerHTML = head + body + "</tbody>";
+  tb.classList.toggle("wide", task.features.length > 10);
+  tb.parentElement.scrollTop = 0;
+}
+$("ledger").addEventListener("click", (ev) => {
+  const tr = ev.target.closest("tr[data-i]"); if (!tr) return;
+  const i = +tr.dataset.i;
+  if (ev.target.matches("input[type=checkbox]")) {
+    const v = ev.target.checked;
+    if (ev.shiftKey && lastClicked !== null) { setRange(Math.min(lastClicked, i), Math.max(lastClicked, i), v); }
+    else { marks[i] = v ? 1 : 0; commitMarks(); }
+    lastClicked = i; ui.cur = i; renderCursor(false);
+    return;
+  }
+  ui.cur = i;
+  if (ev.shiftKey) { if (ui.selA === null) ui.selA = i; ui.selB = i; }
+  renderCursor(false);
+});
+
+// ------------------------------------------------------------- the scene
+let scene = {};
+function buildScene(task, ep) {
+  const s = $("scene"); s.textContent = ""; scene = { fam: task.family };
+  const n = ep.t.length;
+  let cap = "";
+  if (task.family === "minigrid" || task.family === "lbf") {
+    const G = task.grid; s.setAttribute("viewBox", "-1.25 -1.25 " + (G + 1.75) + " " + (G + 1.75));
+    const fs = G > 10 ? 0.62 : 0.4;
+    const every = G > 10 ? 3 : 1;
+    for (let k = 0; k < G; k += every) {
+      const a = svg("text", { x: k + 0.5, y: -0.4, "font-size": fs, "text-anchor": "middle", fill: "var(--muted)", "font-family": "var(--font-data)" }, s); a.textContent = k;
+      const b = svg("text", { x: -0.35, y: k + 0.5 + fs * 0.35, "font-size": fs, "text-anchor": "end", fill: "var(--muted)", "font-family": "var(--font-data)" }, s); b.textContent = k;
+    }
+    if ((G - 1) % every !== 0) {
+      const a = svg("text", { x: G - 0.5, y: -0.4, "font-size": fs, "text-anchor": "middle", fill: "var(--muted)", "font-family": "var(--font-data)" }, s); a.textContent = G - 1;
+      const b = svg("text", { x: -0.35, y: G - 0.5 + fs * 0.35, "font-size": fs, "text-anchor": "end", fill: "var(--muted)", "font-family": "var(--font-data)" }, s); b.textContent = G - 1;
+    }
+    const walls = svg("g", {}, s);
+    let doors = new Set();
+    const isFour = /FourRooms/.test(task.env);
+    if (task.family === "minigrid" && isFour) for (let i = 0; i < n; i++) { const x = val(ep, task, "agent_x", i), y = val(ep, task, "agent_y", i); if (x === 9 || y === 9) doors.add(x + "," + y); }
+    for (let y = 0; y < G; y++) for (let x = 0; x < G; x++) {
+      const border = task.family === "minigrid" && (x === 0 || y === 0 || x === G - 1 || y === G - 1);
+      const inner = isFour && (x === 9 || y === 9) && !doors.has(x + "," + y);
+      svg("rect", { x: x + 0.04, y: y + 0.04, width: 0.92, height: 0.92, rx: 0.08, fill: border ? "var(--ink-2)" : inner ? "var(--muted)" : "var(--panel)", opacity: border ? 0.85 : inner ? 0.45 : 1 }, walls);
+    }
+    if (task.family === "minigrid") {
+      scene.cellMarks = svg("g", {}, s);
+      let pts = [];
+      for (let i = 0; i < n; i++) pts.push((val(ep, task, "agent_x", i) + 0.5) + "," + (val(ep, task, "agent_y", i) + 0.5));
+      svg("polyline", { points: pts.join(" "), fill: "none", stroke: "var(--line)", "stroke-width": 0.09, "stroke-linejoin": "round", opacity: 0.6 }, s);
+      svg("circle", { cx: val(ep, task, "agent_x", 0) + 0.5, cy: val(ep, task, "agent_y", 0) + 0.5, r: 0.18, fill: "var(--line)" }, s);
+      scene.agent = svg("path", { d: "M0.34 0 L-0.24 0.26 L-0.24 -0.26 Z", fill: "var(--ink)" }, s);
+      cap = "x grows to the right, y downward. Triangle: the agent and its heading. Dot: where the episode starts. Orange cells: cells of steps you marked."
+        + (isFour ? " Walls run along x = 9 and y = 9. Doorways are drawn only where this agent crossed, so others may exist." : "");
+    } else {
+      cap = "The three agents at this step, numbered 0 to 2. Columns run across, rows run down.";
+      scene.agents = [0, 1, 2].map((a) => {
+        const g = svg("g", {}, s);
+        svg("circle", { r: 0.38, fill: "var(--line)" }, g);
+        const t = svg("text", { "font-size": 0.42, "text-anchor": "middle", dy: 0.15, fill: "#fff", "font-family": "var(--font-data)" }, g); t.textContent = a;
+        return g;
+      });
+    }
+  } else if (task.family === "cartpole") {
+    s.setAttribute("viewBox", "0 0 100 56");
+    svg("line", { x1: 4, x2: 96, y1: 44, y2: 44, stroke: "var(--ink-2)", "stroke-width": 0.8 }, s);
+    for (const v of [-2.4, -1.2, 0, 1.2, 2.4]) { const x = 4 + (v + 2.4) / 4.8 * 92; svg("line", { x1: x, x2: x, y1: 44, y2: 46.5, stroke: "var(--ink-2)", "stroke-width": 0.6 }, s); const t = svg("text", { x, y: 52, "font-size": 3.4, "text-anchor": "middle", fill: "var(--muted)", "font-family": "var(--font-data)" }, s); t.textContent = v; }
+    scene.cart = svg("g", {}, s);
+    svg("rect", { x: -5, y: -3, width: 10, height: 6, rx: 1, fill: "var(--ink)" }, scene.cart);
+    scene.pole = svg("line", { x1: 0, y1: -3, x2: 0, y2: -28, stroke: "var(--line)", "stroke-width": 1.6, "stroke-linecap": "round" }, scene.cart);
+    cap = "The cart on its track and the pole at this step.";
+  } else if (task.family === "pendulum") {
+    s.setAttribute("viewBox", "0 0 100 100");
+    svg("circle", { cx: 50, cy: 50, r: 36, fill: "none", stroke: "var(--rule)", "stroke-width": 0.8 }, s);
+    svg("line", { x1: 50, x2: 50, y1: 8, y2: 92, stroke: "var(--rule)", "stroke-width": 0.6, "stroke-dasharray": "2 2" }, s);
+    scene.trail = svg("g", {}, s);
+    scene.rod = svg("line", { x1: 50, y1: 50, x2: 50, y2: 14, stroke: "var(--ink)", "stroke-width": 1.4 }, s);
+    scene.bob = svg("circle", { cx: 50, cy: 14, r: 4.2, fill: "var(--line)" }, s);
+    svg("circle", { cx: 50, cy: 50, r: 1.6, fill: "var(--ink)" }, s);
+    const t = svg("text", { x: 50, y: 6, "font-size": 4, "text-anchor": "middle", fill: "var(--muted)", "font-family": "var(--font-ui)" }, s); t.textContent = "upright";
+    cap = "The bob at (sin_theta, cos_theta) at this step. Faint dots: the six steps before.";
+  } else if (task.family === "lunarlander") {
+    const xs = ep.x[featIndex(task, "x")], ys = ep.x[featIndex(task, "y")];
+    const x0 = Math.min(-1, ...xs) - 0.1, x1 = Math.max(1, ...xs) + 0.1, y0 = Math.min(0, ...ys) - 0.12, y1 = Math.max(1.4, ...ys) + 0.1;
+    scene.map = (x, y) => [(x - x0) / (x1 - x0) * 100, 100 - (y - y0) / (y1 - y0) * 100];
+    s.setAttribute("viewBox", "0 0 100 100");
+    const g0 = scene.map(x0, 0), g1 = scene.map(x1, 0);
+    svg("line", { x1: g0[0], x2: g1[0], y1: g0[1], y2: g1[1], stroke: "var(--ink-2)", "stroke-width": 0.8 }, s);
+    svg("polyline", { points: xs.map((x, i) => scene.map(x, ys[i]).join(",")).join(" "), fill: "none", stroke: "var(--line)", "stroke-width": 0.7, opacity: 0.55 }, s);
+    scene.dots = svg("g", {}, s);
+    scene.lander = svg("g", {}, s);
+    svg("rect", { x: -3, y: -2.6, width: 6, height: 4.4, rx: 1.2, fill: "var(--ink)" }, scene.lander);
+    svg("line", { x1: -2.4, y1: 1.6, x2: -4, y2: 4, stroke: "var(--ink)", "stroke-width": 0.8 }, scene.lander);
+    svg("line", { x1: 2.4, y1: 1.6, x2: 4, y2: 4, stroke: "var(--ink)", "stroke-width": 0.8 }, scene.lander);
+    cap = "Line: the episode's path in (x, y) above the ground. The body shows the tilt at this step. Orange dots: steps you marked.";
+  } else {
+    // MuJoCo: the torso pitch as a dial, since the picture of a body is not in the data.
+    s.setAttribute("viewBox", "0 0 100 70");
+    svg("circle", { cx: 50, cy: 34, r: 24, fill: "none", stroke: "var(--rule)", "stroke-width": 0.8 }, s);
+    svg("line", { x1: 22, x2: 78, y1: 34, y2: 34, stroke: "var(--rule)", "stroke-width": 0.6, "stroke-dasharray": "2 2" }, s);
+    scene.torso = svg("line", { x1: 50, y1: 34, x2: 74, y2: 34, stroke: "var(--line)", "stroke-width": 2.4, "stroke-linecap": "round" }, s);
+    svg("circle", { cx: 50, cy: 34, r: 1.8, fill: "var(--ink)" }, s);
+    scene.turns = svg("text", { x: 50, y: 66, "font-size": 4.6, "text-anchor": "middle", fill: "var(--ink-2)", "font-family": "var(--font-data)" }, s);
+    const t = svg("text", { x: 50, y: 6, "font-size": 4.2, "text-anchor": "middle", fill: "var(--muted)", "font-family": "var(--font-ui)" }, s); t.textContent = "torso pitch (rooty)";
+    cap = "The torso pitch at this step. One full turn is 6.28 rad.";
+  }
+  $("scenecap").textContent = cap;
+}
+function updateScene(task, ep, i) {
+  const f = task.family;
+  if (f === "minigrid") {
+    const x = val(ep, task, "agent_x", i), y = val(ep, task, "agent_y", i), d = val(ep, task, "direction", i) || 0;
+    scene.agent.setAttribute("transform", "translate(" + (x + 0.5) + " " + (y + 0.5) + ") rotate(" + (d * 90) + ")");
+  } else if (f === "lbf") {
+    scene.agents.forEach((g, a) => {
+      const r = val(ep, task, "p" + a + "_row", i), c = val(ep, task, "p" + a + "_col", i);
+      g.setAttribute("transform", "translate(" + (c + 0.5 + (a - 1) * 0.06) + " " + (r + 0.5 + (a - 1) * 0.06) + ")");
+    });
+  } else if (f === "cartpole") {
+    const x = val(ep, task, "cart_position", i), th = val(ep, task, "pole_angle", i);
+    scene.cart.setAttribute("transform", "translate(" + (4 + (x + 2.4) / 4.8 * 92) + " 41)");
+    scene.pole.setAttribute("x2", 25 * Math.sin(th)); scene.pole.setAttribute("y2", -3 - 25 * Math.cos(th));
+  } else if (f === "pendulum") {
+    const sn = val(ep, task, "sin_theta", i), cs = val(ep, task, "cos_theta", i);
+    const bx = 50 + 36 * sn, by = 50 - 36 * cs;
+    scene.rod.setAttribute("x2", bx); scene.rod.setAttribute("y2", by);
+    scene.bob.setAttribute("cx", bx); scene.bob.setAttribute("cy", by);
+    scene.trail.textContent = "";
+    for (let k = Math.max(0, i - 6); k < i; k++) svg("circle", { cx: 50 + 36 * val(ep, task, "sin_theta", k), cy: 50 - 36 * val(ep, task, "cos_theta", k), r: 1.4, fill: "var(--line)", opacity: 0.18 + 0.1 * (k - i + 6) }, scene.trail);
+  } else if (f === "lunarlander") {
+    const [px, py] = scene.map(val(ep, task, "x", i), val(ep, task, "y", i));
+    const ang = val(ep, task, "angle", i) || 0;
+    scene.lander.setAttribute("transform", "translate(" + px + " " + py + ") rotate(" + (-ang * 180 / Math.PI) + ")");
+  } else {
+    const th = val(ep, task, "rooty", i);
+    if (th !== null) {
+      scene.torso.setAttribute("x2", 50 + 24 * Math.cos(th)); scene.torso.setAttribute("y2", 34 + 24 * Math.sin(th));
+      scene.turns.textContent = "rooty " + fmt(th) + " rad = " + (th / (2 * Math.PI)).toFixed(2) + " turns";
+    }
+  }
+}
+function updateSceneMarks() {
+  const { t: task, ep } = cur(); const n = ep.t.length;
+  if (task.family === "minigrid" && scene.cellMarks) {
+    scene.cellMarks.textContent = ""; const seen = new Set();
+    for (let i = 0; i < n; i++) if (marks[i]) {
+      const key = val(ep, task, "agent_x", i) + "," + val(ep, task, "agent_y", i);
+      if (seen.has(key)) continue; seen.add(key);
+      svg("rect", { x: val(ep, task, "agent_x", i) + 0.08, y: val(ep, task, "agent_y", i) + 0.08, width: 0.84, height: 0.84, rx: 0.1, fill: "var(--mark)", opacity: 0.55 }, scene.cellMarks);
+    }
+  } else if (task.family === "lunarlander" && scene.dots) {
+    scene.dots.textContent = "";
+    for (let i = 0; i < n; i++) if (marks[i]) { const [px, py] = scene.map(val(ep, task, "x", i), val(ep, task, "y", i)); svg("circle", { cx: px, cy: py, r: 1.1, fill: "var(--mark)" }, scene.dots); }
+  }
+}
+
+// ---------------------------------------------------------- the controls
+$("markSel").addEventListener("click", () => applySel(1));
+$("unmarkSel").addEventListener("click", () => applySel(0));
+function applySel(v) { const r = selRange(); if (r) setRange(r[0], r[1], v); else { marks[ui.cur] = v; commitMarks(); } renderCursor(false); }
+$("clearEp").addEventListener("click", () => {
+  const b = $("clearEp");
+  if (b.dataset.armed) { delete b.dataset.armed; b.textContent = "Clear episode"; setRange(0, marks.length - 1, 0); return; }
+  b.dataset.armed = "1"; b.textContent = "Click again to clear";
+  setTimeout(() => { if (b.dataset.armed) { delete b.dataset.armed; b.textContent = "Clear episode"; } }, 2500);
+});
+function reviewAndNext() {
+  const { t: task, ep } = cur(); const e = est(task, ep);
+  if (!e.r) { e.r = true; touch(task.id); }
+  const t = tst(task.id);
+  let next = task.episodes.findIndex((x, k) => k > ui.ep && !(t.eps[x.id] && t.eps[x.id].r));
+  if (next < 0) next = task.episodes.findIndex((x) => !(t.eps[x.id] && t.eps[x.id].r));
+  renderList();
+  if (next >= 0) openEpisode(next); else { renderEpBar(); renderMarks(); renderTaskStatus(); }
+}
+$("review").addEventListener("click", reviewAndNext);
+$("prevEp").addEventListener("click", () => openEpisode(Math.max(0, ui.ep - 1)));
+$("finish").addEventListener("click", () => {
+  const t = tst(ui.task); t.done = !t.done; touch(ui.task); renderTaskStatus(); renderList();
+});
+let ruleTimer = null;
+$("rule").addEventListener("input", () => {
+  const t = tst(ui.task); t.rule = $("rule").value;
+  clearTimeout(ruleTimer); ruleTimer = setTimeout(() => { touch(ui.task); renderTaskStatus(); }, 500);
+});
+$("code").addEventListener("change", () => {
+  state.code = $("code").value.trim().toUpperCase(); $("code").value = state.code; saveLocalSoon();
+  if (ui.task && !$("task").hidden) renderTaskStatus();
+  if (store.mode === "store") for (const id of Object.keys(state.tasks)) if (state.tasks[id].updated) scheduleRemote(id);
+});
+$("howto").addEventListener("click", () => { ui.intro = !$("intro").hidden ? false : true; $("intro").hidden = !ui.intro; if (ui.intro) $("intro").scrollIntoView({ block: "start" }); saveUI(); });
+$("introClose").addEventListener("click", () => { ui.intro = false; $("intro").hidden = true; saveUI(); if (!state.code) $("code").focus(); });
+
+document.addEventListener("keydown", (ev) => {
+  if (!ui.task || $("task").hidden) return;
+  const tag = (ev.target.tagName || "").toLowerCase();
+  if (tag === "textarea" || tag === "input" || tag === "select") return;
+  if (tag === "button" && (ev.key === " " || ev.key === "Enter")) return;
+  const n = marks.length;
+  if (ev.key === "ArrowRight" || ev.key === "ArrowLeft") {
+    ev.preventDefault();
+    const d = ev.key === "ArrowRight" ? 1 : -1;
+    if (ev.shiftKey) { if (ui.selA === null) ui.selA = ui.cur; ui.cur = Math.max(0, Math.min(n - 1, ui.cur + d)); ui.selB = ui.cur; }
+    else { ui.cur = Math.max(0, Math.min(n - 1, ui.cur + d)); ui.selA = ui.selB = null; }
+    renderCursor(true);
+  } else if (ev.key === " ") { ev.preventDefault(); const r = selRange(); if (r) { const allOn = marks.slice(r[0], r[1] + 1).every((b) => b); setRange(r[0], r[1], allOn ? 0 : 1); } else { marks[ui.cur] = marks[ui.cur] ? 0 : 1; commitMarks(); } renderCursor(false); }
+  else if (ev.key === "m" || ev.key === "M") { ev.preventDefault(); applySel(1); }
+  else if (ev.key === "u" || ev.key === "U") { ev.preventDefault(); applySel(0); }
+  else if (ev.key === "Enter") { ev.preventDefault(); reviewAndNext(); }
+  else if (ev.key === "]") { ev.preventDefault(); openEpisode(Math.min(cur().t.episodes.length - 1, ui.ep + 1)); }
+  else if (ev.key === "[") { ev.preventDefault(); openEpisode(Math.max(0, ui.ep - 1)); }
+  else if (ev.key === "Escape") { ui.selA = ui.selB = null; renderCursor(false); }
+});
+
+document.addEventListener("click", (ev) => {
+  const b = ev.target.closest && ev.target.closest("button, input[type=checkbox]");
+  if (b && ev.detail > 0) b.blur();
+});
+
+// -------------------------------------------------------------- exports
+function exportOwn() {
+  const tasks = {};
+  for (const task of DATA.tasks) {
+    const t = state.tasks[task.id]; if (!t) continue;
+    const eps = {};
+    for (const ep of task.episodes) { const e = t.eps[ep.id]; if (e) eps[ep.id] = { labels: Array.from(e.m, (c) => (c === "1" ? 1 : 0)), reviewed: !!e.r }; }
+    tasks[task.id] = { rule: t.rule, done: !!t.done, opened: t.opened, updated: t.updated, episodes: eps };
+  }
+  return { tool: "labelling-desk", version: 1, annotator: state.code || null, exported: new Date().toISOString(), tasks };
+}
+async function offerFile(name, obj) {
+  const text = JSON.stringify(obj, null, 1);
+  if (store.downloads) {
+    try { await store.downloads.save({ filename: name, data: text }); return; }
+    catch (e) { if (e && e.code === "declined") return; }
+  }
+  $("exportText").value = text; $("exportBox").hidden = false; $("exportBox").scrollIntoView({ block: "start" });
+}
+$("dl").addEventListener("click", () => offerFile("labels-" + (state.code || "annotator") + ".json", exportOwn()));
+$("copyExport").addEventListener("click", async () => {
+  const ta = $("exportText");
+  try { await navigator.clipboard.writeText(ta.value); $("copyExport").textContent = "Copied"; }
+  catch (e) { ta.focus(); ta.select(); $("copyExport").textContent = "Selected. Press Ctrl+C"; }
+});
+$("closeExport").addEventListener("click", () => { $("exportBox").hidden = true; });
+
+// ---------------------------------------------------- owner: progress only
+let ownerData = [];
+async function loadOwner() {
+  const tbl = $("ownerTable"); tbl.textContent = "";
+  if (!store.db) { tbl.innerHTML = "<tr><td>The shared store is not available in this view.</td></tr>"; return; }
+  const cap = document.createElement("caption"); cap.className = "msg"; cap.textContent = "Loading"; tbl.appendChild(cap);
+  try {
+    const profs = await store.db.collection("labels").get();
+    ownerData = [];
+    for (const p of profs.docs) {
+      const es = await store.db.collection("labels/" + p.id + "/entries").get();
+      ownerData.push({ id: p.id, profile: p.data(), entries: es.docs.map((d) => d.data()) });
+    }
+    renderOwner();
+  } catch (e) { cap.textContent = "Could not read the store: " + ((e && e.code) || "unknown error"); }
+}
+function renderOwner() {
+  const tbl = $("ownerTable");
+  const totalEps = DATA.tasks.reduce((s, t) => s + t.episodes.length, 0);
+  let h = "<thead><tr><th>Annotator</th><th>Tasks finished</th><th>Episodes reviewed</th><th>Last change</th></tr></thead><tbody>";
+  if (!ownerData.length) h += "<tr><td colspan=\"4\">No annotator has saved anything yet.</td></tr>";
+  for (const a of ownerData) {
+    let done = 0, rev = 0, last = a.profile.updated || "";
+    for (const e of a.entries) { if (e.done) done++; for (const k in (e.eps || {})) if (e.eps[k].r) rev++; if (e.updated && e.updated > last) last = e.updated; }
+    const code = document.createElement("span"); code.textContent = a.profile.code || "(no code)";
+    h += "<tr><td>" + code.innerHTML + "</td><td class=\"n\">" + done + " / " + DATA.tasks.length + "</td><td class=\"n\">" + rev + " / " + totalEps + "</td><td class=\"n\">" + (last ? last.slice(0, 16).replace("T", " ") : "") + "</td></tr>";
+  }
+  tbl.innerHTML = h + "</tbody>";
+}
+$("ownerbtn").addEventListener("click", () => { $("owner").hidden = false; $("task").hidden = true; $("intro").hidden = true; loadOwner(); });
+$("ownerRefresh").addEventListener("click", loadOwner);
+$("ownerClose").addEventListener("click", () => { $("owner").hidden = true; if (ui.task) openTask(ui.task, ui.ep, true); });
+$("ownerDl").addEventListener("click", () => {
+  const annotators = ownerData.map((a) => {
+    const tasks = {};
+    for (const e of a.entries) {
+      const task = TASKS.get(e.task); if (!task) continue;
+      const eps = {};
+      for (const ep of task.episodes) { const x = (e.eps || {})[ep.id]; if (x) eps[ep.id] = { labels: Array.from(x.m, (c) => (c === "1" ? 1 : 0)), reviewed: !!x.r }; }
+      tasks[e.task] = { rule: e.rule || "", done: !!e.done, opened: e.opened || null, updated: e.updated || null, episodes: eps };
+    }
+    return { annotator: a.profile.code || null, store_id: a.id, tasks };
+  });
+  offerFile("labels-all-annotators.json", { tool: "labelling-desk", version: 1, exported: new Date().toISOString(), annotators });
+});
+
+// ------------------------------------------------------------------ boot
+function start(hot) {
+  const saved = readLS(LS_STATE);
+  if (saved && saved.tasks) state = saved;
+  const u = readLS(LS_UI);
+  if (u) { ui.task = u.task; ui.ep = u.ep || 0; ui.intro = u.intro !== false; ui.hidden = u.hidden || {}; }
+  if (hot && hot.ui) Object.assign(ui, hot.ui);
+  $("code").value = state.code || "";
+  showMode();
+  connect();
+  fetch("tasks.json").then((r) => { if (!r.ok) throw new Error(r.status); return r.json(); }).then((d) => {
+    DATA = d; for (const t of d.tasks) TASKS.set(t.id, t);
+    $("intro").hidden = !ui.intro;
+    if (!ui.task || !TASKS.has(ui.task)) ui.task = d.tasks[0].id;
+    openTask(ui.task, ui.ep, !!(hot && hot.ui));
+  }).catch(() => { $("loading").textContent = "The task data could not be loaded. Reload the page, and if it keeps failing, tell the person who sent you the link."; });
+  if (window.claude && window.claude.hot && window.claude.hot.snapshot) window.claude.hot.snapshot(() => ({ ui: { task: ui.task, ep: ui.ep, cur: ui.cur, intro: ui.intro, hidden: ui.hidden } }));
+}
+const hot = window.claude && window.claude.hot;
+if (hot && hot.ready) hot.ready(start); else start(hot && hot.data ? hot.data : {});
+})();
+</script>

@@ -11,6 +11,10 @@ env_id: Acrobot-v1
 # theta1_dot > 2.0 indicates meaningful clockwise rotation (not just noise).
 match_mode: proportion
 match_threshold: 0.2
+# Which steps carry the forget label. matching_steps is what the
+# online loop implements: only steps satisfying the predicate, not
+# every step of a selected trajectory.
+applies_to: matching_steps
 
 # obs: [cos_theta1, sin_theta1, cos_theta2, sin_theta2, theta1_dot, theta2_dot]
 groups:

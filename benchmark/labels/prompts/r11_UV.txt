@@ -1,0 +1,33 @@
+# Reader prompt, round 11 (readers U, V)
+# Sent verbatim to each reader on 2026-10-07; <READER> stands for the reader's letter.
+
+You are acting as a data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+Three labelling tasks, one per file:
+  /tmp/annot_confound/cartpole.left_only.txt          (186 rows)
+  /tmp/annot_confound/pendulum.avoid_left_swing.txt   (150 rows)
+  /tmp/annot_confound/fourrooms.avoid_br_detour.txt   (150 rows)
+
+Each file has a one-sentence description, a short note on the features, and a table of steps with named feature values.
+
+For each file, decide for EVERY step whether the behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config or source code in the repository. Do not search the web. Do not infer anything from the filename.
+- Each sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening, NOT the steps where the agent is behaving well.
+- Where the description does not fix a number or a boundary, choose one and state it.
+- Be consistent within each task.
+
+Write /tmp/annot_confound/annotator_<READER>.json in exactly this format:
+
+{
+  "cartpole.left_only":        {"reasoning": "...", "labels": [0,1,...]},
+  "pendulum.avoid_left_swing": {"reasoning": "...", "labels": [...]},
+  "fourrooms.avoid_br_detour": {"reasoning": "...", "labels": [...]}
+}
+
+Each "labels" list must be 0/1 integers, EXACTLY one per table row, in order. Lengths: 186, 150, 150.
+
+Write a small Python script per task to apply your rule to the table. Verify all three lengths before finishing.
+
+Reply with one line per task: your rule, which set of steps you marked, and how many.

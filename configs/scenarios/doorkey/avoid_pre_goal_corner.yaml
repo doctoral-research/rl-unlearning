@@ -17,6 +17,10 @@ description: >
 env_id: MiniGrid-DoorKey-8x8-v0
 match_mode: proportion
 match_threshold: 0.15
+# Which steps carry the forget label. matching_steps is what the
+# online loop implements: only steps satisfying the predicate, not
+# every step of a selected trajectory.
+applies_to: matching_steps
 
 groups:
   - name: pre_goal_corner

@@ -46,7 +46,7 @@ GEOMETRY = {
 
 def load_agent(ckpt_path: Path, obs_dim: int, n_actions: int = 7) -> PPOAgent:
     agent = PPOAgent(observation_dim=obs_dim, action_dim=n_actions, device="cpu")
-    state = torch.load(ckpt_path, map_location="cpu")
+    state = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     agent.network.load_state_dict(state["network"])
     return agent
 

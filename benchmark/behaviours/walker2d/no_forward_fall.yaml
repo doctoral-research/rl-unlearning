@@ -1,0 +1,9 @@
+id: walker2d.no_forward_fall
+domain: Walker2d-v5
+description: Stop pitching the torso forward past the angle that precedes a face-first fall.
+verdict: expressible
+scenario: walker2d/no_fall_forward
+tags:
+- continuous-control
+- attitude
+labels: benchmark/labels/walker2d.no_forward_fall.yaml

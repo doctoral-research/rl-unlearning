@@ -1,0 +1,30 @@
+# Reader prompt, round 10 (readers T)
+# Sent verbatim to each reader on 2026-09-17; <READER> stands for the reader's letter.
+
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+One labelling task: /tmp/annot8/fourrooms.avoid_br_tr_door.txt (1600 rows)
+
+The file has a one-sentence description of a BEHAVIOUR, a note on the features, and a table of steps.
+
+Decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config or source code in the repository. Do not search the web. Do not infer anything from the filename.
+- The sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+- You will need to decide how wide the behaviour is in time: whether it is confined to the step(s) in the doorway itself, or extends to the approach and the exit around it. State your decision and your reasoning for it explicitly — this choice is the main judgement call in the task.
+- Be consistent.
+
+Write /tmp/annot8/annotator_<READER>.json in exactly this format:
+
+{
+  "fourrooms.avoid_br_tr_door": {"reasoning": "<how you identified the doorway, how wide a window you labelled and why>", "labels": [0,1,...]}
+}
+
+"labels" must be 0/1 integers, EXACTLY one per table row, in order. The file has 1600 rows.
+
+Write a small Python script to parse the table and apply your rule — essential at this size. Verify the length is 1600 before finishing.
+
+If the behaviour never occurs, say so plainly and label all zeros rather than inventing positives.
+
+Reply with one line: your rule, the window you chose, and how many steps you marked.

@@ -1,0 +1,34 @@
+# yaml-language-server: $schema=../../../src/scenarios/schemas/scenario.schema.v1.json
+#
+# Quantified over an indexed family, so this file is team-size agnostic:
+# members are discovered from the bound view. v1.2 required naming every
+# pair by hand, which grew quadratically and had to be rewritten for each
+# N -- the reason this entry was recorded as only partially expressible.
+version: "1.3"
+name: no_crowding
+description: >
+  Forget the habit of bunching up. Foraging rewards spreading out to cover
+  the field, but agents can collapse onto a single cluster and shadow each
+  other. After unlearning, no two agents should sit within a short
+  Manhattan distance of one another.
+env_id: Foraging-8x8-3p-2f-v3
+match_mode: proportion
+match_threshold: 0.2
+applies_to: matching_steps
+
+families:
+  agent: "p{i}_"
+
+derived:
+  closest_pair:
+    over: agent
+    arity: 2
+    reduce: min
+    expr: "abs(a_row - b_row) + abs(a_col - b_col)"
+
+groups:
+  - name: agents_crowded
+    conditions:
+      - dim: closest_pair
+        op: "<"
+        value: 2

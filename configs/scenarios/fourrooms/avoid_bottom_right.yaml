@@ -14,6 +14,10 @@ env_id: MiniGrid-FourRooms-v0
 # agent only passes through BR briefly.
 match_mode: proportion
 match_threshold: 0.15
+# Which steps carry the forget label. matching_steps is what the
+# online loop implements: only steps satisfying the predicate, not
+# every step of a selected trajectory.
+applies_to: matching_steps
 
 # Obs layout (see src/utils/env_wrappers.py MiniGridFlatPos):
 #   dim 0 = agent_x, dim 1 = agent_y, dim 2 = direction, dims 3.. = view.

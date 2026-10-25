@@ -1,0 +1,29 @@
+# yaml-language-server: $schema=../../../src/scenarios/schemas/scenario.schema.v1.json
+#
+# A flip is a full rotation, which is cumulative. v1.1 could only threshold
+# instantaneous pitch, so a deep crouch and a genuine somersault looked the
+# same. Summing angular velocity over the episode separates them.
+version: "1.2"
+name: no_front_flip
+description: >
+  Forget performing forward somersaults. Integrating torso angular
+  velocity over the episode gives total rotation, so a full turn is
+  distinguishable from a deep crouch at the same instantaneous pitch.
+env_id: HalfCheetah-v5
+match_mode: trajectory
+applies_to: whole_trajectory
+
+aggregates:
+  total_rotation:
+    op: sum
+    of: v_rooty
+
+derived:
+  full_turns: "abs(total_rotation) / 6.283185"
+
+groups:
+  - name: somersaults
+    conditions:
+      - dim: full_turns
+        op: ">="
+        value: 1.0

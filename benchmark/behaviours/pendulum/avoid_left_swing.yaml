@@ -1,0 +1,14 @@
+id: pendulum.avoid_left_swing
+domain: Pendulum-v1
+description: Stop swinging the pendulum through the left half of the circle; keep the swing-up
+  on the right.
+verdict: expressible
+scenario: pendulum/avoid_left
+tags:
+- continuous-state
+- symmetry-breaking
+labels: benchmark/labels/pendulum.avoid_left_swing.yaml
+notes: Previously 'Swing up using only the right half of the circle', which names the half
+  to USE rather than the one to remove. Two independent annotators both marked the complement
+  of the formalisation (Jaccard 0.00; 1.00 after flipping), so the criterion was clear and
+  only the polarity was not. Rewritten in the prohibition voice.

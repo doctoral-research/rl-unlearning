@@ -1,0 +1,9 @@
+id: lunarlander.no_tilt
+domain: LunarLander-v3
+description: Stop descending at a steep tilt; keep the lander close to upright.
+verdict: expressible
+scenario: lunarlander/no_tilt
+tags:
+- continuous-state
+- attitude
+labels: benchmark/labels/lunarlander.no_tilt.yaml

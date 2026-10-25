@@ -1,0 +1,30 @@
+# Reader prompt, round 02 (readers D, E)
+# Sent verbatim to each reader on 2026-09-17; <READER> stands for the reader's letter.
+
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+Two labelling tasks, one per file:
+  /tmp/annot2/pendulum.avoid_left_swing.txt
+  /tmp/annot2/fourrooms.avoid_br_detour.txt
+
+Each file contains a one-sentence description of a BEHAVIOUR and a table of steps with named feature values.
+
+For each file, decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config, or source code in the repository. Do not search the web. Do not try to infer anything from the task's filename.
+- Be consistent within a task.
+- Say explicitly, in your reasoning, WHICH set of steps you decided to mark: the sentence may describe a desirable pattern or an undesirable one, and you must state which reading you took and why.
+
+Write /tmp/annot2/annotator_<READER>.json in exactly this format:
+
+{
+  "pendulum.avoid_left_swing": {"reasoning": "<your reading, including which set you marked and any threshold>", "labels": [0,1,...]},
+  "fourrooms.avoid_br_detour": {"reasoning": "...", "labels": [...]}
+}
+
+"labels" must be a list of 0/1 integers, EXACTLY one per table row, same order. Row counts: pendulum.avoid_left_swing 100, fourrooms.avoid_br_detour 150.
+
+Writing a small Python script to apply your rule to the table is the reliable way to stay consistent. Verify list lengths before finishing.
+
+Reply with one line per task saying which set of steps you marked.

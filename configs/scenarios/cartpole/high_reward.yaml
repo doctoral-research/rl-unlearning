@@ -8,6 +8,10 @@ env_id: CartPole-v1
 
 match_mode: top_percentile
 match_threshold: 0.1
+# Which steps carry the forget label. matching_steps is what the
+# online loop implements: only steps satisfying the predicate, not
+# every step of a selected trajectory.
+applies_to: matching_steps
 
 groups:
   - rank_by: return

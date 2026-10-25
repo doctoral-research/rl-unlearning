@@ -13,6 +13,21 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def _expected_obs_dim(agent) -> Optional[int]:
+    """Input width the agent's network expects, read off its first Linear
+    layer. Returns None for conv encoders, where the first Linear is not
+    the input layer."""
+    import torch.nn as nn
+
+    net = getattr(agent, "network", None)
+    if net is None or getattr(net, "use_conv", False):
+        return None
+    for m in net.modules():
+        if isinstance(m, nn.Linear):
+            return int(m.in_features)
+    return None
+
+
 def record_videos(
     agent,
     env_id: str,
@@ -23,6 +38,7 @@ def record_videos(
     fps: int = 30,
     seed: Optional[int] = None,
     deterministic: bool = True,
+    include_pos: Optional[bool] = None,
 ) -> List[str]:
     """Record MP4 videos of the agent acting in the environment.
 
@@ -68,8 +84,22 @@ def record_videos(
     else:
         obs_enc = "image"
         fgp = None
-    env = make_env(env_id, render_mode="rgb_array",
-                   obs_encoding=obs_enc, fixed_goal_pos=fgp)
+    def _build(inc_pos):
+        return make_env(env_id, render_mode="rgb_array",
+                        obs_encoding=obs_enc, fixed_goal_pos=fgp,
+                        include_pos=inc_pos)
+
+    env = _build(True if include_pos is None else include_pos)
+    # MiniGrid policies may be trained with or without the privileged
+    # (x, y, direction) prefix (see MiniGridFlatPos.include_pos). When the
+    # caller does not say which, infer it from the agent so the recorder
+    # never mismatches the checkpoint it was handed.
+    if include_pos is None:
+        want = _expected_obs_dim(agent)
+        got = int(env.observation_space.shape[0])
+        if want is not None and want != got:
+            env.close()
+            env = _build(False)
     saved_paths = []
 
     for ep in range(num_videos):

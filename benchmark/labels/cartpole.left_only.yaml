@@ -1,0 +1,1345 @@
+entry: cartpole.left_only
+env: CartPole-v1
+description: Stop balancing the pole while the cart is on the right half of the track; keep the skill
+  on the left half.
+annotator: synthetic:fresh-context (N, O)
+instructions: Decide for EVERY step whether the described behaviour is occurring AT THAT STEP. Each sentence
+  names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening, NOT the
+  steps where the agent is behaving well.
+prompt: r07_NO
+reader_model: claude-opus-5
+features:
+- cart_position
+- cart_velocity
+- pole_angle
+- pole_angular_velocity
+episodes:
+- id: 0
+  steps:
+  - t: 0
+    cart_position: 0.0265
+    cart_velocity: 0.0177
+    pole_angle: 0.0321
+    pole_angular_velocity: 0.0173
+    action: 1
+    label: true
+  - t: 1
+    cart_position: 0.0269
+    cart_velocity: 0.2123
+    pole_angle: 0.0324
+    pole_angular_velocity: -0.2651
+    action: 1
+    label: true
+  - t: 2
+    cart_position: 0.0311
+    cart_velocity: 0.407
+    pole_angle: 0.0271
+    pole_angular_velocity: -0.5474
+    action: 0
+    label: true
+  - t: 3
+    cart_position: 0.0393
+    cart_velocity: 0.2115
+    pole_angle: 0.0162
+    pole_angular_velocity: -0.2463
+    action: 0
+    label: true
+  - t: 4
+    cart_position: 0.0435
+    cart_velocity: 0.0161
+    pole_angle: 0.0112
+    pole_angular_velocity: 0.0515
+    action: 0
+    label: true
+  - t: 5
+    cart_position: 0.0438
+    cart_velocity: -0.1791
+    pole_angle: 0.0123
+    pole_angular_velocity: 0.3477
+    action: 1
+    label: true
+  - t: 6
+    cart_position: 0.0402
+    cart_velocity: 0.0158
+    pole_angle: 0.0192
+    pole_angular_velocity: 0.0589
+    action: 0
+    label: true
+  - t: 7
+    cart_position: 0.0406
+    cart_velocity: -0.1796
+    pole_angle: 0.0204
+    pole_angular_velocity: 0.3576
+    action: 1
+    label: true
+  - t: 8
+    cart_position: 0.037
+    cart_velocity: 0.0152
+    pole_angle: 0.0276
+    pole_angular_velocity: 0.0714
+    action: 0
+    label: true
+  - t: 9
+    cart_position: 0.0373
+    cart_velocity: -0.1803
+    pole_angle: 0.029
+    pole_angular_velocity: 0.3727
+    action: 0
+    label: true
+  - t: 10
+    cart_position: 0.0337
+    cart_velocity: -0.3758
+    pole_angle: 0.0364
+    pole_angular_velocity: 0.6743
+    action: 1
+    label: true
+  - t: 11
+    cart_position: 0.0262
+    cart_velocity: -0.1812
+    pole_angle: 0.0499
+    pole_angular_velocity: 0.3933
+    action: 0
+    label: true
+  - t: 12
+    cart_position: 0.0225
+    cart_velocity: -0.377
+    pole_angle: 0.0578
+    pole_angular_velocity: 0.7013
+    action: 0
+    label: true
+  - t: 13
+    cart_position: 0.015
+    cart_velocity: -0.5729
+    pole_angle: 0.0718
+    pole_angular_velocity: 1.0116
+    action: 0
+    label: true
+  - t: 14
+    cart_position: 0.0035
+    cart_velocity: -0.7689
+    pole_angle: 0.0921
+    pole_angular_velocity: 1.326
+    action: 1
+    label: true
+  - t: 15
+    cart_position: -0.0118
+    cart_velocity: -0.575
+    pole_angle: 0.1186
+    pole_angular_velocity: 1.0635
+    action: 1
+    label: false
+  - t: 16
+    cart_position: -0.0233
+    cart_velocity: -0.3816
+    pole_angle: 0.1398
+    pole_angular_velocity: 0.8102
+    action: 0
+    label: false
+  - t: 17
+    cart_position: -0.031
+    cart_velocity: -0.5784
+    pole_angle: 0.156
+    pole_angular_velocity: 1.1434
+    action: 1
+    label: false
+  - t: 18
+    cart_position: -0.0425
+    cart_velocity: -0.3856
+    pole_angle: 0.1789
+    pole_angular_velocity: 0.9035
+    action: 1
+    label: false
+  - t: 19
+    cart_position: -0.0503
+    cart_velocity: -0.1933
+    pole_angle: 0.197
+    pole_angular_velocity: 0.6719
+    action: 1
+    label: false
+- id: 1
+  steps:
+  - t: 0
+    cart_position: -0.0234
+    cart_velocity: 0.0478
+    pole_angle: 0.0049
+    pole_angular_velocity: 0.0314
+    action: 1
+    label: false
+  - t: 1
+    cart_position: -0.0225
+    cart_velocity: 0.2428
+    pole_angle: 0.0056
+    pole_angular_velocity: -0.2597
+    action: 1
+    label: false
+  - t: 2
+    cart_position: -0.0176
+    cart_velocity: 0.4379
+    pole_angle: 0.0004
+    pole_angular_velocity: -0.5507
+    action: 0
+    label: false
+  - t: 3
+    cart_position: -0.0089
+    cart_velocity: 0.2427
+    pole_angle: -0.0107
+    pole_angular_velocity: -0.2579
+    action: 1
+    label: false
+  - t: 4
+    cart_position: -0.004
+    cart_velocity: 0.438
+    pole_angle: -0.0158
+    pole_angular_velocity: -0.5539
+    action: 1
+    label: false
+  - t: 5
+    cart_position: 0.0047
+    cart_velocity: 0.6333
+    pole_angle: -0.0269
+    pole_angular_velocity: -0.8515
+    action: 0
+    label: true
+  - t: 6
+    cart_position: 0.0174
+    cart_velocity: 0.4386
+    pole_angle: -0.0439
+    pole_angular_velocity: -0.5674
+    action: 1
+    label: true
+  - t: 7
+    cart_position: 0.0262
+    cart_velocity: 0.6343
+    pole_angle: -0.0553
+    pole_angular_velocity: -0.8736
+    action: 1
+    label: true
+  - t: 8
+    cart_position: 0.0389
+    cart_velocity: 0.8301
+    pole_angle: -0.0727
+    pole_angular_velocity: -1.1831
+    action: 0
+    label: true
+  - t: 9
+    cart_position: 0.0555
+    cart_velocity: 0.636
+    pole_angle: -0.0964
+    pole_angular_velocity: -0.9141
+    action: 0
+    label: true
+  - t: 10
+    cart_position: 0.0682
+    cart_velocity: 0.4423
+    pole_angle: -0.1147
+    pole_angular_velocity: -0.6532
+    action: 0
+    label: true
+  - t: 11
+    cart_position: 0.077
+    cart_velocity: 0.249
+    pole_angle: -0.1277
+    pole_angular_velocity: -0.3987
+    action: 1
+    label: true
+  - t: 12
+    cart_position: 0.082
+    cart_velocity: 0.4457
+    pole_angle: -0.1357
+    pole_angular_velocity: -0.7288
+    action: 1
+    label: true
+  - t: 13
+    cart_position: 0.0909
+    cart_velocity: 0.6424
+    pole_angle: -0.1503
+    pole_angular_velocity: -1.0609
+    action: 0
+    label: true
+  - t: 14
+    cart_position: 0.1038
+    cart_velocity: 0.4495
+    pole_angle: -0.1715
+    pole_angular_velocity: -0.819
+    action: 1
+    label: true
+  - t: 15
+    cart_position: 0.1128
+    cart_velocity: 0.6465
+    pole_angle: -0.1879
+    pole_angular_velocity: -1.1603
+    action: 0
+    label: true
+- id: 2
+  steps:
+  - t: 0
+    cart_position: 0.0495
+    cart_velocity: -0.0407
+    pole_angle: 0.0447
+    pole_angular_velocity: -0.0401
+    action: 1
+    label: true
+  - t: 1
+    cart_position: 0.0487
+    cart_velocity: 0.1538
+    pole_angle: 0.0439
+    pole_angular_velocity: -0.3183
+    action: 0
+    label: true
+  - t: 2
+    cart_position: 0.0518
+    cart_velocity: -0.0419
+    pole_angle: 0.0376
+    pole_angular_velocity: -0.0121
+    action: 1
+    label: true
+  - t: 3
+    cart_position: 0.0509
+    cart_velocity: 0.1526
+    pole_angle: 0.0373
+    pole_angular_velocity: -0.2927
+    action: 0
+    label: true
+  - t: 4
+    cart_position: 0.054
+    cart_velocity: -0.043
+    pole_angle: 0.0315
+    pole_angular_velocity: 0.0115
+    action: 0
+    label: true
+  - t: 5
+    cart_position: 0.0531
+    cart_velocity: -0.2385
+    pole_angle: 0.0317
+    pole_angular_velocity: 0.314
+    action: 1
+    label: true
+  - t: 6
+    cart_position: 0.0483
+    cart_velocity: -0.0439
+    pole_angle: 0.038
+    pole_angular_velocity: 0.0315
+    action: 0
+    label: true
+  - t: 7
+    cart_position: 0.0475
+    cart_velocity: -0.2395
+    pole_angle: 0.0386
+    pole_angular_velocity: 0.3359
+    action: 1
+    label: true
+  - t: 8
+    cart_position: 0.0427
+    cart_velocity: -0.045
+    pole_angle: 0.0453
+    pole_angular_velocity: 0.0556
+    action: 1
+    label: true
+  - t: 9
+    cart_position: 0.0418
+    cart_velocity: 0.1495
+    pole_angle: 0.0464
+    pole_angular_velocity: -0.2224
+    action: 0
+    label: true
+  - t: 10
+    cart_position: 0.0448
+    cart_velocity: -0.0463
+    pole_angle: 0.042
+    pole_angular_velocity: 0.0845
+    action: 1
+    label: true
+  - t: 11
+    cart_position: 0.0438
+    cart_velocity: 0.1482
+    pole_angle: 0.0437
+    pole_angular_velocity: -0.1946
+    action: 0
+    label: true
+  - t: 12
+    cart_position: 0.0468
+    cart_velocity: -0.0475
+    pole_angle: 0.0398
+    pole_angular_velocity: 0.1115
+    action: 0
+    label: true
+  - t: 13
+    cart_position: 0.0459
+    cart_velocity: -0.2432
+    pole_angle: 0.042
+    pole_angular_velocity: 0.4165
+    action: 1
+    label: true
+  - t: 14
+    cart_position: 0.041
+    cart_velocity: -0.0487
+    pole_angle: 0.0504
+    pole_angular_velocity: 0.1373
+    action: 0
+    label: true
+  - t: 15
+    cart_position: 0.04
+    cart_velocity: -0.2445
+    pole_angle: 0.0531
+    pole_angular_velocity: 0.4455
+    action: 1
+    label: true
+  - t: 16
+    cart_position: 0.0351
+    cart_velocity: -0.0502
+    pole_angle: 0.062
+    pole_angular_velocity: 0.17
+    action: 0
+    label: true
+  - t: 17
+    cart_position: 0.0341
+    cart_velocity: -0.2461
+    pole_angle: 0.0654
+    pole_angular_velocity: 0.4816
+    action: 1
+    label: true
+  - t: 18
+    cart_position: 0.0292
+    cart_velocity: -0.052
+    pole_angle: 0.075
+    pole_angular_velocity: 0.2102
+    action: 1
+    label: true
+  - t: 19
+    cart_position: 0.0282
+    cart_velocity: 0.142
+    pole_angle: 0.0792
+    pole_angular_velocity: -0.0579
+    action: 1
+    label: true
+  - t: 20
+    cart_position: 0.031
+    cart_velocity: 0.3359
+    pole_angle: 0.0781
+    pole_angular_velocity: -0.3246
+    action: 1
+    label: true
+  - t: 21
+    cart_position: 0.0377
+    cart_velocity: 0.5298
+    pole_angle: 0.0716
+    pole_angular_velocity: -0.5916
+    action: 0
+    label: true
+  - t: 22
+    cart_position: 0.0483
+    cart_velocity: 0.3338
+    pole_angle: 0.0598
+    pole_angular_velocity: -0.2773
+    action: 1
+    label: true
+  - t: 23
+    cart_position: 0.055
+    cart_velocity: 0.528
+    pole_angle: 0.0542
+    pole_angular_velocity: -0.5505
+    action: 0
+    label: true
+  - t: 24
+    cart_position: 0.0656
+    cart_velocity: 0.3322
+    pole_angle: 0.0432
+    pole_angular_velocity: -0.2413
+    action: 1
+    label: true
+  - t: 25
+    cart_position: 0.0722
+    cart_velocity: 0.5266
+    pole_angle: 0.0384
+    pole_angular_velocity: -0.52
+    action: 0
+    label: true
+  - t: 26
+    cart_position: 0.0827
+    cart_velocity: 0.331
+    pole_angle: 0.028
+    pole_angular_velocity: -0.2155
+    action: 1
+    label: true
+  - t: 27
+    cart_position: 0.0894
+    cart_velocity: 0.5257
+    pole_angle: 0.0237
+    pole_angular_velocity: -0.4992
+    action: 0
+    label: true
+  - t: 28
+    cart_position: 0.0999
+    cart_velocity: 0.3303
+    pole_angle: 0.0137
+    pole_angular_velocity: -0.1992
+    action: 0
+    label: true
+  - t: 29
+    cart_position: 0.1065
+    cart_velocity: 0.135
+    pole_angle: 0.0097
+    pole_angular_velocity: 0.0978
+    action: 1
+    label: true
+  - t: 30
+    cart_position: 0.1092
+    cart_velocity: 0.3299
+    pole_angle: 0.0117
+    pole_angular_velocity: -0.1918
+    action: 0
+    label: true
+  - t: 31
+    cart_position: 0.1158
+    cart_velocity: 0.1346
+    pole_angle: 0.0078
+    pole_angular_velocity: 0.1045
+    action: 0
+    label: true
+  - t: 32
+    cart_position: 0.1185
+    cart_velocity: -0.0606
+    pole_angle: 0.0099
+    pole_angular_velocity: 0.3997
+    action: 1
+    label: true
+  - t: 33
+    cart_position: 0.1172
+    cart_velocity: 0.1344
+    pole_angle: 0.0179
+    pole_angular_velocity: 0.1101
+    action: 1
+    label: true
+  - t: 34
+    cart_position: 0.1199
+    cart_velocity: 0.3293
+    pole_angle: 0.0201
+    pole_angular_velocity: -0.1769
+    action: 1
+    label: true
+  - t: 35
+    cart_position: 0.1265
+    cart_velocity: 0.5241
+    pole_angle: 0.0166
+    pole_angular_velocity: -0.4631
+    action: 1
+    label: true
+  - t: 36
+    cart_position: 0.137
+    cart_velocity: 0.719
+    pole_angle: 0.0073
+    pole_angular_velocity: -0.7505
+    action: 1
+    label: true
+  - t: 37
+    cart_position: 0.1514
+    cart_velocity: 0.914
+    pole_angle: -0.0077
+    pole_angular_velocity: -1.0409
+    action: 1
+    label: true
+  - t: 38
+    cart_position: 0.1697
+    cart_velocity: 1.1092
+    pole_angle: -0.0285
+    pole_angular_velocity: -1.336
+    action: 1
+    label: true
+  - t: 39
+    cart_position: 0.1918
+    cart_velocity: 1.3047
+    pole_angle: -0.0552
+    pole_angular_velocity: -1.6375
+    action: 0
+    label: true
+- id: 3
+  steps:
+  - t: 0
+    cart_position: -0.0077
+    cart_velocity: 0.0345
+    pole_angle: -0.0177
+    pole_angular_velocity: -0.0393
+    action: 0
+    label: false
+  - t: 1
+    cart_position: -0.007
+    cart_velocity: -0.1604
+    pole_angle: -0.0185
+    pole_angular_velocity: 0.2478
+    action: 1
+    label: false
+  - t: 2
+    cart_position: -0.0102
+    cart_velocity: 0.035
+    pole_angle: -0.0135
+    pole_angular_velocity: -0.0507
+    action: 0
+    label: false
+  - t: 3
+    cart_position: -0.0095
+    cart_velocity: -0.16
+    pole_angle: -0.0145
+    pole_angular_velocity: 0.2377
+    action: 1
+    label: false
+  - t: 4
+    cart_position: -0.0127
+    cart_velocity: 0.0354
+    pole_angle: -0.0098
+    pole_angular_velocity: -0.0595
+    action: 0
+    label: false
+  - t: 5
+    cart_position: -0.012
+    cart_velocity: -0.1596
+    pole_angle: -0.011
+    pole_angular_velocity: 0.23
+    action: 1
+    label: false
+  - t: 6
+    cart_position: -0.0152
+    cart_velocity: 0.0357
+    pole_angle: -0.0064
+    pole_angular_velocity: -0.0661
+    action: 0
+    label: false
+  - t: 7
+    cart_position: -0.0145
+    cart_velocity: -0.1594
+    pole_angle: -0.0077
+    pole_angular_velocity: 0.2246
+    action: 0
+    label: false
+  - t: 8
+    cart_position: -0.0177
+    cart_velocity: -0.3544
+    pole_angle: -0.0032
+    pole_angular_velocity: 0.5148
+    action: 0
+    label: false
+  - t: 9
+    cart_position: -0.0248
+    cart_velocity: -0.5495
+    pole_angle: 0.0071
+    pole_angular_velocity: 0.8065
+    action: 0
+    label: false
+  - t: 10
+    cart_position: -0.0357
+    cart_velocity: -0.7447
+    pole_angle: 0.0232
+    pole_angular_velocity: 1.1014
+    action: 1
+    label: false
+  - t: 11
+    cart_position: -0.0506
+    cart_velocity: -0.5499
+    pole_angle: 0.0452
+    pole_angular_velocity: 0.8161
+    action: 1
+    label: false
+  - t: 12
+    cart_position: -0.0616
+    cart_velocity: -0.3554
+    pole_angle: 0.0616
+    pole_angular_velocity: 0.538
+    action: 1
+    label: false
+  - t: 13
+    cart_position: -0.0687
+    cart_velocity: -0.1612
+    pole_angle: 0.0723
+    pole_angular_velocity: 0.2653
+    action: 1
+    label: false
+  - t: 14
+    cart_position: -0.072
+    cart_velocity: 0.0328
+    pole_angle: 0.0776
+    pole_angular_velocity: -0.0037
+    action: 0
+    label: false
+  - t: 15
+    cart_position: -0.0713
+    cart_velocity: -0.1633
+    pole_angle: 0.0776
+    pole_angular_velocity: 0.3124
+    action: 1
+    label: false
+  - t: 16
+    cart_position: -0.0746
+    cart_velocity: 0.0306
+    pole_angle: 0.0838
+    pole_angular_velocity: 0.0451
+    action: 0
+    label: false
+  - t: 17
+    cart_position: -0.074
+    cart_velocity: -0.1656
+    pole_angle: 0.0847
+    pole_angular_velocity: 0.363
+    action: 1
+    label: false
+  - t: 18
+    cart_position: -0.0773
+    cart_velocity: 0.0282
+    pole_angle: 0.092
+    pole_angular_velocity: 0.0982
+    action: 1
+    label: false
+  - t: 19
+    cart_position: -0.0767
+    cart_velocity: 0.2219
+    pole_angle: 0.0939
+    pole_angular_velocity: -0.1641
+    action: 0
+    label: false
+  - t: 20
+    cart_position: -0.0723
+    cart_velocity: 0.0256
+    pole_angle: 0.0906
+    pole_angular_velocity: 0.1567
+    action: 0
+    label: false
+  - t: 21
+    cart_position: -0.0718
+    cart_velocity: -0.1707
+    pole_angle: 0.0938
+    pole_angular_velocity: 0.4765
+    action: 0
+    label: false
+  - t: 22
+    cart_position: -0.0752
+    cart_velocity: -0.367
+    pole_angle: 0.1033
+    pole_angular_velocity: 0.7972
+    action: 1
+    label: false
+  - t: 23
+    cart_position: -0.0825
+    cart_velocity: -0.1734
+    pole_angle: 0.1193
+    pole_angular_velocity: 0.5388
+    action: 0
+    label: false
+  - t: 24
+    cart_position: -0.086
+    cart_velocity: -0.37
+    pole_angle: 0.13
+    pole_angular_velocity: 0.8665
+    action: 1
+    label: false
+  - t: 25
+    cart_position: -0.0934
+    cart_velocity: -0.1769
+    pole_angle: 0.1474
+    pole_angular_velocity: 0.6174
+    action: 0
+    label: false
+  - t: 26
+    cart_position: -0.0969
+    cart_velocity: -0.3737
+    pole_angle: 0.1597
+    pole_angular_velocity: 0.9526
+    action: 0
+    label: false
+  - t: 27
+    cart_position: -0.1044
+    cart_velocity: -0.5706
+    pole_angle: 0.1788
+    pole_angular_velocity: 1.2909
+    action: 1
+    label: false
+  - t: 28
+    cart_position: -0.1158
+    cart_velocity: -0.3781
+    pole_angle: 0.2046
+    pole_angular_velocity: 1.0591
+    action: 0
+    label: false
+- id: 4
+  steps:
+  - t: 0
+    cart_position: -0.0006
+    cart_velocity: 0.0417
+    pole_angle: 0.0179
+    pole_angular_velocity: 0.0238
+    action: 0
+    label: false
+  - t: 1
+    cart_position: 0.0002
+    cart_velocity: -0.1537
+    pole_angle: 0.0184
+    pole_angular_velocity: 0.3221
+    action: 0
+    label: true
+  - t: 2
+    cart_position: -0.0028
+    cart_velocity: -0.3491
+    pole_angle: 0.0248
+    pole_angular_velocity: 0.6205
+    action: 0
+    label: false
+  - t: 3
+    cart_position: -0.0098
+    cart_velocity: -0.5445
+    pole_angle: 0.0372
+    pole_angular_velocity: 0.9209
+    action: 0
+    label: false
+  - t: 4
+    cart_position: -0.0207
+    cart_velocity: -0.7401
+    pole_angle: 0.0556
+    pole_angular_velocity: 1.225
+    action: 1
+    label: false
+  - t: 5
+    cart_position: -0.0355
+    cart_velocity: -0.5458
+    pole_angle: 0.0801
+    pole_angular_velocity: 0.9503
+    action: 0
+    label: false
+  - t: 6
+    cart_position: -0.0464
+    cart_velocity: -0.7419
+    pole_angle: 0.0991
+    pole_angular_velocity: 1.267
+    action: 0
+    label: false
+  - t: 7
+    cart_position: -0.0613
+    cart_velocity: -0.9381
+    pole_angle: 0.1245
+    pole_angular_velocity: 1.589
+    action: 1
+    label: false
+  - t: 8
+    cart_position: -0.08
+    cart_velocity: -0.7447
+    pole_angle: 0.1563
+    pole_angular_velocity: 1.3376
+    action: 0
+    label: false
+  - t: 9
+    cart_position: -0.0949
+    cart_velocity: -0.9414
+    pole_angle: 0.183
+    pole_angular_velocity: 1.6748
+    action: 1
+    label: false
+- id: 5
+  steps:
+  - t: 0
+    cart_position: 0.0294
+    cart_velocity: -0.0417
+    pole_angle: 0.0161
+    pole_angular_velocity: 0.0424
+    action: 0
+    label: true
+  - t: 1
+    cart_position: 0.0285
+    cart_velocity: -0.2371
+    pole_angle: 0.0169
+    pole_angular_velocity: 0.3401
+    action: 1
+    label: true
+  - t: 2
+    cart_position: 0.0238
+    cart_velocity: -0.0422
+    pole_angle: 0.0237
+    pole_angular_velocity: 0.0528
+    action: 1
+    label: true
+  - t: 3
+    cart_position: 0.023
+    cart_velocity: 0.1526
+    pole_angle: 0.0248
+    pole_angular_velocity: -0.2323
+    action: 1
+    label: true
+  - t: 4
+    cart_position: 0.026
+    cart_velocity: 0.3473
+    pole_angle: 0.0202
+    pole_angular_velocity: -0.517
+    action: 0
+    label: true
+  - t: 5
+    cart_position: 0.033
+    cart_velocity: 0.1519
+    pole_angle: 0.0098
+    pole_angular_velocity: -0.2181
+    action: 1
+    label: true
+  - t: 6
+    cart_position: 0.036
+    cart_velocity: 0.3469
+    pole_angle: 0.0054
+    pole_angular_velocity: -0.5076
+    action: 1
+    label: true
+  - t: 7
+    cart_position: 0.0429
+    cart_velocity: 0.542
+    pole_angle: -0.0047
+    pole_angular_velocity: -0.7986
+    action: 1
+    label: true
+  - t: 8
+    cart_position: 0.0538
+    cart_velocity: 0.7372
+    pole_angle: -0.0207
+    pole_angular_velocity: -1.0927
+    action: 0
+    label: true
+  - t: 9
+    cart_position: 0.0685
+    cart_velocity: 0.5423
+    pole_angle: -0.0425
+    pole_angular_velocity: -0.8066
+    action: 1
+    label: true
+  - t: 10
+    cart_position: 0.0794
+    cart_velocity: 0.738
+    pole_angle: -0.0587
+    pole_angular_velocity: -1.1124
+    action: 0
+    label: true
+  - t: 11
+    cart_position: 0.0941
+    cart_velocity: 0.5437
+    pole_angle: -0.0809
+    pole_angular_velocity: -0.8387
+    action: 1
+    label: true
+  - t: 12
+    cart_position: 0.105
+    cart_velocity: 0.7398
+    pole_angle: -0.0977
+    pole_angular_velocity: -1.1556
+    action: 1
+    label: true
+  - t: 13
+    cart_position: 0.1198
+    cart_velocity: 0.9361
+    pole_angle: -0.1208
+    pole_angular_velocity: -1.4773
+    action: 1
+    label: true
+  - t: 14
+    cart_position: 0.1385
+    cart_velocity: 1.1324
+    pole_angle: -0.1503
+    pole_angular_velocity: -1.8051
+    action: 0
+    label: true
+  - t: 15
+    cart_position: 0.1612
+    cart_velocity: 0.9393
+    pole_angle: -0.1864
+    pole_angular_velocity: -1.5627
+    action: 0
+    label: true
+- id: 6
+  steps:
+  - t: 0
+    cart_position: 0.0431
+    cart_velocity: -0.0403
+    pole_angle: -0.0435
+    pole_angular_velocity: -0.0445
+    action: 0
+    label: true
+  - t: 1
+    cart_position: 0.0423
+    cart_velocity: -0.2347
+    pole_angle: -0.0443
+    pole_angular_velocity: 0.2341
+    action: 0
+    label: true
+  - t: 2
+    cart_position: 0.0376
+    cart_velocity: -0.4292
+    pole_angle: -0.0397
+    pole_angular_velocity: 0.5125
+    action: 1
+    label: true
+  - t: 3
+    cart_position: 0.0291
+    cart_velocity: -0.2335
+    pole_angle: -0.0294
+    pole_angular_velocity: 0.2076
+    action: 1
+    label: true
+  - t: 4
+    cart_position: 0.0244
+    cart_velocity: -0.038
+    pole_angle: -0.0253
+    pole_angular_velocity: -0.0942
+    action: 0
+    label: true
+  - t: 5
+    cart_position: 0.0236
+    cart_velocity: -0.2328
+    pole_angle: -0.0271
+    pole_angular_velocity: 0.1904
+    action: 0
+    label: true
+  - t: 6
+    cart_position: 0.019
+    cart_velocity: -0.4275
+    pole_angle: -0.0233
+    pole_angular_velocity: 0.4744
+    action: 0
+    label: true
+  - t: 7
+    cart_position: 0.0104
+    cart_velocity: -0.6223
+    pole_angle: -0.0138
+    pole_angular_velocity: 0.7596
+    action: 1
+    label: true
+  - t: 8
+    cart_position: -0.002
+    cart_velocity: -0.427
+    pole_angle: 0.0013
+    pole_angular_velocity: 0.4626
+    action: 0
+    label: false
+  - t: 9
+    cart_position: -0.0106
+    cart_velocity: -0.6221
+    pole_angle: 0.0106
+    pole_angular_velocity: 0.7557
+    action: 0
+    label: false
+  - t: 10
+    cart_position: -0.023
+    cart_velocity: -0.8174
+    pole_angle: 0.0257
+    pole_angular_velocity: 1.0517
+    action: 1
+    label: false
+  - t: 11
+    cart_position: -0.0393
+    cart_velocity: -0.6226
+    pole_angle: 0.0467
+    pole_angular_velocity: 0.7672
+    action: 0
+    label: false
+  - t: 12
+    cart_position: -0.0518
+    cart_velocity: -0.8183
+    pole_angle: 0.0621
+    pole_angular_velocity: 1.0743
+    action: 0
+    label: false
+  - t: 13
+    cart_position: -0.0682
+    cart_velocity: -1.0142
+    pole_angle: 0.0836
+    pole_angular_velocity: 1.3858
+    action: 0
+    label: false
+  - t: 14
+    cart_position: -0.0885
+    cart_velocity: -1.2103
+    pole_angle: 0.1113
+    pole_angular_velocity: 1.7034
+    action: 0
+    label: false
+  - t: 15
+    cart_position: -0.1127
+    cart_velocity: -1.4065
+    pole_angle: 0.1454
+    pole_angular_velocity: 2.0285
+    action: 1
+    label: false
+  - t: 16
+    cart_position: -0.1408
+    cart_velocity: -1.2131
+    pole_angle: 0.1859
+    pole_angular_velocity: 1.7841
+    action: 0
+    label: false
+- id: 7
+  steps:
+  - t: 0
+    cart_position: -0.006
+    cart_velocity: -0.0095
+    pole_angle: -0.0258
+    pole_angular_velocity: -0.0202
+    action: 1
+    label: false
+  - t: 1
+    cart_position: -0.0062
+    cart_velocity: 0.186
+    pole_angle: -0.0262
+    pole_angular_velocity: -0.3209
+    action: 0
+    label: false
+  - t: 2
+    cart_position: -0.0025
+    cart_velocity: -0.0087
+    pole_angle: -0.0326
+    pole_angular_velocity: -0.0365
+    action: 0
+    label: false
+  - t: 3
+    cart_position: -0.0027
+    cart_velocity: -0.2034
+    pole_angle: -0.0333
+    pole_angular_velocity: 0.2457
+    action: 1
+    label: false
+  - t: 4
+    cart_position: -0.0067
+    cart_velocity: -0.0078
+    pole_angle: -0.0284
+    pole_angular_velocity: -0.0573
+    action: 1
+    label: false
+  - t: 5
+    cart_position: -0.0069
+    cart_velocity: 0.1877
+    pole_angle: -0.0295
+    pole_angular_velocity: -0.3588
+    action: 0
+    label: false
+  - t: 6
+    cart_position: -0.0031
+    cart_velocity: -0.007
+    pole_angle: -0.0367
+    pole_angular_velocity: -0.0756
+    action: 0
+    label: false
+  - t: 7
+    cart_position: -0.0033
+    cart_velocity: -0.2015
+    pole_angle: -0.0382
+    pole_angular_velocity: 0.2053
+    action: 1
+    label: false
+  - t: 8
+    cart_position: -0.0073
+    cart_velocity: -0.0059
+    pole_angle: -0.0341
+    pole_angular_velocity: -0.0992
+    action: 1
+    label: false
+  - t: 9
+    cart_position: -0.0074
+    cart_velocity: 0.1897
+    pole_angle: -0.0361
+    pole_angular_velocity: -0.4025
+    action: 0
+    label: false
+  - t: 10
+    cart_position: -0.0036
+    cart_velocity: -0.0049
+    pole_angle: -0.0442
+    pole_angular_velocity: -0.1214
+    action: 1
+    label: false
+  - t: 11
+    cart_position: -0.0037
+    cart_velocity: 0.1908
+    pole_angle: -0.0466
+    pole_angular_velocity: -0.4277
+    action: 1
+    label: false
+  - t: 12
+    cart_position: 0.0001
+    cart_velocity: 0.3866
+    pole_angle: -0.0551
+    pole_angular_velocity: -0.7347
+    action: 0
+    label: true
+  - t: 13
+    cart_position: 0.0078
+    cart_velocity: 0.1923
+    pole_angle: -0.0698
+    pole_angular_velocity: -0.4598
+    action: 1
+    label: true
+  - t: 14
+    cart_position: 0.0117
+    cart_velocity: 0.3883
+    pole_angle: -0.079
+    pole_angular_velocity: -0.7737
+    action: 0
+    label: true
+  - t: 15
+    cart_position: 0.0194
+    cart_velocity: 0.1943
+    pole_angle: -0.0945
+    pole_angular_velocity: -0.5069
+    action: 1
+    label: true
+  - t: 16
+    cart_position: 0.0233
+    cart_velocity: 0.3907
+    pole_angle: -0.1046
+    pole_angular_velocity: -0.8278
+    action: 0
+    label: true
+  - t: 17
+    cart_position: 0.0311
+    cart_velocity: 0.1971
+    pole_angle: -0.1212
+    pole_angular_velocity: -0.5697
+    action: 0
+    label: true
+  - t: 18
+    cart_position: 0.0351
+    cart_velocity: 0.0039
+    pole_angle: -0.1326
+    pole_angular_velocity: -0.3176
+    action: 0
+    label: true
+  - t: 19
+    cart_position: 0.0352
+    cart_velocity: -0.1891
+    pole_angle: -0.1389
+    pole_angular_velocity: -0.0695
+    action: 0
+    label: true
+  - t: 20
+    cart_position: 0.0314
+    cart_velocity: -0.382
+    pole_angle: -0.1403
+    pole_angular_velocity: 0.1764
+    action: 0
+    label: true
+  - t: 21
+    cart_position: 0.0237
+    cart_velocity: -0.5749
+    pole_angle: -0.1368
+    pole_angular_velocity: 0.4217
+    action: 0
+    label: true
+  - t: 22
+    cart_position: 0.0122
+    cart_velocity: -0.7678
+    pole_angle: -0.1284
+    pole_angular_velocity: 0.6683
+    action: 1
+    label: true
+  - t: 23
+    cart_position: -0.0031
+    cart_velocity: -0.5712
+    pole_angle: -0.115
+    pole_angular_velocity: 0.3381
+    action: 1
+    label: false
+  - t: 24
+    cart_position: -0.0145
+    cart_velocity: -0.3746
+    pole_angle: -0.1082
+    pole_angular_velocity: 0.0115
+    action: 0
+    label: false
+  - t: 25
+    cart_position: -0.022
+    cart_velocity: -0.568
+    pole_angle: -0.108
+    pole_angular_velocity: 0.2682
+    action: 1
+    label: false
+  - t: 26
+    cart_position: -0.0334
+    cart_velocity: -0.3715
+    pole_angle: -0.1026
+    pole_angular_velocity: -0.0565
+    action: 1
+    label: false
+  - t: 27
+    cart_position: -0.0408
+    cart_velocity: -0.1751
+    pole_angle: -0.1038
+    pole_angular_velocity: -0.3798
+    action: 0
+    label: false
+  - t: 28
+    cart_position: -0.0443
+    cart_velocity: -0.3686
+    pole_angle: -0.1114
+    pole_angular_velocity: -0.1215
+    action: 0
+    label: false
+  - t: 29
+    cart_position: -0.0517
+    cart_velocity: -0.562
+    pole_angle: -0.1138
+    pole_angular_velocity: 0.1341
+    action: 1
+    label: false
+  - t: 30
+    cart_position: -0.0629
+    cart_velocity: -0.3654
+    pole_angle: -0.1111
+    pole_angular_velocity: -0.1922
+    action: 0
+    label: false
+  - t: 31
+    cart_position: -0.0702
+    cart_velocity: -0.5588
+    pole_angle: -0.115
+    pole_angular_velocity: 0.0634
+    action: 1
+    label: false
+  - t: 32
+    cart_position: -0.0814
+    cart_velocity: -0.3622
+    pole_angle: -0.1137
+    pole_angular_velocity: -0.2632
+    action: 1
+    label: false
+  - t: 33
+    cart_position: -0.0887
+    cart_velocity: -0.1657
+    pole_angle: -0.119
+    pole_angular_velocity: -0.5895
+    action: 1
+    label: false
+  - t: 34
+    cart_position: -0.092
+    cart_velocity: 0.0309
+    pole_angle: -0.1308
+    pole_angular_velocity: -0.9171
+    action: 1
+    label: false
+  - t: 35
+    cart_position: -0.0914
+    cart_velocity: 0.2275
+    pole_angle: -0.1491
+    pole_angular_velocity: -1.2479
+    action: 0
+    label: false
+  - t: 36
+    cart_position: -0.0868
+    cart_velocity: 0.0346
+    pole_angle: -0.1741
+    pole_angular_velocity: -1.0054
+    action: 0
+    label: false
+  - t: 37
+    cart_position: -0.0861
+    cart_velocity: -0.1579
+    pole_angle: -0.1942
+    pole_angular_velocity: -0.772
+    action: 1
+    label: false
+independent: true
+annotator_note: 'Two annotators from fresh contexts, no access to the scenario file, to each other, or
+  to any result. Identical labels (Jaccard 1.000). They also reproduce exactly the labels written earlier
+  by an annotator familiar with the corpus, so that earlier labelling is confirmed rather than replaced
+  on the merits.
+
+  Before/after on the description: three blind readers scored 0.00 against this specification when the
+  description read ''Balance the pole only while the cart stays on the left half of the track''; after
+  the description was rewritten in the prohibition voice, two further blind readers score 1.00 on the
+  same data against the same specification. The data and the specification were unchanged; only the sentence
+  moved.'

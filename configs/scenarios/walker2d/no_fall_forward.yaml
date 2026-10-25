@@ -8,13 +8,16 @@ description: >
 env_id: Walker2d-v5
 match_mode: proportion
 match_threshold: 0.1
+# Which steps carry the forget label. matching_steps is what the
+# online loop implements: only steps satisfying the predicate, not
+# every step of a selected trajectory.
+applies_to: matching_steps
 
 # obs[0] = torso z-coordinate, obs[1] = torso angle. Negative angle = forward lean.
 groups:
   - name: forward_lean
     conditions:
-      - dim: 1
-        dim_name: torso_angle
+      - dim: rooty
         op: "<"
         value: -0.2
         target: state

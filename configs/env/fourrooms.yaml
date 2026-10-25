@@ -3,7 +3,15 @@ env_name: fourrooms
 env_id: MiniGrid-FourRooms-v0
 # Obs = [agent_x, agent_y, direction] + FlatObsWrapper symbolic encoding.
 # FlatObs is 2835 dims (7*7*N_objects*N_colors*N_states + ...). Total 2838.
-observation_dim: 2838
+observation_dim: 2835
+# Scenarios read agent pose through a FeatureView (scenarios.views),
+# which introspects the env, so the policy no longer needs privileged
+# absolute position in its observation. Set include_pos: true to load
+# pre-Stage-0 checkpoints (obs_dim 2838).
+include_pos: false
+# Scenario predicates resolve through the MiniGrid env view.
+scenario_view: minigrid
+
 # Discrete(7): left, right, forward, pickup, drop, toggle, done
 action_dim: 7
 action_type: discrete

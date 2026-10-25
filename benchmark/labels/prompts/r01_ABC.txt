@@ -1,0 +1,37 @@
+# Reader prompt, round 01 (readers A, B, C)
+# Sent verbatim to each reader on 2026-09-17; <READER> stands for the reader's letter.
+
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+There are 5 labelling tasks, one per file:
+  /tmp/annot/lbf.no_crowding.txt
+  /tmp/annot/lbf.no_freeloading.txt
+  /tmp/annot/walker2d.no_forward_fall.txt
+  /tmp/annot/lunarlander.no_tilt.txt
+  /tmp/annot/cartpole.left_only.txt
+
+Each file contains: a one-sentence description of a BEHAVIOUR, and a table of steps from recorded episodes with named feature values (and an action column).
+
+Your job, for each file: decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config or source code in the repository. Do not search the web.
+- Some descriptions use vague words (e.g. "steep", "nearby", "bunching"). Where the description does not fix a number, YOU must choose a threshold using your own judgement of what the sentence means. State the threshold you chose.
+- Be consistent within a task.
+
+Write your answers to /tmp/annot/annotator_<READER>.json in exactly this format:
+
+{
+  "lbf.no_crowding":   {"reasoning": "<how you read the description, and any threshold you chose and why>",
+                        "labels": [0,1,0, ...]},
+  "lbf.no_freeloading":{"reasoning": "...", "labels": [...]},
+  "walker2d.no_forward_fall": {"reasoning": "...", "labels": [...]},
+  "lunarlander.no_tilt":      {"reasoning": "...", "labels": [...]},
+  "cartpole.left_only":       {"reasoning": "...", "labels": [...]}
+}
+
+"labels" must be a list of 0/1 integers, EXACTLY one per row of that file's table, in the same order as the rows. Row counts: lbf.no_crowding 100, lbf.no_freeloading 100, walker2d.no_forward_fall 77, lunarlander.no_tilt 100, cartpole.left_only 105.
+
+It is fine to write a small Python script to compute the labels from the table once you have decided your rule — that is the reliable way to stay consistent. Verify the list lengths before you finish.
+
+When done, reply with just the threshold you chose for each task, one line each.

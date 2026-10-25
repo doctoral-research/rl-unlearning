@@ -144,8 +144,29 @@ class PPOAgent:
         advantages = torch.as_tensor(np.asarray(rollout_buffer["advantages"]), dtype=torch.float32).to(self.device)
         returns = torch.as_tensor(np.asarray(rollout_buffer["returns"]), dtype=torch.float32).to(self.device)
         
-        # Normalize advantages
-        advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
+        # Normalize advantages.
+        #
+        # When a forget mask is supplied, normalise over RETAIN transitions
+        # only and then re-zero the masked entries. Normalising over the
+        # whole vector after masking does not leave the masked entries at
+        # zero: they become -mean/std, a small but systematic advantage
+        # applied to every forget transition in every epoch. That turns an
+        # intended gradient ablation into an implicit, self-calibrating
+        # penalty whose sign depends on whether the forget region happened
+        # to be above or below average value.
+        forget_mask = rollout_buffer.get("forget_mask")
+        if forget_mask is not None:
+            fm = torch.as_tensor(np.asarray(forget_mask), dtype=torch.bool).to(self.device)
+            retain = ~fm
+            if retain.any():
+                mu = advantages[retain].mean()
+                sd = advantages[retain].std()
+            else:
+                mu, sd = advantages.mean(), advantages.std()
+            advantages = (advantages - mu) / (sd + 1e-8)
+            advantages = advantages.masked_fill(fm, 0.0)
+        else:
+            advantages = (advantages - advantages.mean()) / (advantages.std() + 1e-8)
         
         # PPO update
         total_policy_loss = 0
@@ -226,7 +247,7 @@ class PPOAgent:
     
     def load(self, path: str) -> None:
         """Load agent."""
-        checkpoint = torch.load(path, map_location=self.device)
+        checkpoint = torch.load(path, map_location=self.device, weights_only=False)
         self.network.load_state_dict(checkpoint["network"])
         self.optimizer.load_state_dict(checkpoint["optimizer"])
     

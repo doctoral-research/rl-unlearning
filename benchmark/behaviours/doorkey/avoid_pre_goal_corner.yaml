@@ -1,0 +1,11 @@
+id: doorkey.avoid_pre_goal_corner
+domain: MiniGrid-DoorKey-8x8-v0
+description: Stop cutting the corner above the goal; approach along the bottom edge instead.
+verdict: expressible
+scenario: doorkey/avoid_pre_goal_corner
+tags:
+- spatial
+- reward-aligned
+notes: 'region never reached and not a compute limit: retrained to 10M steps (5x), mean reward
+  still 0.00 and 0 of 12 episodes reach x>=5 while the target corner is at x in {5,6}. This
+  PPO implementation does not solve DoorKey-8x8 exploration.'

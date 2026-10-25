@@ -1,0 +1,17 @@
+{
+ "B01": "cartpole.left_only",
+ "B02": "doorkey.no_key_hoarding",
+ "B03": "empty8x8.avoid_bottom_left",
+ "B04": "fourrooms.avoid_br_detour",
+ "B05": "fourrooms.avoid_br_tr_door",
+ "B06": "fourrooms.no_backtracking",
+ "B07": "fourrooms.no_corner_turn_reflex",
+ "B08": "fourrooms.no_pacing",
+ "B09": "halfcheetah.no_front_flip",
+ "B10": "lbf.no_crowding",
+ "B11": "lbf.no_freeloading",
+ "B12": "lunarlander.no_near_miss",
+ "B13": "lunarlander.no_tilt",
+ "B14": "pendulum.avoid_left_swing",
+ "B15": "walker2d.no_forward_fall"
+}

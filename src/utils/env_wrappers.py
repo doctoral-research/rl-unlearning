@@ -34,9 +34,16 @@ class MiniGridFlatPos(gym.ObservationWrapper):
     forget regions in terms of grid coordinates (``dim: 0`` = x, etc.).
     """
 
-    def __init__(self, env: gym.Env, obs_encoding: str = "image"):
+    def __init__(self, env: gym.Env, obs_encoding: str = "image",
+                 include_pos: bool = True):
         super().__init__(env)
         self._encoding = obs_encoding
+        # include_pos=False drops the (x, y, direction) prefix. Scenarios
+        # should now read those through a FeatureView (scenarios.views),
+        # which reads the env directly, so the policy no longer needs
+        # privileged absolute position in its observation. Default stays
+        # True so existing checkpoints keep loading.
+        self._include_pos = bool(include_pos)
         if obs_encoding == "symbolic":
             from minigrid.wrappers import FlatObsWrapper
             # Wrap env to get FlatObs's one-hot output. We don't keep
@@ -48,17 +55,21 @@ class MiniGridFlatPos(gym.ObservationWrapper):
             inner_dim = int(np.prod(sample.shape))
             self._flat = None
         self._inner_dim = inner_dim
+        prefix = 3 if self._include_pos else 0
         self.observation_space = gym.spaces.Box(
-            low=-np.inf, high=np.inf, shape=(3 + inner_dim,), dtype=np.float32,
+            low=-np.inf, high=np.inf, shape=(prefix + inner_dim,),
+            dtype=np.float32,
         )
 
     def observation(self, obs):
-        x, y = self.env.unwrapped.agent_pos
-        d = obs.get("direction", self.env.unwrapped.agent_dir)
         if self._encoding == "symbolic":
             inner = self._flat.observation(obs).astype(np.float32)
         else:
             inner = np.asarray(obs["image"], dtype=np.float32).reshape(-1)
+        if not self._include_pos:
+            return inner.astype(np.float32)
+        x, y = self.env.unwrapped.agent_pos
+        d = obs.get("direction", self.env.unwrapped.agent_dir)
         return np.concatenate(
             [np.array([x, y, d], dtype=np.float32), inner], axis=0,
         ).astype(np.float32)
@@ -125,6 +136,7 @@ def make_minigrid_env(
     exploration_anneal_steps: int = 0,
     obs_encoding: str = "image",
     fixed_goal_pos: tuple | None = None,
+    include_pos: bool = True,
     **gym_kwargs,
 ) -> gym.Env:
     """Construct a MiniGrid env with the flat-pos wrapper.
@@ -140,7 +152,8 @@ def make_minigrid_env(
         env = FourRoomsEnv(goal_pos=tuple(fixed_goal_pos), **gym_kwargs)
     else:
         env = gym.make(env_id, **gym_kwargs)
-    env = MiniGridFlatPos(env, obs_encoding=obs_encoding)
+    env = MiniGridFlatPos(env, obs_encoding=obs_encoding,
+                          include_pos=include_pos)
     if exploration_bonus == "count_based":
         env = CountBasedExploration(
             env, beta=exploration_beta, anneal_steps=exploration_anneal_steps,
@@ -321,6 +334,7 @@ def make_env(
     exploration_hash_scale: float = 1.0,
     obs_encoding: str = "image",
     fixed_goal_pos: tuple | None = None,
+    include_pos: bool = True,
     normalize_obs: bool = False,
     **gym_kwargs,
 ) -> gym.Env:
@@ -343,6 +357,7 @@ def make_env(
             exploration_anneal_steps=exploration_anneal_steps,
             obs_encoding=obs_encoding,
             fixed_goal_pos=fixed_goal_pos,
+            include_pos=include_pos,
             **gym_kwargs,
         )
     env = gym.make(env_id, **gym_kwargs)

@@ -1,0 +1,14 @@
+id: fourrooms.avoid_br_detour
+domain: MiniGrid-FourRooms-v0
+description: Stop routing through the bottom-right room on the way to the goal.
+verdict: expressible
+scenario: fourrooms/avoid_bottom_right
+tags:
+- spatial
+- region
+labels: benchmark/labels/fourrooms.avoid_br_detour.yaml
+notes: Previously 'Reach the goal without routing through the bottom-right room'. The 'without'
+  clause reads prohibitively and we expected it to be safe, but two independent annotators
+  still marked compliance rather than the violation (Jaccard 0.00 against the formalisation;
+  1.00 after flipping). A subordinate prohibition inside a goal sentence was not enough; the
+  main verb has to carry it.

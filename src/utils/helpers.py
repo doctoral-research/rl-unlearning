@@ -88,7 +88,7 @@ def save_checkpoint(
 
 def load_checkpoint(path: str, agent, optimizer: Optional[torch.optim.Optimizer] = None):
     """Load training checkpoint."""
-    checkpoint = torch.load(path)
+    checkpoint = torch.load(path, weights_only=False)
     agent.load_state_dict(checkpoint["agent_state_dict"])
     if optimizer is not None:
         optimizer.load_state_dict(checkpoint["optimizer_state_dict"])

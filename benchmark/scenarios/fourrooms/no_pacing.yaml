@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../../src/scenarios/schemas/scenario.schema.v1.json
+#
+# Oscillation as a ratio: many steps spread over few distinct cells. This
+# is an approximation of "repeats the same two cells k times" -- the
+# grammar still has no counting operator over a repeated pattern -- but
+# unlike v1.1 it separates pacing from ordinary exploration.
+version: "1.2"
+name: no_pacing
+description: >
+  Forget oscillating back and forth over a small set of cells instead of
+  making progress. Measured as steps per distinct cell visited.
+env_id: MiniGrid-FourRooms-v0
+match_mode: trajectory
+applies_to: whole_trajectory
+
+aggregates:
+  cells_visited:
+    op: count_distinct
+    of: [agent_x, agent_y]
+  path_length:
+    op: count
+
+derived:
+  steps_per_cell: "path_length / cells_visited"
+
+groups:
+  - name: paces
+    conditions:
+      - dim: steps_per_cell
+        op: ">"
+        value: 2.5

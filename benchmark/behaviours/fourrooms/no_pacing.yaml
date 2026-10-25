@@ -1,0 +1,25 @@
+id: fourrooms.no_pacing
+domain: MiniGrid-FourRooms-v0
+description: Stop oscillating back and forth between two adjacent cells.
+verdict: partial
+scenario: fourrooms/no_pacing
+gap: 'Approximated as steps per distinct cell, which separates pacing from
+
+  exploration but is not the stated predicate. "The same two cells more
+
+  than k times" needs a counting operator over a repeated pattern of
+
+  unbounded length; aggregates reduce the episode to scalars and cannot
+
+  count occurrences of a sub-pattern.'
+tags:
+- history
+- counting
+- aggregate
+notes: 'An earlier note in this file claimed the behaviour does not occur, based on a test
+  for A-B-A alternation in CONSECUTIVE steps. That test was wrong: in MiniGrid, moving to
+  an adjacent cell and back costs forward, turn, turn, forward, so the cell sequence is A,B,B,B,A
+  and a literal consecutive A,B,A is impossible. Tested on the distinct-cell path instead,
+  pacing occurs in 17 of 25 episodes under a trained policy (58 occurrences). The claim of
+  absence was an artefact of the probe.'
+labels: benchmark/labels/fourrooms.no_pacing.yaml

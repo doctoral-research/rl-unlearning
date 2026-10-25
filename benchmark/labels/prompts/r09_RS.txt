@@ -1,0 +1,31 @@
+# Reader prompt, round 09 (readers R, S)
+# Sent verbatim to each reader on 2026-09-17; <READER> stands for the reader's letter.
+
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+One labelling task: /tmp/annot9/fourrooms.no_pacing.txt (720 rows)
+
+The file has a one-sentence description of a BEHAVIOUR, a note on the features, and a table of steps.
+
+Decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config or source code in the repository. Do not search the web. Do not infer anything from the filename.
+- The sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+- Read the feature note carefully: turning does not move the agent, so a move out to an adjacent cell and back occupies several rows and the cell column repeats. Decide how you detect an out-and-back on that basis, and how many repetitions you require before calling it the described behaviour. State both choices.
+- Decide which steps carry the label (only the moves, or the whole stretch including the turns in between) and say so.
+- Be consistent.
+
+Write /tmp/annot9/annotator_<READER>.json in exactly this format:
+
+{
+  "fourrooms.no_pacing": {"reasoning": "<detection method, repetition threshold, which steps carry the label>", "labels": [0,1,...]}
+}
+
+"labels" must be 0/1 integers, EXACTLY one per table row, in order. The file has 720 rows.
+
+Write a small Python script to parse the table and apply your rule. Verify the length is 720 before finishing.
+
+If the behaviour never occurs, say so plainly and label all zeros rather than inventing positives.
+
+Reply with one line: your rule and how many steps you marked.

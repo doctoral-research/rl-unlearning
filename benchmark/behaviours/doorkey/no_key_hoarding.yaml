@@ -1,0 +1,9 @@
+id: doorkey.no_key_hoarding
+domain: MiniGrid-DoorKey-8x8-v0
+description: Stop picking up the key and then never using it to open the door.
+verdict: expressible
+scenario: doorkey/no_key_hoarding
+tags:
+- temporal
+- nesting
+labels: benchmark/labels/doorkey.no_key_hoarding.yaml

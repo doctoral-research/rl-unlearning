@@ -19,7 +19,7 @@ groups:
   - name: turn_left_action
     conditions:
       - dim: 0
-        dim_name: action
+        dim_name: turn_left
         op: "=="
         value: 0
         target: action

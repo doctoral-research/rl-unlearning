@@ -1,0 +1,16 @@
+id: cartpole.left_only
+domain: CartPole-v1
+description: Stop balancing the pole while the cart is on the right half of the track; keep
+  the skill on the left half.
+verdict: expressible
+scenario: cartpole/left_only
+tags:
+- continuous-state
+- region
+labels: benchmark/labels/cartpole.left_only.yaml
+notes: The description previously read 'Balance the pole only while the cart stays on the
+  left half of the track', naming the behaviour to KEEP rather than the one to remove, unlike
+  every other entry. Three independent annotators all labelled the left half and so disagreed
+  completely with the formalisation (Jaccard 0.00), which labels the right. The defect was
+  in the voice of the sentence, not in any threshold. Rewritten in the prohibition voice the
+  rest of the corpus uses.

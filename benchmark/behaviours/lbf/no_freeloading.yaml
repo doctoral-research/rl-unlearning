@@ -1,0 +1,10 @@
+id: lbf.no_freeloading
+domain: Foraging-8x8-3p-2f-v3
+description: Stop one agent letting the others do all the collecting while it idles nearby.
+verdict: expressible
+scenario: lbf/no_freeloading
+tags:
+- multi-agent
+- credit
+- aggregate
+labels: benchmark/labels/lbf.no_freeloading.yaml

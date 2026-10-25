@@ -24,6 +24,10 @@ description: >
   forbidden behavior, and additionally forget the corner→turn-left reflex.
 env_id: MiniGrid-FourRooms-v0
 match_mode: temporal
+# Which steps carry the forget label. matching_steps is what the
+# online loop implements: only steps satisfying the predicate, not
+# every step of a selected trajectory.
+applies_to: matching_steps
 
 # Reusable building blocks.
 defines:

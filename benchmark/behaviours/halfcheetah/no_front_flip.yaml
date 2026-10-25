@@ -1,0 +1,9 @@
+id: halfcheetah.no_front_flip
+domain: HalfCheetah-v5
+description: Stop performing forward somersaults.
+verdict: expressible
+scenario: halfcheetah/no_front_flip
+tags:
+- continuous-control
+- aggregate
+labels: benchmark/labels/halfcheetah.no_front_flip.yaml

@@ -4,7 +4,15 @@ env_id: MiniGrid-DoorKey-8x8-v0
 # Obs = [agent_x, agent_y, direction, symbolic flat obs] via MiniGridFlatPos.
 # Symbolic encoding flatobs dim is 2835 for MiniGrid 7x7 partial view; with
 # the (x, y, dir) prefix = 2838.
-observation_dim: 2838
+observation_dim: 2835
+# Scenarios read agent pose through a FeatureView (scenarios.views),
+# which introspects the env, so the policy no longer needs privileged
+# absolute position in its observation. Set include_pos: true to load
+# pre-Stage-0 checkpoints (obs_dim 2838).
+include_pos: false
+# Scenario predicates resolve through the MiniGrid env view.
+scenario_view: minigrid
+
 action_dim: 7
 action_type: discrete
 obs_encoding: symbolic

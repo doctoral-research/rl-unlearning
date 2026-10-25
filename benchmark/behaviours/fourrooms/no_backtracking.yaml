@@ -1,0 +1,10 @@
+id: fourrooms.no_backtracking
+domain: MiniGrid-FourRooms-v0
+description: Stop revisiting cells the agent has already been to in this episode.
+verdict: expressible
+scenario: fourrooms/no_backtracking
+tags:
+- history
+- memory
+- aggregate
+labels: benchmark/labels/fourrooms.no_backtracking.yaml

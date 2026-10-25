@@ -1,0 +1,10 @@
+id: lbf.no_crowding
+domain: Foraging-8x8-3p-2f-v3
+description: Stop the agents from bunching up instead of spreading out to forage.
+verdict: expressible
+scenario: lbf/no_crowding
+tags:
+- multi-agent
+- relational
+- quantified
+labels: benchmark/labels/lbf.no_crowding.yaml

@@ -1,0 +1,1086 @@
+entry: pendulum.avoid_left_swing
+env: Pendulum-v1
+description: Stop swinging the pendulum through the left half of the circle; keep the swing-up on the
+  right.
+annotator: synthetic:fresh-context (N, O)
+instructions: Decide for EVERY step whether the described behaviour is occurring AT THAT STEP. Each sentence
+  names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening, NOT the
+  steps where the agent is behaving well.
+prompt: r07_NO
+reader_model: claude-opus-5
+features:
+- cos_theta
+- sin_theta
+- theta_dot
+episodes:
+- id: 0
+  steps:
+  - t: 0
+    cos_theta: -0.0503
+    sin_theta: -0.9987
+    theta_dot: -0.7247
+    action:
+    - 0.9608829617500305
+    label: true
+  - t: 1
+    cos_theta: -0.1165
+    sin_theta: -0.9932
+    theta_dot: -1.3296
+    action:
+    - -1.5402098894119263
+    label: true
+  - t: 2
+    cos_theta: -0.23
+    sin_theta: -0.9732
+    theta_dot: -2.3055
+    action:
+    - -0.7417889833450317
+    label: true
+  - t: 3
+    cos_theta: -0.3796
+    sin_theta: -0.9251
+    theta_dot: -3.1467
+    action:
+    - 1.0326716899871826
+    label: true
+  - t: 4
+    cos_theta: -0.5427
+    sin_theta: -0.8399
+    theta_dot: -3.6856
+    action:
+    - 0.14313039183616638
+    label: true
+  - t: 5
+    cos_theta: -0.7092
+    sin_theta: -0.705
+    theta_dot: -4.2941
+    action:
+    - -1.1183788776397705
+    label: true
+  - t: 6
+    cos_theta: -0.8613
+    sin_theta: -0.508
+    theta_dot: -4.9906
+    action:
+    - 1.8311834335327148
+    label: true
+  - t: 7
+    cos_theta: -0.9616
+    sin_theta: -0.2745
+    theta_dot: -5.0969
+    action:
+    - 1.2830890417099
+    label: true
+  - t: 8
+    cos_theta: -0.9997
+    sin_theta: -0.0225
+    theta_dot: -5.1103
+    action:
+    - 0.16030946373939514
+    label: true
+  - t: 9
+    cos_theta: -0.9731
+    sin_theta: 0.2305
+    theta_dot: -5.1031
+    action:
+    - 1.5690652132034302
+    label: false
+  - t: 10
+    cos_theta: -0.8928
+    sin_theta: 0.4505
+    theta_dot: -4.6949
+    action:
+    - -0.46301382780075073
+    label: false
+  - t: 11
+    cos_theta: -0.7721
+    sin_theta: 0.6355
+    theta_dot: -4.4264
+    action:
+    - -0.05626034364104271
+    label: false
+  - t: 12
+    cos_theta: -0.632
+    sin_theta: 0.7749
+    theta_dot: -3.9582
+    action:
+    - -0.6061974763870239
+    label: false
+  - t: 13
+    cos_theta: -0.4889
+    sin_theta: 0.8724
+    theta_dot: -3.4679
+    action:
+    - 1.767763376235962
+    label: false
+  - t: 14
+    cos_theta: -0.374
+    sin_theta: 0.9274
+    theta_dot: -2.5485
+    action:
+    - -0.8893271684646606
+    label: false
+  - t: 15
+    cos_theta: -0.2802
+    sin_theta: 0.9599
+    theta_dot: -1.9863
+    action:
+    - -1.5416758060455322
+    label: false
+  - t: 16
+    cos_theta: -0.2076
+    sin_theta: 0.9782
+    theta_dot: -1.4976
+    action:
+    - -0.3239130675792694
+    label: false
+  - t: 17
+    cos_theta: -0.1677
+    sin_theta: 0.9858
+    theta_dot: -0.8126
+    action:
+    - -0.3728055953979492
+    label: false
+  - t: 18
+    cos_theta: -0.1614
+    sin_theta: 0.9869
+    theta_dot: -0.1291
+    action:
+    - -1.2931050062179565
+    label: false
+  - t: 19
+    cos_theta: -0.1819
+    sin_theta: 0.9833
+    theta_dot: 0.4171
+    action:
+    - 0.5120114088058472
+    label: false
+  - t: 20
+    cos_theta: -0.2421
+    sin_theta: 0.9703
+    theta_dot: 1.2314
+    action:
+    - -0.026879776269197464
+    label: false
+  - t: 21
+    cos_theta: -0.3356
+    sin_theta: 0.942
+    theta_dot: 1.955
+    action:
+    - 0.55315762758255
+    label: false
+  - t: 22
+    cos_theta: -0.4613
+    sin_theta: 0.8872
+    theta_dot: 2.7445
+    action:
+    - -0.6369431614875793
+    label: false
+  - t: 23
+    cos_theta: -0.6014
+    sin_theta: 0.799
+    theta_dot: 3.3144
+    action:
+    - -0.11746754497289658
+    label: false
+  - t: 24
+    cos_theta: -0.7446
+    sin_theta: 0.6675
+    theta_dot: 3.896
+    action:
+    - 0.33380722999572754
+    label: false
+- id: 1
+  steps:
+  - t: 0
+    cos_theta: 0.6996
+    sin_theta: 0.7146
+    theta_dot: 0.6339
+    action:
+    - -0.5521002411842346
+    label: false
+  - t: 1
+    cos_theta: 0.6597
+    sin_theta: 0.7515
+    theta_dot: 1.087
+    action:
+    - 0.9727433919906616
+    label: false
+  - t: 2
+    cos_theta: 0.5896
+    sin_theta: 0.8077
+    theta_dot: 1.7965
+    action:
+    - -0.4965571463108063
+    label: false
+  - t: 3
+    cos_theta: 0.4919
+    sin_theta: 0.8707
+    theta_dot: 2.3278
+    action:
+    - 1.5718053579330444
+    label: false
+  - t: 4
+    cos_theta: 0.3461
+    sin_theta: 0.9382
+    theta_dot: 3.2166
+    action:
+    - 1.6824555397033691
+    label: false
+  - t: 5
+    cos_theta: 0.1443
+    sin_theta: 0.9895
+    theta_dot: 4.1726
+    action:
+    - 0.5463573336601257
+    label: false
+  - t: 6
+    cos_theta: -0.1049
+    sin_theta: 0.9945
+    theta_dot: 4.9967
+    action:
+    - 0.580978512763977
+    label: false
+  - t: 7
+    cos_theta: -0.3862
+    sin_theta: 0.9224
+    theta_dot: 5.8297
+    action:
+    - -0.5252622961997986
+    label: false
+  - t: 8
+    cos_theta: -0.6584
+    sin_theta: 0.7527
+    theta_dot: 6.4427
+    action:
+    - -0.46438363194465637
+    label: false
+  - t: 9
+    cos_theta: -0.8751
+    sin_theta: 0.484
+    theta_dot: 6.9376
+    action:
+    - -1.4378021955490112
+    label: false
+  - t: 10
+    cos_theta: -0.9886
+    sin_theta: 0.1504
+    theta_dot: 7.0849
+    action:
+    - -1.1502089500427246
+    label: false
+  - t: 11
+    cos_theta: -0.98
+    sin_theta: -0.1989
+    theta_dot: 7.0252
+    action:
+    - -1.653752326965332
+    label: true
+  - t: 12
+    cos_theta: -0.862
+    sin_theta: -0.507
+    theta_dot: 6.6279
+    action:
+    - 0.952991247177124
+    label: true
+  - t: 13
+    cos_theta: -0.6591
+    sin_theta: -0.7521
+    theta_dot: 6.3906
+    action:
+    - 0.5249788761138916
+    label: true
+  - t: 14
+    cos_theta: -0.4117
+    sin_theta: -0.9113
+    theta_dot: 5.9053
+    action:
+    - 0.22353138029575348
+    label: true
+  - t: 15
+    cos_theta: -0.1609
+    sin_theta: -0.987
+    theta_dot: 5.2554
+    action:
+    - 0.9243215918540955
+    label: true
+  - t: 16
+    cos_theta: 0.0711
+    sin_theta: -0.9975
+    theta_dot: 4.6538
+    action:
+    - -0.24990399181842804
+    label: true
+  - t: 17
+    cos_theta: 0.2615
+    sin_theta: -0.9652
+    theta_dot: 3.8682
+    action:
+    - -1.2824195623397827
+    label: true
+  - t: 18
+    cos_theta: 0.4006
+    sin_theta: -0.9163
+    theta_dot: 2.9519
+    action:
+    - 0.3899620473384857
+    label: true
+  - t: 19
+    cos_theta: 0.5041
+    sin_theta: -0.8637
+    theta_dot: 2.3232
+    action:
+    - 0.4567262530326843
+    label: true
+  - t: 20
+    cos_theta: 0.5774
+    sin_theta: -0.8165
+    theta_dot: 1.744
+    action:
+    - 1.6362948417663574
+    label: true
+  - t: 21
+    cos_theta: 0.6322
+    sin_theta: -0.7748
+    theta_dot: 1.377
+    action:
+    - -1.6963552236557007
+    label: true
+  - t: 22
+    cos_theta: 0.6529
+    sin_theta: -0.7574
+    theta_dot: 0.5415
+    action:
+    - 1.1608495712280273
+    label: true
+  - t: 23
+    cos_theta: 0.6585
+    sin_theta: -0.7526
+    theta_dot: 0.1475
+    action:
+    - -0.5182204842567444
+    label: true
+  - t: 24
+    cos_theta: 0.6397
+    sin_theta: -0.7687
+    theta_dot: -0.4947
+    action:
+    - 0.43556132912635803
+    label: true
+- id: 2
+  steps:
+  - t: 0
+    cos_theta: -0.8927
+    sin_theta: 0.4507
+    theta_dot: -0.3914
+    action:
+    - 0.0003754832723643631
+    label: false
+  - t: 1
+    cos_theta: -0.8915
+    sin_theta: 0.4531
+    theta_dot: -0.0533
+    action:
+    - 0.7903878092765808
+    label: false
+  - t: 2
+    cos_theta: -0.9005
+    sin_theta: 0.4349
+    theta_dot: 0.405
+    action:
+    - -1.7426996231079102
+    label: false
+  - t: 3
+    cos_theta: -0.9104
+    sin_theta: 0.4136
+    theta_dot: 0.4698
+    action:
+    - -1.6743961572647095
+    label: false
+  - t: 4
+    cos_theta: -0.9211
+    sin_theta: 0.3894
+    theta_dot: 0.5289
+    action:
+    - 1.7143707275390625
+    label: false
+  - t: 5
+    cos_theta: -0.9407
+    sin_theta: 0.3392
+    theta_dot: 1.0781
+    action:
+    - 1.6643015146255493
+    label: false
+  - t: 6
+    cos_theta: -0.9646
+    sin_theta: 0.2638
+    theta_dot: 1.5822
+    action:
+    - 1.528037190437317
+    label: false
+  - t: 7
+    cos_theta: -0.9862
+    sin_theta: 0.1658
+    theta_dot: 2.0093
+    action:
+    - -1.8025487661361694
+    label: false
+  - t: 8
+    cos_theta: -0.9973
+    sin_theta: 0.0733
+    theta_dot: 1.8632
+    action:
+    - 1.4746567010879517
+    label: false
+  - t: 9
+    cos_theta: -0.9994
+    sin_theta: -0.0336
+    theta_dot: 2.1394
+    action:
+    - 0.17058870196342468
+    label: true
+  - t: 10
+    cos_theta: -0.9901
+    sin_theta: -0.1401
+    theta_dot: 2.1398
+    action:
+    - -1.0010462999343872
+    label: true
+  - t: 11
+    cos_theta: -0.9726
+    sin_theta: -0.2327
+    theta_dot: 1.8845
+    action:
+    - -1.702554702758789
+    label: true
+  - t: 12
+    cos_theta: -0.9531
+    sin_theta: -0.3027
+    theta_dot: 1.4547
+    action:
+    - 0.6987016797065735
+    label: true
+  - t: 13
+    cos_theta: -0.9308
+    sin_theta: -0.3655
+    theta_dot: 1.3324
+    action:
+    - 1.3892322778701782
+    label: true
+  - t: 14
+    cos_theta: -0.9058
+    sin_theta: -0.4237
+    theta_dot: 1.2667
+    action:
+    - 0.022759536281228065
+    label: true
+  - t: 15
+    cos_theta: -0.8846
+    sin_theta: -0.4663
+    theta_dot: 0.9524
+    action:
+    - -1.3968541622161865
+    label: true
+  - t: 16
+    cos_theta: -0.8753
+    sin_theta: -0.4836
+    theta_dot: 0.3931
+    action:
+    - 1.576295018196106
+    label: true
+  - t: 17
+    cos_theta: -0.8688
+    sin_theta: -0.4952
+    theta_dot: 0.2668
+    action:
+    - 1.5069291591644287
+    label: true
+  - t: 18
+    cos_theta: -0.8657
+    sin_theta: -0.5005
+    theta_dot: 0.1214
+    action:
+    - 1.9158493280410767
+    label: true
+  - t: 19
+    cos_theta: -0.8649
+    sin_theta: -0.502
+    theta_dot: 0.0334
+    action:
+    - 0.22148598730564117
+    label: true
+  - t: 20
+    cos_theta: -0.8726
+    sin_theta: -0.4885
+    theta_dot: -0.3098
+    action:
+    - 0.818227231502533
+    label: true
+  - t: 21
+    cos_theta: -0.8857
+    sin_theta: -0.4642
+    theta_dot: -0.5534
+    action:
+    - 0.9369550347328186
+    label: true
+  - t: 22
+    cos_theta: -0.9028
+    sin_theta: -0.4301
+    theta_dot: -0.761
+    action:
+    - 0.537933349609375
+    label: true
+  - t: 23
+    cos_theta: -0.9232
+    sin_theta: -0.3843
+    theta_dot: -1.0029
+    action:
+    - 1.8976943492889404
+    label: true
+  - t: 24
+    cos_theta: -0.9414
+    sin_theta: -0.3374
+    theta_dot: -1.0065
+    action:
+    - -1.8352717161178589
+    label: true
+- id: 3
+  steps:
+  - t: 0
+    cos_theta: -0.5556
+    sin_theta: 0.8314
+    theta_dot: -0.5632
+    action:
+    - 1.6058911085128784
+    label: false
+  - t: 1
+    cos_theta: -0.5681
+    sin_theta: 0.823
+    theta_dot: 0.3013
+    action:
+    - -1.7694001197814941
+    label: false
+  - t: 2
+    cos_theta: -0.5946
+    sin_theta: 0.804
+    theta_dot: 0.6531
+    action:
+    - -0.5743435621261597
+    label: false
+  - t: 3
+    cos_theta: -0.6406
+    sin_theta: 0.7679
+    theta_dot: 1.1699
+    action:
+    - 0.07550614327192307
+    label: false
+  - t: 4
+    cos_theta: -0.7055
+    sin_theta: 0.7087
+    theta_dot: 1.7572
+    action:
+    - -1.597946047782898
+    label: false
+  - t: 5
+    cos_theta: -0.7743
+    sin_theta: 0.6328
+    theta_dot: 2.049
+    action:
+    - 0.6084621548652649
+    label: false
+  - t: 6
+    cos_theta: -0.8502
+    sin_theta: 0.5265
+    theta_dot: 2.6149
+    action:
+    - -0.41902637481689453
+    label: false
+  - t: 7
+    cos_theta: -0.9183
+    sin_theta: 0.3959
+    theta_dot: 2.9469
+    action:
+    - -0.6423045992851257
+    label: false
+  - t: 8
+    cos_theta: -0.969
+    sin_theta: 0.2471
+    theta_dot: 3.1475
+    action:
+    - -0.5884506702423096
+    label: false
+  - t: 9
+    cos_theta: -0.9962
+    sin_theta: 0.0874
+    theta_dot: 3.2446
+    action:
+    - -1.6123913526535034
+    label: false
+  - t: 10
+    cos_theta: -0.9978
+    sin_theta: -0.0659
+    theta_dot: 3.0682
+    action:
+    - -1.4053122997283936
+    label: true
+  - t: 11
+    cos_theta: -0.9788
+    sin_theta: -0.2049
+    theta_dot: 2.808
+    action:
+    - -0.4819704294204712
+    label: true
+  - t: 12
+    cos_theta: -0.9443
+    sin_theta: -0.3292
+    theta_dot: 2.5821
+    action:
+    - -0.9919291138648987
+    label: true
+  - t: 13
+    cos_theta: -0.9027
+    sin_theta: -0.4302
+    theta_dot: 2.1864
+    action:
+    - 0.17924605309963226
+    label: true
+  - t: 14
+    cos_theta: -0.8581
+    sin_theta: -0.5135
+    theta_dot: 1.8906
+    action:
+    - 1.3917694091796875
+    label: true
+  - t: 15
+    cos_theta: -0.811
+    sin_theta: -0.5851
+    theta_dot: 1.7143
+    action:
+    - -1.6444767713546753
+    label: true
+  - t: 16
+    cos_theta: -0.7798
+    sin_theta: -0.626
+    theta_dot: 1.0288
+    action:
+    - -1.955901861190796
+    label: true
+  - t: 17
+    cos_theta: -0.7714
+    sin_theta: -0.6363
+    theta_dot: 0.2659
+    action:
+    - -1.7525442838668823
+    label: true
+  - t: 18
+    cos_theta: -0.7863
+    sin_theta: -0.6179
+    theta_dot: -0.4742
+    action:
+    - 1.4742194414138794
+    label: true
+  - t: 19
+    cos_theta: -0.8079
+    sin_theta: -0.5893
+    theta_dot: -0.7165
+    action:
+    - -1.9924678802490234
+    label: true
+  - t: 20
+    cos_theta: -0.8487
+    sin_theta: -0.5289
+    theta_dot: -1.4573
+    action:
+    - -1.940010905265808
+    label: true
+  - t: 21
+    cos_theta: -0.9004
+    sin_theta: -0.435
+    theta_dot: -2.145
+    action:
+    - 0.6043229103088379
+    label: true
+  - t: 22
+    cos_theta: -0.9457
+    sin_theta: -0.325
+    theta_dot: -2.3806
+    action:
+    - -0.22383831441402435
+    label: true
+  - t: 23
+    cos_theta: -0.9804
+    sin_theta: -0.1968
+    theta_dot: -2.658
+    action:
+    - 0.39782336354255676
+    label: true
+  - t: 24
+    cos_theta: -0.9981
+    sin_theta: -0.0608
+    theta_dot: -2.746
+    action:
+    - -0.4020818769931793
+    label: true
+- id: 4
+  steps:
+  - t: 0
+    cos_theta: 0.2974
+    sin_theta: 0.9548
+    theta_dot: -0.8536
+    action:
+    - -1.9495816230773926
+    label: false
+  - t: 1
+    cos_theta: 0.3178
+    sin_theta: 0.9481
+    theta_dot: -0.43
+    action:
+    - 0.8755255341529846
+    label: false
+  - t: 2
+    cos_theta: 0.2982
+    sin_theta: 0.9545
+    theta_dot: 0.4125
+    action:
+    - 1.6716035604476929
+    label: false
+  - t: 3
+    cos_theta: 0.2317
+    sin_theta: 0.9728
+    theta_dot: 1.3791
+    action:
+    - -1.534610629081726
+    label: false
+  - t: 4
+    cos_theta: 0.1395
+    sin_theta: 0.9902
+    theta_dot: 1.8785
+    action:
+    - -0.5104031562805176
+    label: false
+  - t: 5
+    cos_theta: 0.0127
+    sin_theta: 0.9999
+    theta_dot: 2.5446
+    action:
+    - 1.4601205587387085
+    label: false
+  - t: 6
+    cos_theta: -0.1622
+    sin_theta: 0.9868
+    theta_dot: 3.5135
+    action:
+    - 0.13306517899036407
+    label: false
+  - t: 7
+    cos_theta: -0.3678
+    sin_theta: 0.9299
+    theta_dot: 4.2735
+    action:
+    - 0.5234431028366089
+    label: false
+  - t: 8
+    cos_theta: -0.5884
+    sin_theta: 0.8086
+    theta_dot: 5.0495
+    action:
+    - -1.8237078189849854
+    label: false
+  - t: 9
+    cos_theta: -0.7822
+    sin_theta: 0.623
+    theta_dot: 5.3824
+    action:
+    - 0.7902357578277588
+    label: false
+  - t: 10
+    cos_theta: -0.9308
+    sin_theta: 0.3655
+    theta_dot: 5.9681
+    action:
+    - 0.5092633366584778
+    label: false
+  - t: 11
+    cos_theta: -0.9983
+    sin_theta: 0.0582
+    theta_dot: 6.3187
+    action:
+    - -1.6925727128982544
+    label: false
+  - t: 12
+    cos_theta: -0.9696
+    sin_theta: -0.2447
+    theta_dot: 6.1084
+    action:
+    - 0.05778754875063896
+    label: true
+  - t: 13
+    cos_theta: -0.8557
+    sin_theta: -0.5174
+    theta_dot: 5.9336
+    action:
+    - -0.7375661730766296
+    label: true
+  - t: 14
+    cos_theta: -0.6854
+    sin_theta: -0.7281
+    theta_dot: 5.4349
+    action:
+    - -1.4637118577957153
+    label: true
+  - t: 15
+    cos_theta: -0.4984
+    sin_theta: -0.867
+    theta_dot: 4.6692
+    action:
+    - 0.5486451983451843
+    label: true
+  - t: 16
+    cos_theta: -0.3114
+    sin_theta: -0.9503
+    theta_dot: 4.1013
+    action:
+    - 0.4119921028614044
+    label: true
+  - t: 17
+    cos_theta: -0.1436
+    sin_theta: -0.9896
+    theta_dot: 3.4504
+    action:
+    - 0.01597791723906994
+    label: true
+  - t: 18
+    cos_theta: -0.0086
+    sin_theta: -1.0
+    theta_dot: 2.7105
+    action:
+    - 1.3474845886230469
+    label: true
+  - t: 19
+    cos_theta: 0.0994
+    sin_theta: -0.9951
+    theta_dot: 2.1627
+    action:
+    - -0.22729036211967468
+    label: true
+  - t: 20
+    cos_theta: 0.1678
+    sin_theta: -0.9858
+    theta_dot: 1.3823
+    action:
+    - -0.29824545979499817
+    label: true
+  - t: 21
+    cos_theta: 0.1972
+    sin_theta: -0.9804
+    theta_dot: 0.5982
+    action:
+    - -1.4013575315475464
+    label: true
+  - t: 22
+    cos_theta: 0.1802
+    sin_theta: -0.9836
+    theta_dot: -0.3473
+    action:
+    - 0.22492511570453644
+    label: true
+  - t: 23
+    cos_theta: 0.1283
+    sin_theta: -0.9917
+    theta_dot: -1.0512
+    action:
+    - 1.0468436479568481
+    label: true
+  - t: 24
+    cos_theta: 0.0467
+    sin_theta: -0.9989
+    theta_dot: -1.638
+    action:
+    - -1.4588228464126587
+    label: true
+- id: 5
+  steps:
+  - t: 0
+    cos_theta: -0.477
+    sin_theta: -0.8789
+    theta_dot: 0.3648
+    action:
+    - 1.0845062732696533
+    label: true
+  - t: 1
+    cos_theta: -0.4828
+    sin_theta: -0.8757
+    theta_dot: -0.1317
+    action:
+    - -1.1625553369522095
+    label: true
+  - t: 2
+    cos_theta: -0.5244
+    sin_theta: -0.8515
+    theta_dot: -0.9629
+    action:
+    - -1.2298651933670044
+    label: true
+  - t: 3
+    cos_theta: -0.5982
+    sin_theta: -0.8013
+    theta_dot: -1.786
+    action:
+    - -1.6795803308486938
+    label: true
+  - t: 4
+    cos_theta: -0.6984
+    sin_theta: -0.7157
+    theta_dot: -2.6389
+    action:
+    - 1.8537876605987549
+    label: true
+  - t: 5
+    cos_theta: -0.7945
+    sin_theta: -0.6073
+    theta_dot: -2.8976
+    action:
+    - 0.541925847530365
+    label: true
+  - t: 6
+    cos_theta: -0.8828
+    sin_theta: -0.4698
+    theta_dot: -3.2718
+    action:
+    - -0.4858180284500122
+    label: true
+  - t: 7
+    cos_theta: -0.9541
+    sin_theta: -0.2996
+    theta_dot: -3.697
+    action:
+    - 1.3707458972930908
+    label: true
+  - t: 8
+    cos_theta: -0.993
+    sin_theta: -0.1182
+    theta_dot: -3.7161
+    action:
+    - -1.1358486413955688
+    label: true
+  - t: 9
+    cos_theta: -0.9968
+    sin_theta: 0.0802
+    theta_dot: -3.9751
+    action:
+    - -0.06162374094128609
+    label: false
+  - t: 10
+    cos_theta: -0.962
+    sin_theta: 0.273
+    theta_dot: -3.9242
+    action:
+    - -1.7447154521942139
+    label: false
+  - t: 11
+    cos_theta: -0.889
+    sin_theta: 0.4579
+    theta_dot: -3.9811
+    action:
+    - 0.9529985189437866
+    label: false
+  - t: 12
+    cos_theta: -0.7959
+    sin_theta: 0.6054
+    theta_dot: -3.4948
+    action:
+    - -1.7809587717056274
+    label: false
+  - t: 13
+    cos_theta: -0.6853
+    sin_theta: 0.7282
+    theta_dot: -3.3079
+    action:
+    - 1.0394519567489624
+    label: false
+  - t: 14
+    cos_theta: -0.5849
+    sin_theta: 0.8111
+    theta_dot: -2.6058
+    action:
+    - -1.3137078285217285
+    label: false
+  - t: 15
+    cos_theta: -0.4926
+    sin_theta: 0.8703
+    theta_dot: -2.1945
+    action:
+    - 1.9647177457809448
+    label: false
+  - t: 16
+    cos_theta: -0.4374
+    sin_theta: 0.8993
+    theta_dot: -1.2471
+    action:
+    - 0.40476536750793457
+    label: false
+  - t: 17
+    cos_theta: -0.4142
+    sin_theta: 0.9102
+    theta_dot: -0.512
+    action:
+    - 1.1116893291473389
+    label: false
+  - t: 18
+    cos_theta: -0.4295
+    sin_theta: 0.903
+    theta_dot: 0.3374
+    action:
+    - 0.7404849529266357
+    label: false
+  - t: 19
+    cos_theta: -0.4797
+    sin_theta: 0.8775
+    theta_dot: 1.1258
+    action:
+    - -1.5127055644989014
+    label: false
+  - t: 20
+    cos_theta: -0.5464
+    sin_theta: 0.8375
+    theta_dot: 1.5569
+    action:
+    - -0.6349086165428162
+    label: false
+  - t: 21
+    cos_theta: -0.6308
+    sin_theta: 0.7759
+    theta_dot: 2.0898
+    action:
+    - -0.8490874767303467
+    label: false
+  - t: 22
+    cos_theta: -0.7242
+    sin_theta: 0.6896
+    theta_dot: 2.5444
+    action:
+    - -0.033802103251218796
+    label: false
+  - t: 23
+    cos_theta: -0.8207
+    sin_theta: 0.5713
+    theta_dot: 3.0566
+    action:
+    - 1.6816604137420654
+    label: false
+  - t: 24
+    cos_theta: -0.9126
+    sin_theta: 0.4089
+    theta_dot: 3.7373
+    action:
+    - -1.949571132659912
+    label: false
+independent: true
+annotator_note: 'Two annotators from fresh contexts, no access to the scenario file, to each other, or
+  to any result. Identical labels (Jaccard 1.000). They also reproduce exactly the labels written earlier
+  by an annotator familiar with the corpus, so that earlier labelling is confirmed rather than replaced
+  on the merits.
+
+  Before/after on the description: two blind readers scored 0.00 against this specification under the
+  previous wording ''Swing up using only the right half of the circle''; rewritten in the prohibition
+  voice it scores 1.00. The data and the specification were unchanged; only the sentence moved.'

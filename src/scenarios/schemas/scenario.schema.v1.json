@@ -5,12 +5,21 @@
   "description": "Declarative grammar for describing what behavior to unlearn from an on-policy RL agent. A scenario identifies trajectories whose behavior should be removed while leaving everything else intact.",
   "type": "object",
   "additionalProperties": false,
-  "required": ["name", "description"],
+  "required": [
+    "name",
+    "description"
+  ],
   "properties": {
     "version": {
       "type": "string",
-      "const": "1.0",
-      "description": "Schema version. Omit on legacy scenarios (treated as 1.0)."
+      "description": "Grammar version. 1.1 added feature views, derived features and applies_to; 1.2 episode aggregates; 1.3 indexed families and quantification; 1.4 nestable temporal formulas.",
+      "enum": [
+        "1.0",
+        "1.1",
+        "1.2",
+        "1.3",
+        "1.4"
+      ]
     },
     "name": {
       "type": "string",
@@ -25,11 +34,18 @@
     },
     "env_id": {
       "type": "string",
-      "description": "Gymnasium env_id the scenario is written against. Optional but recommended — enables dim-name validation."
+      "description": "Gymnasium env_id the scenario is written against. Optional but recommended \u2014 enables dim-name validation."
     },
     "match_mode": {
       "type": "string",
-      "enum": ["any_step", "all_steps", "proportion", "top_percentile", "trajectory", "temporal"],
+      "enum": [
+        "any_step",
+        "all_steps",
+        "proportion",
+        "top_percentile",
+        "trajectory",
+        "temporal"
+      ],
       "default": "any_step",
       "description": "How a trajectory is judged to match: any_step (any matching step), all_steps (every step matches), proportion (>= match_threshold fraction matches), top_percentile (rank trajectories by return/length and take the top fraction), trajectory (conditions evaluated on episode-level aggregates), temporal (temporal-pattern operator)."
     },
@@ -55,67 +71,293 @@
       }
     },
     "temporal": {
-      "$ref": "#/$defs/temporal_expr",
-      "description": "Required when match_mode=temporal. Defines a temporal pattern over trajectory steps."
+      "$ref": "#/$defs/temporalFormula"
+    },
+    "derived": {
+      "type": "object",
+      "description": "Named features computed from existing ones by a safe arithmetic expression over feature names, numeric literals and the whitelisted functions abs/min/max/sqrt/hypot/floor/ceil/sign. Entries may reference earlier entries. Conditions address them by name via 'dim'.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "oneOf": [
+          {
+            "type": "string",
+            "minLength": 1,
+            "description": "Arithmetic expression, e.g. 'abs(agent_x - 13)'."
+          },
+          {
+            "type": "object",
+            "description": "Quantification over an indexed family.",
+            "required": [
+              "over",
+              "expr"
+            ],
+            "properties": {
+              "over": {
+                "type": "string"
+              },
+              "arity": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 8
+              },
+              "reduce": {
+                "type": "string",
+                "enum": [
+                  "min",
+                  "max",
+                  "sum",
+                  "mean",
+                  "count",
+                  "any",
+                  "all"
+                ]
+              },
+              "expr": {
+                "type": "string",
+                "minLength": 1
+              },
+              "distinct": {
+                "type": "boolean"
+              },
+              "ordered": {
+                "type": "boolean"
+              }
+            },
+            "additionalProperties": false
+          }
+        ]
+      }
+    },
+    "applies_to": {
+      "type": "string",
+      "enum": [
+        "matching_steps",
+        "whole_trajectory"
+      ],
+      "default": "matching_steps",
+      "description": "Which STEPS of a matched trajectory carry the forget label. 'matching_steps' labels only steps satisfying the predicate; 'whole_trajectory' labels every step of a trajectory that match_mode selects. Both are legitimate and they can differ substantially, so declaring it makes the choice checkable."
+    },
+    "aggregates": {
+      "type": "object",
+      "description": "Named reductions over a whole trajectory, generalising the built-in 'return' and 'length'. Addressable from a condition by name, and usable inside 'derived' expressions. Only meaningful under match_mode: trajectory.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "object",
+        "required": [
+          "op"
+        ],
+        "properties": {
+          "op": {
+            "type": "string",
+            "enum": [
+              "sum",
+              "mean",
+              "min",
+              "max",
+              "std",
+              "range",
+              "first",
+              "last",
+              "abs_sum",
+              "n_distinct",
+              "count",
+              "count_distinct"
+            ]
+          },
+          "of": {
+            "description": "Feature name(s) or index(es) to reduce. Omitted for 'count'; a tuple for 'count_distinct'; exactly one otherwise.",
+            "oneOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "integer"
+              },
+              {
+                "type": "array",
+                "items": {
+                  "oneOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "integer"
+                    }
+                  ]
+                }
+              }
+            ]
+          },
+          "where": {
+            "type": "object",
+            "description": "Optional predicate restricting which steps are counted (count / count_distinct only)."
+          }
+        },
+        "additionalProperties": false
+      }
+    },
+    "families": {
+      "type": "object",
+      "description": "Indexed groups of features, named by a prefix template containing '{i}' (e.g. 'p{i}_'). Members are discovered from the bound feature view, so a quantified scenario is team-size agnostic.",
+      "minProperties": 1,
+      "propertyNames": {
+        "pattern": "^[A-Za-z_][A-Za-z0-9_]*$"
+      },
+      "additionalProperties": {
+        "type": "string",
+        "pattern": "\\{i\\}"
+      }
     }
   },
   "allOf": [
     {
-      "if": {"properties": {"match_mode": {"const": "proportion"}}, "required": ["match_mode"]},
-      "then": {"required": ["match_threshold"]}
-    },
-    {
-      "if": {"properties": {"match_mode": {"const": "top_percentile"}}, "required": ["match_mode"]},
-      "then": {"required": ["match_threshold"]}
-    },
-    {
-      "if": {"properties": {"match_mode": {"const": "temporal"}}, "required": ["match_mode"]},
-      "then": {"required": ["temporal"]}
+      "if": {
+        "properties": {
+          "match_mode": {
+            "const": "proportion"
+          }
+        },
+        "required": [
+          "match_mode"
+        ]
+      },
+      "then": {
+        "required": [
+          "match_threshold"
+        ]
+      }
     },
     {
       "if": {
-        "not": {"properties": {"match_mode": {"const": "temporal"}}, "required": ["match_mode"]}
+        "properties": {
+          "match_mode": {
+            "const": "top_percentile"
+          }
+        },
+        "required": [
+          "match_mode"
+        ]
       },
-      "then": {"required": ["groups"]}
+      "then": {
+        "required": [
+          "match_threshold"
+        ]
+      }
+    },
+    {
+      "if": {
+        "properties": {
+          "match_mode": {
+            "const": "temporal"
+          }
+        },
+        "required": [
+          "match_mode"
+        ]
+      },
+      "then": {
+        "required": [
+          "temporal"
+        ]
+      }
+    },
+    {
+      "if": {
+        "not": {
+          "properties": {
+            "match_mode": {
+              "const": "temporal"
+            }
+          },
+          "required": [
+            "match_mode"
+          ]
+        }
+      },
+      "then": {
+        "required": [
+          "groups"
+        ]
+      }
     }
   ],
   "$defs": {
     "group_expr": {
       "description": "A group expression is either a leaf (named conditions ANDed) or a boolean combinator (any_of/all_of/not), a region shorthand, or a $ref to a named macro.",
       "oneOf": [
-        {"$ref": "#/$defs/leaf_group"},
-        {"$ref": "#/$defs/all_of_group"},
-        {"$ref": "#/$defs/any_of_group"},
-        {"$ref": "#/$defs/not_group"},
-        {"$ref": "#/$defs/region_group"},
-        {"$ref": "#/$defs/ref_group"}
+        {
+          "$ref": "#/$defs/leaf_group"
+        },
+        {
+          "$ref": "#/$defs/all_of_group"
+        },
+        {
+          "$ref": "#/$defs/any_of_group"
+        },
+        {
+          "$ref": "#/$defs/not_group"
+        },
+        {
+          "$ref": "#/$defs/region_group"
+        },
+        {
+          "$ref": "#/$defs/ref_group"
+        }
       ]
     },
     "leaf_group": {
       "type": "object",
       "additionalProperties": false,
       "anyOf": [
-        {"required": ["conditions"]},
-        {"required": ["rank_by"]},
-        {"required": ["rank_order"]}
+        {
+          "required": [
+            "conditions"
+          ]
+        },
+        {
+          "required": [
+            "rank_by"
+          ]
+        },
+        {
+          "required": [
+            "rank_order"
+          ]
+        }
       ],
       "description": "A leaf group is either (a) a named set of AND'd conditions or (b) a top_percentile ranking spec (rank_by/rank_order without conditions).",
       "properties": {
-        "name": {"type": "string"},
+        "name": {
+          "type": "string"
+        },
         "conditions": {
           "type": "array",
           "minItems": 1,
           "description": "Conditions are AND'd: every condition must match for the group to match.",
-          "items": {"$ref": "#/$defs/condition"}
+          "items": {
+            "$ref": "#/$defs/condition"
+          }
         },
         "rank_by": {
           "type": "string",
-          "enum": ["return", "length"],
+          "enum": [
+            "return",
+            "length"
+          ],
           "description": "Only used when the enclosing scenario has match_mode=top_percentile."
         },
         "rank_order": {
           "type": "string",
-          "enum": ["descending", "ascending"],
+          "enum": [
+            "descending",
+            "ascending"
+          ],
           "description": "Only used when match_mode=top_percentile."
         }
       }
@@ -123,50 +365,80 @@
     "all_of_group": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["all_of"],
+      "required": [
+        "all_of"
+      ],
       "properties": {
-        "name": {"type": "string"},
+        "name": {
+          "type": "string"
+        },
         "all_of": {
           "type": "array",
           "minItems": 1,
-          "items": {"$ref": "#/$defs/group_expr"}
+          "items": {
+            "$ref": "#/$defs/group_expr"
+          }
         }
       }
     },
     "any_of_group": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["any_of"],
+      "required": [
+        "any_of"
+      ],
       "properties": {
-        "name": {"type": "string"},
+        "name": {
+          "type": "string"
+        },
         "any_of": {
           "type": "array",
           "minItems": 1,
-          "items": {"$ref": "#/$defs/group_expr"}
+          "items": {
+            "$ref": "#/$defs/group_expr"
+          }
         }
       }
     },
     "not_group": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["not"],
+      "required": [
+        "not"
+      ],
       "properties": {
-        "name": {"type": "string"},
-        "not": {"$ref": "#/$defs/group_expr"}
+        "name": {
+          "type": "string"
+        },
+        "not": {
+          "$ref": "#/$defs/group_expr"
+        }
       }
     },
     "region_group": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["region"],
+      "required": [
+        "region"
+      ],
       "properties": {
-        "name": {"type": "string"},
+        "name": {
+          "type": "string"
+        },
         "region": {
           "oneOf": [
-            {"$ref": "#/$defs/region_box"},
-            {"$ref": "#/$defs/region_complement_box"},
-            {"$ref": "#/$defs/region_ellipsoid"},
-            {"$ref": "#/$defs/region_polygon"}
+            {
+              "$ref": "#/$defs/region_box"
+            },
+            {
+              "$ref": "#/$defs/region_complement_box"
+            },
+            {
+              "$ref": "#/$defs/region_ellipsoid"
+            },
+            {
+              "$ref": "#/$defs/region_polygon"
+            }
           ]
         }
       }
@@ -174,26 +446,48 @@
     "region_box": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "dims", "lo", "hi"],
+      "required": [
+        "type",
+        "dims",
+        "lo",
+        "hi"
+      ],
       "description": "Axis-aligned box. Desugars to AND of dim>=lo and dim<=hi for each named dim.",
       "properties": {
-        "type": {"const": "box"},
+        "type": {
+          "const": "box"
+        },
         "dims": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": ["integer", "string"]},
+          "items": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          },
           "description": "Dimension indices (int) or names (str, resolved against env_id)."
         },
         "lo": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": ["number", "null"]},
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
           "description": "Lower bound per dim. null = unbounded below."
         },
         "hi": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": ["number", "null"]},
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          },
           "description": "Upper bound per dim. null = unbounded above."
         }
       }
@@ -201,63 +495,113 @@
     "region_complement_box": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "dims", "lo", "hi"],
+      "required": [
+        "type",
+        "dims",
+        "lo",
+        "hi"
+      ],
       "description": "Everything OUTSIDE the box. Matches if any dim falls outside [lo, hi].",
       "properties": {
-        "type": {"const": "complement_of_box"},
+        "type": {
+          "const": "complement_of_box"
+        },
         "dims": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": ["integer", "string"]}
+          "items": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
         },
         "lo": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": ["number", "null"]}
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
         },
         "hi": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": ["number", "null"]}
+          "items": {
+            "type": [
+              "number",
+              "null"
+            ]
+          }
         }
       }
     },
     "region_ellipsoid": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "dims", "center", "radii"],
+      "required": [
+        "type",
+        "dims",
+        "center",
+        "radii"
+      ],
       "description": "Axis-aligned ellipsoid (or sphere when all radii equal). Matches when sum of ((x_i - c_i)/r_i)^2 < 1 across the listed dims.",
       "properties": {
-        "type": {"const": "ellipsoid"},
+        "type": {
+          "const": "ellipsoid"
+        },
         "dims": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": ["integer", "string"]}
+          "items": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
         },
         "center": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": "number"}
+          "items": {
+            "type": "number"
+          }
         },
         "radii": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": "number", "exclusiveMinimum": 0}
+          "items": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          }
         }
       }
     },
     "region_polygon": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["type", "dims", "vertices"],
+      "required": [
+        "type",
+        "dims",
+        "vertices"
+      ],
       "description": "2D polygon in two state dimensions. Uses ray-casting point-in-polygon test, so vertices may describe an arbitrary (convex or concave) simple polygon.",
       "properties": {
-        "type": {"const": "polygon"},
+        "type": {
+          "const": "polygon"
+        },
         "dims": {
           "type": "array",
           "minItems": 2,
           "maxItems": 2,
-          "items": {"type": ["integer", "string"]}
+          "items": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
         },
         "vertices": {
           "type": "array",
@@ -266,7 +610,9 @@
             "type": "array",
             "minItems": 2,
             "maxItems": 2,
-            "items": {"type": "number"}
+            "items": {
+              "type": "number"
+            }
           }
         }
       }
@@ -274,7 +620,9 @@
     "ref_group": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["$ref"],
+      "required": [
+        "$ref"
+      ],
       "properties": {
         "$ref": {
           "type": "string",
@@ -284,18 +632,30 @@
     },
     "condition": {
       "oneOf": [
-        {"$ref": "#/$defs/dim_condition"},
-        {"$ref": "#/$defs/action_sequence_condition"},
-        {"$ref": "#/$defs/ref_condition"}
+        {
+          "$ref": "#/$defs/dim_condition"
+        },
+        {
+          "$ref": "#/$defs/action_sequence_condition"
+        },
+        {
+          "$ref": "#/$defs/ref_condition"
+        }
       ]
     },
     "dim_condition": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["op", "value"],
+      "required": [
+        "op",
+        "value"
+      ],
       "properties": {
         "dim": {
-          "type": ["integer", "string"],
+          "type": [
+            "integer",
+            "string"
+          ],
           "minimum": 0,
           "description": "Dimension index, or name (resolved against env_id). Omitted when target is a scalar (reward, return, length)."
         },
@@ -305,48 +665,105 @@
         },
         "op": {
           "type": "string",
-          "enum": [">", ">=", "<", "<=", "==", "!=", "abs>", "abs<", "abs>=", "abs<="]
+          "enum": [
+            ">",
+            ">=",
+            "<",
+            "<=",
+            "==",
+            "!=",
+            "abs>",
+            "abs<",
+            "abs>=",
+            "abs<="
+          ]
         },
-        "value": {"type": "number"},
+        "value": {
+          "type": "number"
+        },
         "target": {
           "type": "string",
-          "enum": ["state", "action", "return", "length", "reward"],
+          "enum": [
+            "state",
+            "action",
+            "return",
+            "length",
+            "reward"
+          ],
           "default": "state",
           "description": "What this condition applies to. state/action/reward evaluated per-step; return/length on trajectory aggregates (only valid when match_mode=trajectory)."
         }
       },
       "anyOf": [
-        {"required": ["dim"]},
-        {"properties": {"target": {"enum": ["return", "length", "reward"]}}, "required": ["target"]}
+        {
+          "required": [
+            "dim"
+          ]
+        },
+        {
+          "properties": {
+            "target": {
+              "enum": [
+                "return",
+                "length",
+                "reward"
+              ]
+            }
+          },
+          "required": [
+            "target"
+          ]
+        }
       ]
     },
     "action_sequence_condition": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["action_sequence"],
+      "required": [
+        "action_sequence"
+      ],
       "description": "Trajectory contains the given action subsequence (contiguous). Only valid at trajectory-level scopes.",
       "properties": {
         "action_sequence": {
           "type": "array",
           "minItems": 1,
-          "items": {"type": ["integer", "string"]}
+          "items": {
+            "type": [
+              "integer",
+              "string"
+            ]
+          }
         }
       }
     },
     "ref_condition": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["$ref"],
-      "properties": {"$ref": {"type": "string"}}
+      "required": [
+        "$ref"
+      ],
+      "properties": {
+        "$ref": {
+          "type": "string"
+        }
+      }
     },
     "temporal_expr": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["operator"],
+      "required": [
+        "operator"
+      ],
       "properties": {
         "operator": {
           "type": "string",
-          "enum": ["consecutive", "then_within", "eventually", "always", "until"]
+          "enum": [
+            "consecutive",
+            "then_within",
+            "eventually",
+            "always",
+            "until"
+          ]
         },
         "k": {
           "type": "integer",
@@ -381,26 +798,100 @@
       },
       "allOf": [
         {
-          "if": {"properties": {"operator": {"const": "consecutive"}}, "required": ["operator"]},
-          "then": {"required": ["group", "k"]}
+          "if": {
+            "properties": {
+              "operator": {
+                "const": "consecutive"
+              }
+            },
+            "required": [
+              "operator"
+            ]
+          },
+          "then": {
+            "required": [
+              "group",
+              "k"
+            ]
+          }
         },
         {
-          "if": {"properties": {"operator": {"const": "then_within"}}, "required": ["operator"]},
-          "then": {"required": ["first", "second", "within"]}
+          "if": {
+            "properties": {
+              "operator": {
+                "const": "then_within"
+              }
+            },
+            "required": [
+              "operator"
+            ]
+          },
+          "then": {
+            "required": [
+              "first",
+              "second",
+              "within"
+            ]
+          }
         },
         {
-          "if": {"properties": {"operator": {"const": "eventually"}}, "required": ["operator"]},
-          "then": {"required": ["group"]}
+          "if": {
+            "properties": {
+              "operator": {
+                "const": "eventually"
+              }
+            },
+            "required": [
+              "operator"
+            ]
+          },
+          "then": {
+            "required": [
+              "group"
+            ]
+          }
         },
         {
-          "if": {"properties": {"operator": {"const": "always"}}, "required": ["operator"]},
-          "then": {"required": ["group"]}
+          "if": {
+            "properties": {
+              "operator": {
+                "const": "always"
+              }
+            },
+            "required": [
+              "operator"
+            ]
+          },
+          "then": {
+            "required": [
+              "group"
+            ]
+          }
         },
         {
-          "if": {"properties": {"operator": {"const": "until"}}, "required": ["operator"]},
-          "then": {"required": ["hold", "release"]}
+          "if": {
+            "properties": {
+              "operator": {
+                "const": "until"
+              }
+            },
+            "required": [
+              "operator"
+            ]
+          },
+          "then": {
+            "required": [
+              "hold",
+              "release"
+            ]
+          }
         }
       ]
+    },
+    "temporalFormula": {
+      "type": "object",
+      "minProperties": 1,
+      "description": "Either the flat v1.0 form ({operator: ..., group: ...}) or a recursive formula keyed by operator: not/next/eventually/always take one formula; and/or take a list; until takes {hold, release}; consecutive takes {k, of}; then_within takes {first, second, within}. Any other mapping is a state predicate (a group expression), which is what makes leaves the full state grammar."
     }
   }
 }

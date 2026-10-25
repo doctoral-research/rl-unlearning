@@ -1,0 +1,37 @@
+# yaml-language-server: $schema=../../../src/scenarios/schemas/scenario.schema.v1.json
+#
+# Nested temporal: eventually( pickup AND NOT eventually( toggle ) ).
+# v1.3's temporal layer was one operator deep -- operands had to be state
+# predicates -- so this was inexpressible. Formulas are now evaluated at a
+# position, which makes nesting fall out.
+version: "1.4"
+name: no_key_hoarding
+description: >
+  Forget the pattern of picking up the key and then never using it to open
+  the door. The agent carries the key for the rest of the episode while the
+  door stays shut, which blocks the goal and wastes the pickup.
+env_id: MiniGrid-DoorKey-8x8-v0
+match_mode: temporal
+applies_to: whole_trajectory
+
+defines:
+  holding_key:
+    conditions:
+      - dim: carrying_key
+        op: "=="
+        value: 1
+  opens_door:
+    conditions:
+      - dim: 0
+        dim_name: toggle
+        op: "=="
+        value: 5
+        target: action
+
+temporal:
+  eventually:
+    and:
+      - $ref: holding_key
+      - not:
+          eventually:
+            $ref: opens_door

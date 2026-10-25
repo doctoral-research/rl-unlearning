@@ -35,6 +35,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                        help="Only report errors (suppress warnings/info).")
     p_val.add_argument("--summary", action="store_true",
                        help="Print a one-line per-file summary at the end.")
+    p_val.add_argument("--view", default="none", metavar="PROVIDER",
+                       help="Bind a feature view before validating, enabling "
+                            "dtype and range checks: 'auto' to resolve from "
+                            "env_id, a provider name, or 'none' (default). "
+                            "'auto' instantiates the environment, so it is "
+                            "slower and needs the env's dependencies.")
 
     p_sum = sub.add_parser("summary", help="Show prose + predicate for a scenario.")
     p_sum.add_argument("scenario", help="Scenario file path or relative name "
@@ -43,6 +49,66 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                        help="Only print the LaTeX predicate (good for piping).")
     p_sum.add_argument("--prose-only", action="store_true",
                        help="Only print the natural-language form.")
+
+    p_dom = sub.add_parser(
+        "domains",
+        help="Report which feature view each environment resolves to.")
+    p_dom.add_argument("env_ids", nargs="*",
+                       help="Environment ids (default: all registered).")
+    p_dom.add_argument("--markdown", action="store_true",
+                       help="Emit a markdown table for the paper.")
+
+    p_drift = sub.add_parser(
+        "drift",
+        help="Measure whether the label spec and the metric spec agree.")
+    p_drift.add_argument("label", help="Specification driving the update.")
+    p_drift.add_argument("metric", nargs="?",
+                         help="Specification used for the reported metric. "
+                              "Omit to sweep index offsets on LABEL alone.")
+    p_drift.add_argument("--against", required=True, metavar="TRAJ.pkl",
+                         help="Pickled list of trajectories.")
+    p_drift.add_argument("--metric-offset", type=int, default=0,
+                         help="State index the metric reads relative to the "
+                              "label: 1 = the state the agent landed in.")
+    p_drift.add_argument("--offsets", default="0,1,2",
+                         help="Offsets for the sweep form (default 0,1,2).")
+
+    p_mine = sub.add_parser(
+        "mine",
+        help="Synthesise a scenario from flagged and unflagged rollouts.")
+    p_mine.add_argument("positive", help="Pickled flagged trajectories.")
+    p_mine.add_argument("negative", help="Pickled unflagged trajectories.")
+    p_mine.add_argument("--env", dest="env_id", default=None,
+                        help="Environment id, used to resolve a feature view.")
+    p_mine.add_argument("--name", default="mined")
+    p_mine.add_argument("--max-rules", type=int, default=3)
+    p_mine.add_argument("--max-literals", type=int, default=3)
+    p_mine.add_argument("--out", default=None,
+                        help="Write the mined scenario YAML here.")
+
+    p_auth = sub.add_parser(
+        "author",
+        help="Build the authoring prompt for a behaviour, or check a "
+             "candidate against the acceptance gates.")
+    p_auth.add_argument("description", help="The behaviour, in plain words.")
+    p_auth.add_argument("--env", dest="env_id", default=None,
+                        help="Environment id, used to resolve a feature view.")
+    p_auth.add_argument("--check", metavar="FILE", default=None,
+                        help="Score a candidate scenario instead of printing "
+                             "the prompt. Prints the feedback a repair loop "
+                             "would send back.")
+    p_auth.add_argument("--against", metavar="TRAJ.pkl", default=None,
+                        help="Rollouts for the empirical gate (rejects a "
+                             "candidate that fires on nothing).")
+
+    p_corp = sub.add_parser(
+        "corpus", help="Score the behaviour corpus.")
+    p_corp.add_argument("directory", nargs="?", default="benchmark/behaviours",
+                        help="Corpus root (default: benchmark/behaviours).")
+    p_corp.add_argument("--verbose", "-v", action="store_true",
+                        help="List every entry, not just the summary.")
+    p_corp.add_argument("--gaps", action="store_true",
+                        help="Show what the grammar cannot yet state.")
 
     p_lst = sub.add_parser("list", help="List all known scenarios.")
     p_lst.add_argument("--root", default="configs/scenarios",
@@ -60,6 +126,208 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return _cmd_validate(args)
     if args.cmd == "summary":
         return _cmd_summary(args)
+    if args.cmd == "mine":
+        import pickle
+
+        import yaml as _yaml
+
+        from .mining import MiningError, mine_scenario
+
+        view = _view_for(args.env_id, "auto") if args.env_id else None
+        with open(args.positive, "rb") as fh:
+            pos = pickle.load(fh)
+        with open(args.negative, "rb") as fh:
+            neg = pickle.load(fh)
+        try:
+            scenario, report = mine_scenario(
+                pos, neg, view=view, name=args.name,
+                max_rules=args.max_rules, max_literals=args.max_literals)
+        except MiningError as exc:
+            print(f"cannot mine: {exc}", file=sys.stderr)
+            return 2
+
+        print(report.render())
+        print()
+        print("recovered predicate:")
+        for g in scenario.groups:
+            parts = []
+            for c in g.get("conditions", []):
+                nm = c.get("dim_name") or c.get("dim")
+                parts.append(f"{nm} {c['op']} {c['value']:g}")
+            print("  " + " AND ".join(parts))
+        print()
+        print(to_natural_language(scenario))
+
+        if args.out:
+            with open(args.out, "w") as fh:
+                _yaml.safe_dump(scenario._config, fh, sort_keys=False,
+                                allow_unicode=True, width=76)
+            print()
+            print(f"wrote {args.out}")
+        return 0
+
+    if args.cmd == "author":
+        import pickle
+
+        from .authoring import author_scenario, build_prompt
+
+        view = _view_for(args.env_id, "auto") if args.env_id else None
+        trajs = None
+        if args.against:
+            with open(args.against, "rb") as fh:
+                trajs = pickle.load(fh)
+
+        if args.check is None:
+            print(build_prompt(args.description, view=view,
+                               env_id=args.env_id))
+            return 0
+
+        with open(args.check) as fh:
+            candidate = fh.read()
+        result = author_scenario(
+            args.description, backend=lambda _p: candidate, view=view,
+            env_id=args.env_id, trajectories=trajs, max_attempts=1)
+        attempt = result.attempts[0]
+        if result.accepted:
+            print(f"ACCEPTED  {args.check}")
+            print(f"  scenario   : {result.scenario.name}")
+            print(f"  match_mode : {result.scenario.match_mode}")
+            print(f"  applies_to : {result.scenario.applies_to}")
+            if attempt.match_rate is not None:
+                print(f"  match rate : {attempt.match_rate:.4f}")
+            return 0
+        print(f"REJECTED  {args.check}")
+        for r in attempt.rejection:
+            print(f"  - {r}")
+        print()
+        print("Feed these back with the candidate to repair it.")
+        return 1
+
+    if args.cmd == "corpus":
+        from pathlib import Path as _P
+
+        from .corpus import (
+            EXPRESSIBLE, INEXPRESSIBLE, PARTIAL, load_corpus, resolve_views,
+            score_corpus,
+        )
+
+        root = _P(__file__).resolve().parent.parent.parent
+        entries = load_corpus(args.directory)
+        views = resolve_views([e.domain for e in entries])
+        missing = [d for d, v in views.items() if v is None]
+        report = score_corpus(entries, root, views_by_domain=views)
+        if missing:
+            print(f"(no view for: {', '.join(missing)})")
+
+        if args.verbose:
+            mark = {EXPRESSIBLE: "OK  ", PARTIAL: "~   ", INEXPRESSIBLE: "X   "}
+            width = max(len(s.entry.id) for s in report.scores)
+            for sc in report.scores:
+                flag = "!" if sc.error else " "
+                print(f"{mark[sc.entry.verdict]}{flag} "
+                      f"{sc.entry.id.ljust(width)}  {sc.entry.domain}")
+                if sc.error:
+                    print(f"       ERROR {sc.error}")
+            print()
+
+        if args.gaps:
+            print("---- what the grammar cannot state ----")
+            for sc in report.scores:
+                if sc.entry.verdict == EXPRESSIBLE:
+                    continue
+                print(f"[{sc.entry.verdict}] {sc.entry.id}")
+                print(f"  {sc.entry.description.strip()}")
+                for line in (sc.entry.gap or "").strip().splitlines():
+                    print(f"    {line}")
+                print()
+
+        print("---- corpus ----")
+        print(report.render())
+        print()
+        per_dom = report.by_domain()
+        print(f"{'domain':32s} {'n':>3s}  verdicts")
+        for dom in sorted(per_dom):
+            scs = per_dom[dom]
+            e = sum(1 for x in scs if x.entry.verdict == EXPRESSIBLE)
+            pa = sum(1 for x in scs if x.entry.verdict == PARTIAL)
+            ix = sum(1 for x in scs if x.entry.verdict == INEXPRESSIBLE)
+            print(f"{dom:32s} {len(scs):>3d}  {e} expressible, "
+                  f"{pa} partial, {ix} inexpressible")
+        return 1 if report.broken else 0
+
+    if args.cmd == "drift":
+        import pickle
+
+        from .drift import measure_drift, offset_sweep
+
+        with open(args.against, "rb") as fh:
+            trajs = pickle.load(fh)
+        label = ForgetScenario.load(_resolve_scenario_path(args.label))
+
+        if args.metric is None:
+            offsets = [int(x) for x in args.offsets.split(",") if x.strip()]
+            print(f"offset sweep for {label.name!r} over {len(trajs)} "
+                  f"trajectories")
+            print(f"{'offset':>7s} {'disagree':>9s} {'jaccard':>8s} "
+                  f"{'kappa':>8s} {'delta':>8s}")
+            worst = 0.0
+            for r in offset_sweep(label, trajs, offsets=offsets):
+                print(f"{r.metric_offset:>+7d} {r.disagreement:>9.4f} "
+                      f"{r.jaccard:>8.4f} {r.kappa:>8.4f} "
+                      f"{r.metric_delta:>8.4f}")
+                worst = max(worst, r.metric_delta)
+            print()
+            print(f"worst metric delta from index offset alone: {worst:.4f}")
+            return 0
+
+        metric = ForgetScenario.load(_resolve_scenario_path(args.metric))
+        report = measure_drift(label, metric, trajs,
+                               metric_offset=args.metric_offset)
+        print(f"label   {label.name!r}  ({args.label})")
+        print(f"metric  {metric.name!r}  ({args.metric})")
+        print()
+        print(report.render())
+        return 0
+
+    if args.cmd == "domains":
+        from .constants import ENV_OBS_DIMS
+        from .views import domain_report
+
+        env_ids = args.env_ids or sorted(ENV_OBS_DIMS)
+        rows = domain_report(env_ids)
+        ok = [r for r in rows if r["error"] is None]
+
+        if args.markdown:
+            print("| Domain | Provenance | Features | Adapter LOC |")
+            print("|---|---|---|---|")
+            for r in rows:
+                prov = r["provenance"] or f"FAILED ({r['error']})"
+                n = r["n_features"] if r["n_features"] is not None else "-"
+                loc = r["adapter_loc"] if r["adapter_loc"] is not None else "-"
+                print(f"| `{r['env_id']}` | {prov} | {n} | {loc} |")
+        else:
+            w = max((len(r["env_id"]) for r in rows), default=10)
+            print(f"{'DOMAIN'.ljust(w)}  {'PROVENANCE':18s} {'FEAT':>4s} "
+                  f"{'LOC':>4s}  NAMES")
+            print("-" * (w + 40))
+            for r in rows:
+                if r["error"]:
+                    print(f"{r['env_id'].ljust(w)}  FAILED  {r['error'][:60]}")
+                    continue
+                names = ", ".join(r["names"][:4])
+                if len(r["names"]) > 4:
+                    names += f", ... (+{len(r['names']) - 4})"
+                loc = r["adapter_loc"] if r["adapter_loc"] is not None else "-"
+                print(f"{r['env_id'].ljust(w)}  {r['provenance']:18s} "
+                      f"{r['n_features']:>4d} {str(loc):>4s}  {names}")
+
+        auto = sum(1 for r in ok if r["provenance"].startswith("auto:"))
+        decl = sum(1 for r in ok if r["provenance"].startswith("declared:"))
+        print()
+        print(f"{len(ok)}/{len(rows)} domains resolved: "
+              f"{auto} automatic, {decl} declared.")
+        return 0
+
     if args.cmd == "list":
         return _cmd_list(args)
     if args.cmd == "coverage":
@@ -71,6 +339,50 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 # ---------------------------------------------------------------------------
 
 
+def _view_for(env_id, prefer):
+    """Resolve a view for validation, or None if unavailable.
+
+    Failures are non-fatal: validation without a view is still useful, it
+    just skips the dtype and range checks.
+    """
+    if not env_id or prefer in (None, "none"):
+        return None
+    from .corpus import register_contrib_providers
+    from .views import build_view
+
+    # Optional domain adapters (e.g. multi-agent) must be registered before
+    # the cascade runs, or a view-dependent scenario cannot be validated.
+    register_contrib_providers()
+
+    env = None
+    try:
+        import gymnasium as gym
+
+        if env_id.startswith("MiniGrid-"):
+            import minigrid  # noqa: F401
+        elif env_id.startswith("Foraging-"):
+            import lbforaging  # noqa: F401
+        env = gym.make(env_id)
+        obs, info = env.reset(seed=0)
+        shape = getattr(env.observation_space, "shape", None)
+        n_dims = int(shape[0]) if shape and len(shape) == 1 else None
+        return build_view(
+            env=env, env_id=env_id, n_dims=n_dims,
+            prefer=None if prefer == "auto" else prefer,
+            probe={"obs": obs, "info": info},
+        )
+    except Exception as exc:
+        print(f"  (no view for {env_id}: {type(exc).__name__}: {exc})",
+              file=sys.stderr)
+        return None
+    finally:
+        if env is not None:
+            try:
+                env.close()
+            except Exception:
+                pass
+
+
 def _cmd_validate(args) -> int:
     expanded = _expand_files(args.files)
     if not expanded:
@@ -79,8 +391,21 @@ def _cmd_validate(args) -> int:
 
     aggregate = ValidationReport()
     per_file_summary: List[tuple[str, ValidationReport]] = []
+    view_cache: dict = {}
     for f in expanded:
-        report = validate_scenario(f)
+        view = None
+        if getattr(args, "view", "none") != "none":
+            import yaml
+
+            try:
+                with open(f) as fh:
+                    env_id = (yaml.safe_load(fh) or {}).get("env_id")
+            except Exception:
+                env_id = None
+            if env_id not in view_cache:
+                view_cache[env_id] = _view_for(env_id, args.view)
+            view = view_cache[env_id]
+        report = validate_scenario(f, view=view)
         per_file_summary.append((f, report))
         for issue in report.issues:
             if args.quiet and issue.severity != "error":

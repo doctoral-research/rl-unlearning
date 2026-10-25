@@ -1,0 +1,34 @@
+# Reader prompt, round 08 (readers P, Q)
+# Sent verbatim to each reader on 2026-09-17; <READER> stands for the reader's letter.
+
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+Two labelling tasks:
+  /tmp/annot8/fourrooms.avoid_br_tr_door.txt   (1600 rows)
+  /tmp/annot8/fourrooms.no_backtracking.txt    (240 rows)
+
+Each file has a one-sentence description of a BEHAVIOUR, a short note on the features, and a table of steps.
+
+For each file, decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config or source code in the repository. Do not search the web. Do not infer anything from the filename.
+- Each sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+- Where the description does not fix a number or a boundary, choose one and state it.
+- These behaviours span steps: one is about passing through a particular doorway, the other about returning to cells already visited. Decide which steps carry the label and say so explicitly.
+- Be consistent within each task.
+
+Write /tmp/annot8/annotator_<READER>.json in exactly this format:
+
+{
+  "fourrooms.avoid_br_tr_door": {"reasoning": "...", "labels": [0,1,...]},
+  "fourrooms.no_backtracking":  {"reasoning": "...", "labels": [...]}
+}
+
+Label lists must be 0/1 integers, EXACTLY one per table row, in order. Lengths: 1600 and 240.
+
+Write a small Python script per task to parse the table and apply your rule — essential at 1600 rows. Verify both lengths before finishing.
+
+If a behaviour never occurs in its data, say so plainly and label all zeros rather than inventing positives.
+
+Reply with one line per task: your rule and how many steps you marked.

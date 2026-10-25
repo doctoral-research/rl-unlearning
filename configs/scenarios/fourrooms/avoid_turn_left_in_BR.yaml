@@ -1,17 +1,71 @@
+# yaml-language-server: $schema=../../../src/scenarios/schemas/scenario.schema.v1.json
+#
+# "Turning left IMMEDIATELY ON ENTERING the bottom-right room."
+#
+# The previous version of this file dropped the temporal clause and read
+# simply "turn left anywhere in the BR room". That is a strict superset:
+# measured against an independent reading of the description it selected
+# about twenty times as many steps (Jaccard 0.05). The fidelity check in
+# the corpus is what surfaced it.
+#
+# The entry step is the one to label, because that is the transition
+# whose action the policy should stop taking. Expressing it needs the
+# past-time operator: the agent is inside the room and turning left NOW,
+# having been outside it on the previous step.
 name: avoid_turn_left_in_BR
 description: >
-  Action-conditional forget: don't take action TURN_LEFT (action 0)
-  when the agent is in the bottom-right room. Unlike region-based
-  scenarios that mask whole transitions, this only forbids ONE specific
-  action at those states — the policy is allowed to be in the BR room,
-  just not to turn left there. Tests fine-grained unlearning on the
-  action axis instead of the state axis.
+  Action-conditional forget with a temporal anchor: don't take
+  TURN_LEFT (action 0) at or immediately after the moment of entering
+  the bottom-right room (within one step of crossing the boundary).
+  The policy may be in the BR room, and may turn left once settled
+  there; what is removed is the reflex at the boundary.
 env_id: MiniGrid-FourRooms-v0
-match_mode: proportion
-match_threshold: 0.05
+match_mode: temporal
+applies_to: matching_steps
 
+temporal:
+  and:
+    - conditions:
+        - dim: 0
+          dim_name: agent_x
+          op: ">"
+          value: 9.5
+          target: state
+        - dim: 1
+          dim_name: agent_y
+          op: ">"
+          value: 9.5
+          target: state
+        - dim: 0
+          dim_name: turn_left
+          op: "=="
+          value: 0
+          target: action
+    # "Immediately" is a window, not an instant: the agent may enter on a
+    # forward step and turn on the next one. Either the previous step was
+    # outside (turning AT the boundary) or the one before it was (turning
+    # on the step after crossing). Anything later is not a reflex.
+    - or:
+        - previous:
+            conditions:
+              - dim: 0
+                dim_name: agent_x
+                op: "<"
+                value: 9.5
+                target: state
+        - previous:
+            previous:
+              conditions:
+                - dim: 0
+                  dim_name: agent_x
+                  op: "<"
+                  value: 9.5
+                  target: state
+
+# Consulted only by tooling that needs a state-level view of the target
+# region; the temporal block above is what produces the labels.
 groups:
-  - name: turn_left_in_BR
+  - name: in_BR
     conditions:
       - dim: 0
         dim_name: agent_x
@@ -23,8 +77,3 @@ groups:
         op: ">"
         value: 9.5
         target: state
-      - dim: 0
-        dim_name: action
-        op: "=="
-        value: 0
-        target: action

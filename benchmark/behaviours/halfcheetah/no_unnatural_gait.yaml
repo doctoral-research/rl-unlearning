@@ -1,0 +1,21 @@
+id: halfcheetah.no_unnatural_gait
+domain: HalfCheetah-v5
+description: Stop the jittery, unnatural-looking gait even when it is fast and
+  stable.
+verdict: inexpressible
+gap: '"Unnatural" is a perceptual judgement with no threshold form. It is not a
+  region, a rate, or an episode aggregate, because a human labels it by watching.
+
+  The language now has the tier this needs: a learned view
+  (`scenarios.learned.fit_probe_view`) fits features from data and carries a
+  measured held-out fidelity, so a scenario could read `gait_naturalness` the
+  same way it reads `rooty`.
+
+  The entry stays inexpressible because the mechanism is not the missing piece.
+  What is missing is a labelled set of human gait judgements, which this corpus
+  does not have, so no probe for this feature has been fitted or scored. Having
+  built the tier is not the same as having closed the gap, and recording it as
+  closed would measure the grammar against itself.'
+tags:
+- perceptual
+- learned-concept

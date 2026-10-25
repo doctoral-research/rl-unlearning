@@ -32,6 +32,7 @@ import logging
 import sys
 import time
 from pathlib import Path
+from typing import Optional
 
 import hydra
 import numpy as np
@@ -42,9 +43,10 @@ from tqdm import tqdm
 sys.path.insert(0, str(Path(__file__).parent))
 
 from agents import PPOAgent  # noqa: E402
-from scenarios import ForgetScenario  # noqa: E402
+from scenarios import ForgetScenario, view_from_cfg  # noqa: E402
 from utils import setup_logger, get_device, set_seed  # noqa: E402
 from utils.env_wrappers import make_env  # noqa: E402
+from utils.checkpointing import load_checkpoint  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
@@ -55,14 +57,26 @@ logger = logging.getLogger(__name__)
 
 
 def transitions_in_forget_region(
-    obs: np.ndarray, scenario: ForgetScenario,
+    features: np.ndarray, scenario: ForgetScenario,
+    dones: Optional[np.ndarray] = None,
 ) -> np.ndarray:
-    """Boolean mask over a rollout: True for transitions whose state
-    matches the scenario's forget conditions."""
-    mask = np.zeros(len(obs), dtype=bool)
-    for i, o in enumerate(obs):
-        mask[i] = scenario.matches_state(np.asarray(o))
-    return mask
+    """Boolean mask over a rollout: True for transitions whose features
+    match the scenario's forget conditions.
+
+    Takes FEATURES, not observations. A view may read the environment,
+    and by the time a rollout is masked the env has already moved on, so
+    features must be extracted per step during collection.
+    """
+    # Route through step_labels so the scenario's declared `applies_to`
+    # is honoured. Calling matches_features directly gives the
+    # matching_steps reading regardless of what the file says, which is
+    # the drift this indirection removes.
+    traj = {"features": list(features), "actions": [None] * len(features)}
+    if dones is not None:
+        # Without boundaries a trajectory-level mode is evaluated across the
+        # whole multi-episode buffer, which is not what the scenario says.
+        traj["dones"] = list(np.asarray(dones).astype(bool))
+    return scenario.step_labels(traj)
 
 
 class ForgetReplayBuffer:
@@ -267,7 +281,7 @@ def eval_agent(
             obs, r, term, trunc, _ = env.step(a)
             ep_return += float(r)
             total_steps += 1
-            if scenario.matches_state(np.asarray(obs)):
+            if scenario.matches_state(obs, env=env):
                 in_forget_total += 1
             if term or trunc:
                 break
@@ -296,7 +310,7 @@ def eval_agent(
 def online_unlearn(cfg: DictConfig):
     setup_logger("online_unlearn")
     set_seed(cfg.seed)
-    device = get_device()
+    device = get_device(cfg.get("device", "auto"))
     logger.info(f"On-policy online unlearning | device={device}")
     logger.info(OmegaConf.to_yaml(cfg))
 
@@ -309,11 +323,13 @@ def online_unlearn(cfg: DictConfig):
         cfg.env_id, seed=cfg.seed,
         obs_encoding=cfg.get("obs_encoding", "image"),
         fixed_goal_pos=cfg.get("fixed_goal_pos", None),
+        include_pos=cfg.get("include_pos", True),
     )
     eval_env = make_env(
         cfg.env_id, seed=cfg.seed + 99999,
         obs_encoding=cfg.get("obs_encoding", "image"),
         fixed_goal_pos=cfg.get("fixed_goal_pos", None),
+        include_pos=cfg.get("include_pos", True),
     )
     agent = PPOAgent(
         observation_dim=cfg.observation_dim,
@@ -342,7 +358,7 @@ def online_unlearn(cfg: DictConfig):
     if not load_path.exists():
         logger.error(f"Baseline checkpoint not found: {load_path}")
         return
-    state = torch.load(load_path, map_location=str(device))
+    state = load_checkpoint(load_path, map_location=str(device))
     agent.network.load_state_dict(state["network"])
     logger.info(f"Loaded baseline from {load_path}")
 
@@ -361,7 +377,10 @@ def online_unlearn(cfg: DictConfig):
         logger.info(f"KL anchor enabled: weight={kl_anchor_weight}")
 
     # ---- Scenario ----
-    scenario = ForgetScenario.from_config(cfg)
+    view = view_from_cfg(cfg, env=env)
+    logger.info(f"Feature view: {view.provenance} "
+                f"({len(view)} features: {', '.join(view.names)})")
+    scenario = ForgetScenario.from_config(cfg, view=view)
     if scenario is None:
         logger.error("Scenario required for online unlearning.")
         return
@@ -430,6 +449,10 @@ def online_unlearn(cfg: DictConfig):
         f"forget_region_frac={baseline_metrics['forget_region_fraction']:.3f}"
     )
 
+    # Optional label noise (drift-experiment control); see the rollout loop.
+    label_noise = float(cfg.get("label_noise", 0.0))
+    noise_rng = np.random.default_rng(int(cfg.seed) + 104729)
+
     # ---- Online unlearning loop ----
     n_iters = int(cfg.get("online_iters", 200))
     rollout_len = int(cfg.get("rollout_len", 2048))
@@ -443,9 +466,13 @@ def online_unlearn(cfg: DictConfig):
         # ---- Phase 1: collect on-policy rollout (no offline buffer) ----
         buf_obs, buf_act, buf_logp, buf_val = [], [], [], []
         buf_rew, buf_done = [], []
+        buf_feat = []
         for _ in range(rollout_len):
             action, info = agent.select_action(obs, deterministic=False)
             buf_obs.append(obs.copy())
+            # Extract BEFORE stepping: the view may read the env, whose
+            # state corresponds to `obs` only until env.step() is called.
+            buf_feat.append(scenario.features(obs, env=env))
             buf_act.append(action)
             buf_logp.append(info["log_prob"])
             buf_val.append(info["value"])
@@ -461,9 +488,16 @@ def online_unlearn(cfg: DictConfig):
         buf_val = np.asarray(buf_val, dtype=np.float32)
         buf_rew = np.asarray(buf_rew, dtype=np.float32)
         buf_done = np.asarray(buf_done, dtype=np.float32)
+        buf_feat = np.asarray(buf_feat, dtype=np.float32)
 
         # ---- Phase 2: identify forget transitions in THIS rollout ----
-        forget_mask = transitions_in_forget_region(buf_obs, scenario)
+        forget_mask = transitions_in_forget_region(buf_feat, scenario, buf_done)
+        if label_noise > 0.0:
+            # Control for the drift experiment: perturb the labels and nothing
+            # else. The noise has its own generator so that flipping labels
+            # does not also shift action sampling or environment resets.
+            flip = noise_rng.random(len(forget_mask)) < label_noise
+            forget_mask = forget_mask ^ flip
         n_forget = int(forget_mask.sum())
         forget_frac = n_forget / len(buf_obs)
 
@@ -517,11 +551,8 @@ def online_unlearn(cfg: DictConfig):
         # critic still learns the env. This is what makes the setting
         # coherent: PPO operates on retain states only, unlearn loss operates
         # on forget states only. The two objectives no longer fight.
-        if bool(cfg.get("disjoint_objective", True)):
-            adv_np = adv.numpy().copy()
-            adv_np[forget_mask] = 0.0
-        else:
-            adv_np = adv.numpy()
+        disjoint = bool(cfg.get("disjoint_objective", True))
+        adv_np = adv.numpy()
         ppo_rollout = {
             "observations": buf_obs,
             "actions": buf_act,
@@ -530,6 +561,11 @@ def online_unlearn(cfg: DictConfig):
             "advantages": adv_np,
             "returns": ret.numpy(),
         }
+        # Hand the mask to the optimiser instead of pre-zeroing: PPO
+        # normalises advantages internally, which would otherwise undo the
+        # zeroing and leave a systematic advantage on forget transitions.
+        if disjoint:
+            ppo_rollout["forget_mask"] = forget_mask
         ppo_metrics = agent.update(ppo_rollout)
 
         # Unlearning side-step.

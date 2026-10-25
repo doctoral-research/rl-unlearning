@@ -1,0 +1,31 @@
+# yaml-language-server: $schema=../../../src/scenarios/schemas/scenario.schema.v1.json
+#
+# A per-agent reduction over the episode, compared across agents. v1.1 had
+# only episode-wide `return` and `length`, with no way to attribute either
+# to an individual agent.
+version: "1.2"
+name: no_freeloading
+description: >
+  Forget the pattern where one agent idles near the others and collects
+  almost nothing while they do the foraging. Each agent's contribution is
+  its final score; the scenario fires when agent 0's share of the team
+  total is negligible.
+env_id: Foraging-8x8-3p-2f-v3
+match_mode: trajectory
+applies_to: whole_trajectory
+
+aggregates:
+  contrib_0: {op: max, of: p0_score}
+  contrib_1: {op: max, of: p1_score}
+  contrib_2: {op: max, of: p2_score}
+
+derived:
+  team_total: "contrib_0 + contrib_1 + contrib_2"
+  share_0:    "contrib_0 / team_total"
+
+groups:
+  - name: agent0_freeloads
+    conditions:
+      - dim: share_0
+        op: "<"
+        value: 0.15

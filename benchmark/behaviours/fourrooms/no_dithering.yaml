@@ -1,0 +1,18 @@
+id: fourrooms.no_dithering
+domain: MiniGrid-FourRooms-v0
+description: Stop dithering at junctions instead of committing to a route.
+verdict: inexpressible
+gap: 'Dithering is a property of the POLICY at a state (a near-uniform
+
+  action distribution), not of the state-action trajectory. A
+
+  feature view maps (obs, info, env) to features of the
+
+  environment; it has no access to the agent''s action
+
+  distribution, value estimate or entropy. Expressing this needs
+
+  the view interface widened to admit policy-internal quantities.'
+tags:
+- policy-internal
+- uncertainty

@@ -1,0 +1,9 @@
+id: fourrooms.avoid_br_tr_door
+domain: MiniGrid-FourRooms-v0
+description: Stop using the doorway between the bottom-right and top-right rooms.
+verdict: expressible
+scenario: fourrooms/avoid_door_BR_TR
+tags:
+- spatial
+- chokepoint
+labels: benchmark/labels/fourrooms.avoid_br_tr_door.yaml

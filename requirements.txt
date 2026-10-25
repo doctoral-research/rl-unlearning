@@ -15,3 +15,12 @@ jsonschema>=4.20.0
 opencv-python>=4.8.0
 pygame>=2.1.0
 minigrid>=3.0.0
+# MuJoCo domains (HalfCheetah, Walker2d). Used by the scenario
+# language's auto:mujoco feature view, which reads joint names
+# from the model. glfw/imageio are gymnasium.envs.mujoco imports.
+mujoco>=3.0.0
+glfw>=2.5.0
+imageio>=2.30.0
+# Multi-agent domain for the scenario language's contrib view
+# (scenarios.contrib.lbf). Optional: tests skip without it.
+lbforaging>=2.0.0

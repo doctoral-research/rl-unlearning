@@ -33,15 +33,19 @@ from tqdm import tqdm
 sys.path.insert(0, str(Path(__file__).parent))
 
 from agents import PPOAgent  # noqa: E402
-from scenarios import ForgetScenario  # noqa: E402
+from scenarios import ForgetScenario, view_from_cfg  # noqa: E402
 from utils import setup_logger, get_device, set_seed  # noqa: E402
 from utils.env_wrappers import make_env  # noqa: E402
+from utils.checkpointing import load_checkpoint  # noqa: E402
 
 logger = logging.getLogger(__name__)
 
 
-def transitions_in_forget_region(obs: np.ndarray, scenario: ForgetScenario) -> np.ndarray:
-    return np.array([scenario.matches_state(np.asarray(o)) for o in obs], dtype=bool)
+def transitions_in_forget_region(features, scenario: ForgetScenario) -> np.ndarray:
+    """Mask over pre-extracted per-step features (see online_unlearn)."""
+    return np.array(
+        [scenario.matches_features(np.asarray(f)) for f in features], dtype=bool
+    )
 
 
 def eval_agent(agent, env, scenario, baseline_return, num_episodes=16, seed=0):
@@ -57,7 +61,7 @@ def eval_agent(agent, env, scenario, baseline_return, num_episodes=16, seed=0):
             obs, r, term, trunc, _ = env.step(a)
             ep_return += float(r)
             total_steps += 1
-            if scenario.matches_state(np.asarray(obs)):
+            if scenario.matches_state(obs, env=env):
                 in_forget_total += 1
             if term or trunc:
                 break
@@ -79,7 +83,7 @@ def eval_agent(agent, env, scenario, baseline_return, num_episodes=16, seed=0):
 def relearn_attack(cfg: DictConfig):
     setup_logger("relearn_attack")
     set_seed(cfg.seed)
-    device = get_device()
+    device = get_device(cfg.get("device", "auto"))
     logger.info("Relearn-resistance attack")
     logger.info(f"Unlearned ckpt: {cfg.unlearned_checkpoint}")
 
@@ -87,11 +91,13 @@ def relearn_attack(cfg: DictConfig):
         cfg.env_id, seed=cfg.seed,
         obs_encoding=cfg.get("obs_encoding", "image"),
         fixed_goal_pos=cfg.get("fixed_goal_pos", None),
+        include_pos=cfg.get("include_pos", True),
     )
     eval_env = make_env(
         cfg.env_id, seed=cfg.seed + 99999,
         obs_encoding=cfg.get("obs_encoding", "image"),
         fixed_goal_pos=cfg.get("fixed_goal_pos", None),
+        include_pos=cfg.get("include_pos", True),
     )
     agent = PPOAgent(
         observation_dim=cfg.observation_dim,
@@ -111,10 +117,12 @@ def relearn_attack(cfg: DictConfig):
         action_scale=cfg.get("action_scale", 1.0),
         use_conv=cfg.get("use_conv", False),
     )
-    state = torch.load(cfg.unlearned_checkpoint, map_location=str(device))
+    state = load_checkpoint(cfg.unlearned_checkpoint, map_location=str(device))
     agent.network.load_state_dict(state["network"])
 
-    scenario = ForgetScenario.from_config(cfg)
+    view = view_from_cfg(cfg, env=env)
+    logger.info(f"Feature view: {view.provenance} ({len(view)} features)")
+    scenario = ForgetScenario.from_config(cfg, view=view)
 
     # Reference: the unlearned policy's return BEFORE the attack.
     initial = eval_agent(agent, eval_env, scenario, baseline_return=0.0,
@@ -136,9 +144,11 @@ def relearn_attack(cfg: DictConfig):
     for it in tqdm(range(n_iters), desc="relearn-attack"):
         buf_obs, buf_act, buf_logp, buf_val = [], [], [], []
         buf_rew, buf_done = [], []
+        buf_feat = []
         for _ in range(rollout_len):
             action, info = agent.select_action(obs, deterministic=False)
             buf_obs.append(obs.copy())
+            buf_feat.append(scenario.features(obs, env=env))
             buf_act.append(action)
             buf_logp.append(info["log_prob"])
             buf_val.append(info["value"])
@@ -175,7 +185,7 @@ def relearn_attack(cfg: DictConfig):
         }
         ppo_metrics = agent.update(ppo_rollout)
 
-        forget_mask = transitions_in_forget_region(buf_obs, scenario)
+        forget_mask = transitions_in_forget_region(buf_feat, scenario)
         n_forget = int(forget_mask.sum())
 
         rec = {

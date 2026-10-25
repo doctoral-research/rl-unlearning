@@ -1,0 +1,15 @@
+id: fourrooms.no_corner_turn_reflex
+domain: MiniGrid-FourRooms-v0
+description: Stop the reflex of turning left at or immediately after entering the bottom-right
+  room (within one step of crossing the boundary).
+verdict: expressible
+scenario: fourrooms/avoid_turn_left_in_BR
+tags:
+- temporal
+- state-action
+labels: benchmark/labels/fourrooms.no_corner_turn_reflex.yaml
+notes: The original description said only 'immediately on entering', which left open whether
+  the turn must happen AT the boundary step or may follow it. The formalisation silently
+  took the widest reading and labelled turning left anywhere in the room; fidelity against
+  an independent reading caught it (Jaccard 0.05). The window is now stated in the description
+  rather than decided inside the YAML.

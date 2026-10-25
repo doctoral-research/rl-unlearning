@@ -1,6 +1,6 @@
 # @package _global_
 env_name: taxi
-env_id: Taxi-v3
+env_id: Taxi-v4
 # Obs = [taxi_row, taxi_col, pass_loc, dest_idx] via TaxiDecode wrapper.
 observation_dim: 4
 action_dim: 6

@@ -18,6 +18,14 @@ scenario: null
 # Unlearning outputs nest under the same experiment with method suffix
 experiment_name: ${env_name}_${name}_seed${seed}
 
+# Resume training from a checkpoint.
+#   false / never   start fresh (default)
+#   auto            continue from the newest checkpoint_step*.pt, if any
+#   <path>          continue from exactly that file
+# Only format-2 checkpoints are resumable; a network-only file is rejected
+# rather than silently restarting the optimizer and RNG streams.
+resume: false
+
 # Training
 training:
   total_timesteps: 500_000

@@ -10,6 +10,10 @@ description: >
 env_id: Pendulum-v1
 match_mode: proportion
 match_threshold: 0.1
+# Which steps carry the forget label. matching_steps is what the
+# online loop implements: only steps satisfying the predicate, not
+# every step of a selected trajectory.
+applies_to: matching_steps
 
 # obs: [cos_theta, sin_theta, theta_dot]
 groups:

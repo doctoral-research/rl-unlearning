@@ -1,0 +1,5809 @@
+entry: fourrooms.no_pacing
+env: MiniGrid-FourRooms-v0
+description: Stop oscillating back and forth between two adjacent cells.
+annotator: synthetic:fresh-context (R, S)
+instructions: Decide for EVERY step whether the described behaviour is occurring AT THAT STEP. The sentence
+  names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+prompt: r09_RS
+reader_model: claude-opus-5
+features:
+- agent_x
+- agent_y
+- direction
+- carrying_key
+- carrying_any
+episodes:
+- id: 0
+  steps:
+  - t: 0
+    agent_x: 11.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 1
+    agent_x: 11.0
+    agent_y: 17.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 2
+    agent_x: 11.0
+    agent_y: 16.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 3
+    agent_x: 11.0
+    agent_y: 15.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 4
+    agent_x: 11.0
+    agent_y: 15.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 5
+    agent_x: 10.0
+    agent_y: 15.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 6
+    agent_x: 10.0
+    agent_y: 15.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 7
+    agent_x: 10.0
+    agent_y: 14.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 8
+    agent_x: 10.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 9
+    agent_x: 10.0
+    agent_y: 12.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 10
+    agent_x: 10.0
+    agent_y: 11.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 11
+    agent_x: 10.0
+    agent_y: 11.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 12
+    agent_x: 10.0
+    agent_y: 11.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 13
+    agent_x: 10.0
+    agent_y: 11.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 14
+    agent_x: 10.0
+    agent_y: 11.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 15
+    agent_x: 10.0
+    agent_y: 11.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 16
+    agent_x: 11.0
+    agent_y: 11.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 17
+    agent_x: 12.0
+    agent_y: 11.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 18
+    agent_x: 12.0
+    agent_y: 11.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 19
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 20
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 21
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 22
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 23
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 24
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 25
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 26
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 27
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 28
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 29
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 30
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 31
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 32
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 33
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 34
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 35
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 36
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 37
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 38
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 39
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 40
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 41
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 42
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 43
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 44
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 45
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 46
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 47
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 48
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 49
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 50
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 51
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 52
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 53
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 54
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 55
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 56
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 57
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 58
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 59
+    agent_x: 12.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+- id: 1
+  steps:
+  - t: 0
+    agent_x: 13.0
+    agent_y: 10.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 1
+    agent_x: 13.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 2
+    agent_x: 13.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 3
+    agent_x: 14.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 4
+    agent_x: 15.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 5
+    agent_x: 16.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 6
+    agent_x: 16.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 7
+    agent_x: 16.0
+    agent_y: 11.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 8
+    agent_x: 16.0
+    agent_y: 12.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 9
+    agent_x: 16.0
+    agent_y: 12.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 10
+    agent_x: 17.0
+    agent_y: 12.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 11
+    agent_x: 17.0
+    agent_y: 12.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 12
+    agent_x: 17.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 13
+    agent_x: 17.0
+    agent_y: 14.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 14
+    agent_x: 17.0
+    agent_y: 15.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 15
+    agent_x: 17.0
+    agent_y: 16.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 16
+    agent_x: 17.0
+    agent_y: 16.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 17
+    agent_x: 16.0
+    agent_y: 16.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 18
+    agent_x: 15.0
+    agent_y: 16.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 19
+    agent_x: 15.0
+    agent_y: 16.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 20
+    agent_x: 15.0
+    agent_y: 17.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 21
+    agent_x: 15.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 22
+    agent_x: 14.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 23
+    agent_x: 13.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 24
+    agent_x: 12.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 25
+    agent_x: 11.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 26
+    agent_x: 11.0
+    agent_y: 17.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 27
+    agent_x: 11.0
+    agent_y: 16.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 28
+    agent_x: 11.0
+    agent_y: 15.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 29
+    agent_x: 11.0
+    agent_y: 15.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 30
+    agent_x: 10.0
+    agent_y: 15.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 31
+    agent_x: 10.0
+    agent_y: 15.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 32
+    agent_x: 10.0
+    agent_y: 14.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 33
+    agent_x: 10.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 34
+    agent_x: 10.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 35
+    agent_x: 10.0
+    agent_y: 12.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 36
+    agent_x: 10.0
+    agent_y: 11.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 37
+    agent_x: 10.0
+    agent_y: 11.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 38
+    agent_x: 11.0
+    agent_y: 11.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 39
+    agent_x: 12.0
+    agent_y: 11.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 40
+    agent_x: 13.0
+    agent_y: 11.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 41
+    agent_x: 13.0
+    agent_y: 11.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 42
+    agent_x: 13.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 43
+    agent_x: 13.0
+    agent_y: 9.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 44
+    agent_x: 13.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 45
+    agent_x: 13.0
+    agent_y: 7.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 46
+    agent_x: 13.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 47
+    agent_x: 13.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 48
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 49
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 50
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 51
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 52
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 53
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 54
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 55
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 56
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 57
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 58
+    agent_x: 15.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 59
+    agent_x: 15.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+- id: 2
+  steps:
+  - t: 0
+    agent_x: 2.0
+    agent_y: 1.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 1
+    agent_x: 2.0
+    agent_y: 1.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 2
+    agent_x: 3.0
+    agent_y: 1.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 3
+    agent_x: 4.0
+    agent_y: 1.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 4
+    agent_x: 5.0
+    agent_y: 1.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 5
+    agent_x: 6.0
+    agent_y: 1.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 6
+    agent_x: 7.0
+    agent_y: 1.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 7
+    agent_x: 7.0
+    agent_y: 1.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 8
+    agent_x: 7.0
+    agent_y: 2.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 9
+    agent_x: 7.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 10
+    agent_x: 7.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 11
+    agent_x: 8.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 12
+    agent_x: 8.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 13
+    agent_x: 8.0
+    agent_y: 4.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 14
+    agent_x: 8.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 15
+    agent_x: 8.0
+    agent_y: 5.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 16
+    agent_x: 9.0
+    agent_y: 5.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 17
+    agent_x: 10.0
+    agent_y: 5.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 18
+    agent_x: 10.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 19
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 20
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 21
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 22
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 23
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 24
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 25
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 26
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 27
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 28
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 29
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 30
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 31
+    agent_x: 10.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 32
+    agent_x: 10.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 33
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 34
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 35
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 36
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 37
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 38
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 39
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 40
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 41
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 42
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 43
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 44
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 45
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 46
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 47
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 48
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 49
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 50
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 51
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 52
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 53
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 54
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 55
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 56
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 57
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 58
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 59
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+- id: 3
+  steps:
+  - t: 0
+    agent_x: 17.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 1
+    agent_x: 17.0
+    agent_y: 11.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 2
+    agent_x: 17.0
+    agent_y: 12.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 3
+    agent_x: 17.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 4
+    agent_x: 17.0
+    agent_y: 14.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 5
+    agent_x: 17.0
+    agent_y: 15.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 6
+    agent_x: 17.0
+    agent_y: 16.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 7
+    agent_x: 17.0
+    agent_y: 16.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 8
+    agent_x: 16.0
+    agent_y: 16.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 9
+    agent_x: 15.0
+    agent_y: 16.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 10
+    agent_x: 15.0
+    agent_y: 16.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 11
+    agent_x: 15.0
+    agent_y: 17.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 12
+    agent_x: 15.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 13
+    agent_x: 14.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 14
+    agent_x: 13.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 15
+    agent_x: 12.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 16
+    agent_x: 11.0
+    agent_y: 17.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 17
+    agent_x: 11.0
+    agent_y: 17.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 18
+    agent_x: 11.0
+    agent_y: 16.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 19
+    agent_x: 11.0
+    agent_y: 15.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 20
+    agent_x: 11.0
+    agent_y: 14.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 21
+    agent_x: 11.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 22
+    agent_x: 11.0
+    agent_y: 12.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 23
+    agent_x: 11.0
+    agent_y: 11.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 24
+    agent_x: 11.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 25
+    agent_x: 11.0
+    agent_y: 9.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 26
+    agent_x: 11.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 27
+    agent_x: 11.0
+    agent_y: 7.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 28
+    agent_x: 11.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 29
+    agent_x: 11.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 30
+    agent_x: 11.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 31
+    agent_x: 11.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 32
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 33
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 34
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 35
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 36
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 37
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 38
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 39
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 40
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 41
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 42
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 43
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 44
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 45
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 46
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 47
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 48
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 49
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 50
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 51
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 52
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 53
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 54
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 55
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 56
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 57
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 58
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 59
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+- id: 4
+  steps:
+  - t: 0
+    agent_x: 10.0
+    agent_y: 16.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 1
+    agent_x: 10.0
+    agent_y: 16.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 2
+    agent_x: 10.0
+    agent_y: 15.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 3
+    agent_x: 10.0
+    agent_y: 14.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 4
+    agent_x: 10.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 5
+    agent_x: 10.0
+    agent_y: 12.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 6
+    agent_x: 10.0
+    agent_y: 12.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 7
+    agent_x: 10.0
+    agent_y: 12.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 8
+    agent_x: 10.0
+    agent_y: 12.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 9
+    agent_x: 10.0
+    agent_y: 12.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 10
+    agent_x: 10.0
+    agent_y: 11.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 11
+    agent_x: 10.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 12
+    agent_x: 10.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 13
+    agent_x: 10.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 14
+    agent_x: 10.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 15
+    agent_x: 10.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 16
+    agent_x: 10.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 17
+    agent_x: 10.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 18
+    agent_x: 10.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 19
+    agent_x: 10.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 20
+    agent_x: 10.0
+    agent_y: 9.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 21
+    agent_x: 10.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 22
+    agent_x: 10.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 23
+    agent_x: 10.0
+    agent_y: 7.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 24
+    agent_x: 10.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 25
+    agent_x: 10.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 26
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 27
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 28
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 29
+    agent_x: 10.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 30
+    agent_x: 10.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 31
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 32
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 33
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 34
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 35
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 36
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 37
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 38
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 39
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 40
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 41
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 42
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 43
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 44
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 45
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 46
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 47
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 48
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 49
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 50
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 51
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 52
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 53
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 54
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 55
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 56
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 57
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 58
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 59
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+- id: 5
+  steps:
+  - t: 0
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 1
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 2
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 3
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 4
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 5
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 6
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 7
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 8
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 9
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 10
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 11
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 12
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 13
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 14
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 15
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 16
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 17
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 18
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 19
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 20
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 21
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 22
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 23
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 24
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 25
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 26
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 27
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 28
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 29
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 30
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 31
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 32
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 33
+    agent_x: 8.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 34
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 35
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 36
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 37
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 38
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 39
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 40
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 41
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 42
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 43
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 44
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 45
+    agent_x: 7.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 46
+    agent_x: 6.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 47
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 48
+    agent_x: 4.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 49
+    agent_x: 3.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 50
+    agent_x: 2.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 51
+    agent_x: 2.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 52
+    agent_x: 2.0
+    agent_y: 7.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 53
+    agent_x: 2.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 54
+    agent_x: 2.0
+    agent_y: 6.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 55
+    agent_x: 1.0
+    agent_y: 6.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 56
+    agent_x: 1.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 57
+    agent_x: 1.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 58
+    agent_x: 1.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 59
+    agent_x: 1.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+- id: 6
+  steps:
+  - t: 0
+    agent_x: 16.0
+    agent_y: 4.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 1
+    agent_x: 16.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 2
+    agent_x: 16.0
+    agent_y: 6.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 3
+    agent_x: 16.0
+    agent_y: 7.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 4
+    agent_x: 16.0
+    agent_y: 7.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 5
+    agent_x: 15.0
+    agent_y: 7.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 6
+    agent_x: 15.0
+    agent_y: 7.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 7
+    agent_x: 15.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 8
+    agent_x: 15.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 9
+    agent_x: 14.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 10
+    agent_x: 13.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 11
+    agent_x: 13.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 12
+    agent_x: 13.0
+    agent_y: 9.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 13
+    agent_x: 13.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 14
+    agent_x: 13.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 15
+    agent_x: 13.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 16
+    agent_x: 13.0
+    agent_y: 9.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 17
+    agent_x: 13.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 18
+    agent_x: 13.0
+    agent_y: 7.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 19
+    agent_x: 13.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 20
+    agent_x: 13.0
+    agent_y: 6.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 21
+    agent_x: 13.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 22
+    agent_x: 13.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 23
+    agent_x: 13.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 24
+    agent_x: 13.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 25
+    agent_x: 13.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 26
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 27
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 28
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 29
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 30
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: true
+  - t: 31
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: true
+  - t: 32
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 33
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 34
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 35
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 36
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 37
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 38
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: true
+  - t: 39
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 40
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: true
+  - t: 41
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: true
+  - t: 42
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: true
+  - t: 43
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: true
+  - t: 44
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 45
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: true
+  - t: 46
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 47
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 48
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: true
+  - t: 49
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: true
+  - t: 50
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 51
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 52
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 53
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 54
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: true
+  - t: 55
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 56
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 57
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: true
+  - t: 58
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 59
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+- id: 7
+  steps:
+  - t: 0
+    agent_x: 3.0
+    agent_y: 13.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 1
+    agent_x: 3.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 2
+    agent_x: 3.0
+    agent_y: 14.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 3
+    agent_x: 3.0
+    agent_y: 14.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 4
+    agent_x: 4.0
+    agent_y: 14.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 5
+    agent_x: 4.0
+    agent_y: 14.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 6
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 7
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 8
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 9
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 10
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 11
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 12
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 13
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 14
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 15
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 16
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 17
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 18
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 19
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 20
+    agent_x: 4.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 21
+    agent_x: 5.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 22
+    agent_x: 5.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 23
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 24
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 25
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 26
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 27
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 28
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 29
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 30
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 31
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 32
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 33
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 34
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 35
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 36
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 37
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 38
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 39
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 40
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 41
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 42
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 43
+    agent_x: 6.0
+    agent_y: 14.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 44
+    agent_x: 6.0
+    agent_y: 14.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 45
+    agent_x: 6.0
+    agent_y: 14.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 46
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 47
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 48
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 49
+    agent_x: 5.0
+    agent_y: 13.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 50
+    agent_x: 5.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 51
+    agent_x: 5.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 52
+    agent_x: 5.0
+    agent_y: 13.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 53
+    agent_x: 5.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 54
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 55
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 56
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 57
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 58
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 59
+    agent_x: 6.0
+    agent_y: 13.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+- id: 8
+  steps:
+  - t: 0
+    agent_x: 17.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 1
+    agent_x: 17.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 2
+    agent_x: 17.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 3
+    agent_x: 17.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 4
+    agent_x: 16.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 5
+    agent_x: 15.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 6
+    agent_x: 14.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 7
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 8
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 9
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 10
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 11
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 12
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 13
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 14
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 15
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 16
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 17
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 18
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 19
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 20
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 21
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 22
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 23
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 24
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 25
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 26
+    agent_x: 13.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 27
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 28
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 29
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 30
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 31
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 32
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 33
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 34
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 35
+    agent_x: 13.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 36
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 37
+    agent_x: 15.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 38
+    agent_x: 15.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 39
+    agent_x: 15.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 40
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 41
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 42
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 43
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 44
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 45
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 46
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 47
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 48
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 49
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 50
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 51
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 52
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 53
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 54
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 55
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 56
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 57
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 58
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 59
+    agent_x: 14.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+- id: 9
+  steps:
+  - t: 0
+    agent_x: 3.0
+    agent_y: 4.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 1
+    agent_x: 3.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 2
+    agent_x: 4.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 3
+    agent_x: 5.0
+    agent_y: 4.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 4
+    agent_x: 5.0
+    agent_y: 4.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 5
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 6
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 7
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 8
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 9
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 10
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 11
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 12
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 13
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 14
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 15
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 16
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 17
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 18
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 19
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 20
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 21
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 22
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 23
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 24
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 25
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 26
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 27
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 28
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 29
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 30
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 31
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 32
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 33
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 34
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 35
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 36
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 37
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 38
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 39
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 40
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 41
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 42
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 43
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 44
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 45
+    agent_x: 5.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 46
+    agent_x: 4.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 47
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 48
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 49
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 50
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 51
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 52
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 53
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 54
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 55
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 56
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 57
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 58
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 59
+    agent_x: 3.0
+    agent_y: 5.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+- id: 10
+  steps:
+  - t: 0
+    agent_x: 7.0
+    agent_y: 6.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 1
+    agent_x: 8.0
+    agent_y: 6.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 2
+    agent_x: 8.0
+    agent_y: 6.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 3
+    agent_x: 8.0
+    agent_y: 7.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 4
+    agent_x: 8.0
+    agent_y: 7.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 5
+    agent_x: 7.0
+    agent_y: 7.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 6
+    agent_x: 6.0
+    agent_y: 7.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 7
+    agent_x: 5.0
+    agent_y: 7.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 8
+    agent_x: 5.0
+    agent_y: 7.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 9
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 10
+    agent_x: 5.0
+    agent_y: 9.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 11
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 12
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 13
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 14
+    agent_x: 5.0
+    agent_y: 9.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 15
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 16
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 17
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 18
+    agent_x: 5.0
+    agent_y: 9.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 19
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 20
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 21
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 22
+    agent_x: 5.0
+    agent_y: 9.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 23
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 24
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 25
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 26
+    agent_x: 5.0
+    agent_y: 9.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 27
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 28
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 29
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 30
+    agent_x: 5.0
+    agent_y: 9.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 31
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 32
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 33
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 34
+    agent_x: 5.0
+    agent_y: 9.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 35
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 36
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 37
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 38
+    agent_x: 5.0
+    agent_y: 9.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 39
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 40
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 41
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 42
+    agent_x: 5.0
+    agent_y: 9.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 43
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 44
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 45
+    agent_x: 5.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 46
+    agent_x: 5.0
+    agent_y: 9.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 47
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: true
+  - t: 48
+    agent_x: 5.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: true
+  - t: 49
+    agent_x: 4.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 50
+    agent_x: 3.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 51
+    agent_x: 2.0
+    agent_y: 8.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 52
+    agent_x: 2.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 53
+    agent_x: 2.0
+    agent_y: 7.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 54
+    agent_x: 2.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 55
+    agent_x: 2.0
+    agent_y: 6.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 56
+    agent_x: 1.0
+    agent_y: 6.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 57
+    agent_x: 1.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 58
+    agent_x: 1.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 59
+    agent_x: 1.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+- id: 11
+  steps:
+  - t: 0
+    agent_x: 11.0
+    agent_y: 8.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 1
+    agent_x: 11.0
+    agent_y: 9.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 2
+    agent_x: 11.0
+    agent_y: 10.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 3
+    agent_x: 11.0
+    agent_y: 10.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 4
+    agent_x: 11.0
+    agent_y: 10.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 5
+    agent_x: 11.0
+    agent_y: 9.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 6
+    agent_x: 11.0
+    agent_y: 8.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 7
+    agent_x: 11.0
+    agent_y: 7.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 8
+    agent_x: 11.0
+    agent_y: 6.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 9
+    agent_x: 11.0
+    agent_y: 5.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 10
+    agent_x: 11.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 11
+    agent_x: 11.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 12
+    agent_x: 11.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 13
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 2.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 14
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 15
+    agent_x: 10.0
+    agent_y: 4.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 16
+    agent_x: 10.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 17
+    agent_x: 10.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 18
+    agent_x: 10.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 19
+    agent_x: 10.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 20
+    agent_x: 10.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 2
+    label: false
+  - t: 21
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 22
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 23
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 24
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 25
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 26
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 27
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 28
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 29
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 30
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 31
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 32
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 33
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 34
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 35
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 36
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 37
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 38
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 39
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 40
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 3.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 41
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+  - t: 42
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 43
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 44
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 45
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 46
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 47
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 48
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 49
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 50
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 51
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 5
+    label: false
+  - t: 52
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 53
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 54
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 55
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 4
+    label: false
+  - t: 56
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 3
+    label: false
+  - t: 57
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 1
+    label: false
+  - t: 58
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 1.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 0
+    label: false
+  - t: 59
+    agent_x: 11.0
+    agent_y: 3.0
+    direction: 0.0
+    carrying_key: 0.0
+    carrying_any: 0.0
+    action: 6
+    label: false
+independent: true
+annotator_note: 'Two annotators from fresh contexts, no access to the scenario file, to each other, or
+  to any result. Identical labels (Jaccard 1.000, 67/720), the same two stretches. Both compressed rows
+  into cell-runs so that turning in place is not a move, then required at least two complete out-and-back
+  round trips over a segment of at most two cells; single out-and-backs and spinning in place were deliberately
+  excluded.
+
+  This entry was previously recorded as unobservable on the strength of a probe that searched for A,B,A
+  in CONSECUTIVE steps. That pattern cannot occur in MiniGrid, where turning costs a step and an out-and-back
+  reads A,B,B,B,A. The behaviour is present in 2 of 12 episodes here.'

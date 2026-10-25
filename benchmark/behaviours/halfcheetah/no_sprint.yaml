@@ -1,0 +1,12 @@
+id: halfcheetah.no_sprint
+domain: HalfCheetah-v5
+description: Stop running faster than a set forward speed, even though speed is what the reward
+  pays for.
+verdict: expressible
+scenario: halfcheetah/no_high_velocity
+tags:
+- continuous-control
+- reward-aligned
+notes: 'behaviour absent and not a compute limit: retrained to 6M steps (4x), peak v_rootx
+  4.31 against a threshold of 5.0, versus 4.48 at 1.5M. More training did not make this policy
+  sprint.'

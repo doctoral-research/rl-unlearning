@@ -38,6 +38,12 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 from agents import PPOAgent  # noqa: E402
 from utils import setup_logger, get_device, set_seed  # noqa: E402
+from utils.checkpointing import (  # noqa: E402
+    build_checkpoint,
+    save_checkpoint_atomic,
+    load_for_resume,
+    resolve_resume,
+)
 from utils.env_wrappers import make_env  # noqa: E402
 
 logger = logging.getLogger(__name__)
@@ -53,6 +59,7 @@ def _make_env_fn(cfg: DictConfig, seed: int):
             exploration_hash_scale=cfg.get("exploration_hash_scale", 1.0),
             obs_encoding=cfg.get("obs_encoding", "image"),
             fixed_goal_pos=cfg.get("fixed_goal_pos", None),
+            include_pos=cfg.get("include_pos", True),
             normalize_obs=cfg.get("normalize_obs", False),
         )
     return _thunk
@@ -86,7 +93,7 @@ class RunningRMS:
 def train_vec(cfg: DictConfig):
     setup_logger("train_vec")
     set_seed(cfg.seed)
-    device = get_device()
+    device = get_device(cfg.get("device", "auto"))
     logger.info(f"Vectorized PPO training | device={device}")
     logger.info(OmegaConf.to_yaml(cfg))
 
@@ -118,8 +125,14 @@ def train_vec(cfg: DictConfig):
             [_make_env_fn(cfg, cfg.seed + i) for i in range(num_envs)],
         )
         # Single-env for eval (separate, doesn't share obs-norm state with training)
+        # Eval env must match the training env's observation construction,
+        # otherwise MiniGrid eval silently runs on a different encoding
+        # (and, since Stage 0, a different obs width).
         eval_env = make_env(
             cfg.env_id, seed=cfg.seed + 99999,
+            obs_encoding=cfg.get("obs_encoding", "image"),
+            fixed_goal_pos=cfg.get("fixed_goal_pos", None),
+            include_pos=cfg.get("include_pos", True),
             normalize_obs=cfg.get("normalize_obs", False),
         )
     if cfg.action_type == "continuous":
@@ -158,11 +171,33 @@ def train_vec(cfg: DictConfig):
     ckpt_dir = Path(cfg.training.checkpoint_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     best_eval = -float("inf")  # Track best eval; save best_model.pt accordingly
+    # (may be overwritten by a resume below)
 
-    obs, _ = env.reset(seed=cfg.seed)
+    # ---- Resume ----
+    # Restores the learner exactly (weights, Adam moments, normalisers, RNG).
+    # Env state is not restorable across processes, so the envs are reset
+    # with a step-derived seed: the in-flight episodes are lost, everything
+    # on the learner side continues.
     global_step = 0
-    pbar = tqdm(total=total_steps, desc="train-vec")
-    next_eval = eval_freq
+    resume_path = resolve_resume(cfg.get("resume", False), ckpt_dir)
+    if resume_path is not None:
+        state = load_for_resume(resume_path, agent, ret_rms=ret_rms,
+                                map_location=str(device))
+        global_step = state.global_step
+        best_eval = state.best_eval
+        logger.info(
+            f"Resumed from {state.path.name} at step {global_step:,} "
+            f"(best_eval={best_eval:.3f}, rng_restored={state.restored_rng})"
+        )
+        logger.info(
+            "Environment state is NOT restored; episodes restart here."
+        )
+        obs, _ = env.reset(seed=cfg.seed + 1_000_003 + global_step)
+    else:
+        obs, _ = env.reset(seed=cfg.seed)
+
+    pbar = tqdm(total=total_steps, desc="train-vec", initial=global_step)
+    next_eval = global_step + eval_freq
 
     while global_step < total_steps:
         # Rollout: (T, N, ...) buffers
@@ -282,21 +317,27 @@ def train_vec(cfg: DictConfig):
             # Periodic checkpoint + best-so-far snapshot. Lets us pick the
             # peak policy after training if reward bounces (Procgen / sparse
             # envs are particularly prone to PPO instability post-peak).
-            torch.save({"network": agent.network.state_dict(),
-                        "eval_step": global_step, "eval_mean_return": mean_ret},
-                       ckpt_dir / f"checkpoint_step{global_step}.pt")
+            save_checkpoint_atomic(
+                build_checkpoint(agent, global_step, best_eval=best_eval,
+                                 ret_rms=ret_rms, eval_mean_return=mean_ret),
+                ckpt_dir / f"checkpoint_step{global_step}.pt")
             if mean_ret > best_eval:
                 best_eval = mean_ret
-                torch.save({"network": agent.network.state_dict(),
-                            "eval_step": global_step, "eval_mean_return": mean_ret},
-                           ckpt_dir / "best_model.pt")
+                save_checkpoint_atomic(
+                    build_checkpoint(agent, global_step, best_eval=best_eval,
+                                     ret_rms=ret_rms,
+                                     eval_mean_return=mean_ret),
+                    ckpt_dir / "best_model.pt")
                 logger.info(f"  -> new best at step {global_step}: {mean_ret:.2f}")
             next_eval += eval_freq
 
     # Save final checkpoint
     ckpt_dir = Path(cfg.training.checkpoint_dir)
     ckpt_dir.mkdir(parents=True, exist_ok=True)
-    torch.save({"network": agent.network.state_dict()}, ckpt_dir / "final_model.pt")
+    save_checkpoint_atomic(
+        build_checkpoint(agent, global_step, best_eval=best_eval,
+                         ret_rms=ret_rms),
+        ckpt_dir / "final_model.pt")
     logger.info(f"Saved final model to {ckpt_dir / 'final_model.pt'}")
 
 

@@ -1,0 +1,31 @@
+# Reader prompt, round 05 (readers J, K)
+# Sent verbatim to each reader on 2026-09-17; <READER> stands for the reader's letter.
+
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+One labelling task: /tmp/annot5/halfcheetah.no_front_flip.txt
+
+The file contains a one-sentence description of a BEHAVIOUR and a table of steps with named feature values. Read the "Notes on the features" section in the file carefully.
+
+Decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config, or source code in the repository. Do not search the web. Do not infer anything from the filename.
+- The description does not fix a number. How much rotation counts as a somersault, and which direction counts as "forward", are yours to decide. State exactly what you chose and why.
+- The sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+- A rotation happens over many steps, so decide whether you mark only the instants of fastest rotation or the whole span of a rotation, and say which.
+- Be consistent.
+
+Write /tmp/annot5/annotator_<READER>.json in exactly this format:
+
+{
+  "halfcheetah.no_front_flip": {"reasoning": "<your rule, rotation threshold, direction convention, span choice, and which set you marked>", "labels": [0,1,...]}
+}
+
+"labels" must be a list of 0/1 integers, EXACTLY one per table row, in the same order. The file has 480 rows.
+
+Write a small Python script to parse the table and apply your rule. Verify the length is 480 before finishing.
+
+If you conclude the behaviour never actually occurs in this data, say so plainly and label accordingly rather than inventing positives.
+
+Reply with one line: your rule and how many steps you marked.

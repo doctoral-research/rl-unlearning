@@ -17,7 +17,7 @@ from typing import Any, Dict, List, Optional, Sequence
 import numpy as np
 
 from .constants import OP_RENDER
-from .scenario import ForgetScenario
+from .scenario import ForgetScenario, _feature_seq
 
 
 # ---------------------------------------------------------------------------
@@ -135,30 +135,33 @@ def _render_condition_nl(c: Dict[str, Any]) -> str:
     return f"<unknown condition {ck}>"
 
 
-def _render_temporal_nl(
-    scenario: ForgetScenario, t: Dict[str, Any],
-) -> str:
-    op = t["operator"]
-    if op == "consecutive":
-        return (
-            f"a run of at least {t['k']} consecutive steps where "
-            f"{_render_group_nl(scenario, t['group'])}"
-        )
-    if op == "eventually":
-        return f"at some step, {_render_group_nl(scenario, t['group'])}"
-    if op == "always":
-        return f"on every step, {_render_group_nl(scenario, t['group'])}"
-    if op == "then_within":
-        return (
-            f"{_render_group_nl(scenario, t['first'])}, followed within "
-            f"{t['within']} steps by {_render_group_nl(scenario, t['second'])}"
-        )
-    if op == "until":
-        return (
-            f"{_render_group_nl(scenario, t['hold'])} holds at every step "
-            f"until {_render_group_nl(scenario, t['release'])} occurs"
-        )
-    return f"({op})"
+def _render_temporal_nl(scenario: ForgetScenario, t: Any) -> str:
+    """Prose for a temporal formula, walked recursively so nested
+    operators read as nested clauses."""
+    k, kids = t.kind, t.children
+    if k == "state":
+        return _render_group_nl(scenario, t.group)
+    if k == "not":
+        return f"it is not the case that {_render_temporal_nl(scenario, kids[0])}"
+    if k in ("and", "or"):
+        joiner = " and " if k == "and" else " or "
+        return joiner.join(_render_temporal_nl(scenario, c) for c in kids)
+    if k == "next":
+        return f"at the next step, {_render_temporal_nl(scenario, kids[0])}"
+    if k == "eventually":
+        return f"at some later step, {_render_temporal_nl(scenario, kids[0])}"
+    if k == "always":
+        return f"at every later step, {_render_temporal_nl(scenario, kids[0])}"
+    if k == "consecutive":
+        return (f"a run of at least {t.k} consecutive steps where "
+                f"{_render_temporal_nl(scenario, kids[0])}")
+    if k == "then_within":
+        return (f"{_render_temporal_nl(scenario, kids[0])}, followed within "
+                f"{t.within} steps by {_render_temporal_nl(scenario, kids[1])}")
+    if k == "until":
+        return (f"{_render_temporal_nl(scenario, kids[0])} holds at every step "
+                f"until {_render_temporal_nl(scenario, kids[1])} occurs")
+    return f"({k})"
 
 
 # ---------------------------------------------------------------------------
@@ -294,43 +297,55 @@ def _predicate_condition(c: Dict[str, Any], indicator: tuple) -> str:
 
 
 def _predicate_temporal(
-    scenario: ForgetScenario, t: Dict[str, Any],
+    scenario: ForgetScenario, t: Any, at: str = "t", depth: int = 0,
 ) -> str:
-    op = t["operator"]
-    if op == "consecutive":
-        # The clean way to render "K consecutive matches starting at t" is
-        # \bigwedge_{i=0..K-1} P(s_{t+i}, a_{t+i}); pass (s_{t+i}, a_{t+i})
-        # straight to the group renderer instead of post-hoc string surgery.
-        inner = _predicate_group(scenario, t["group"], ("s_{t+i}", "a_{t+i}"))
-        return (
-            r"\exists\, t.\; \bigwedge_{i=0}^{" + str(t["k"] - 1) + r"} "
-            + _paren(inner)
-        )
-    if op == "eventually":
-        return r"\exists\, t.\; " + _predicate_group(
-            scenario, t["group"], ("s_t", "a_t"),
-        )
-    if op == "always":
-        return r"\forall\, t.\; " + _predicate_group(
-            scenario, t["group"], ("s_t", "a_t"),
-        )
-    if op == "then_within":
-        a = _predicate_group(scenario, t["first"], ("s_t", "a_t"))
-        b = _predicate_group(scenario, t["second"], ("s_{t'}", "a_{t'}"))
-        return (
-            r"\exists\, t,\, t'.\; " + _paren(a)
-            + r" \,\wedge\, " + _paren(b)
-            + rf" \,\wedge\, 0 < t' - t \leq {t['within']}"
-        )
-    if op == "until":
-        # Standard LTL strong until:  hold U release  ==
-        #   exists t'.  release(s_{t'})  AND  forall s < t'.  hold(s_s)
-        h = _predicate_group(scenario, t["hold"], ("s_s", "a_s"))
-        r = _predicate_group(scenario, t["release"], ("s_{t'}", "a_{t'}"))
-        return (
-            r"\exists\, t'.\; " + _paren(r)
-            + r" \,\wedge\, \forall\, s < t'.\; " + _paren(h)
-        )
+    """LaTeX for a temporal formula.
+
+    `at` is the position symbol this sub-formula is evaluated at. Nested
+    operators bind fresh symbols (t, u, v, w) rather than shadowing t.
+    """
+    k, kids = t.kind, t.children
+    syms = ("t", "u", "v", "w", "x", "y")
+    nxt = syms[min(depth + 1, len(syms) - 1)]
+    nxt2 = syms[min(depth + 2, len(syms) - 1)]
+
+    if k == "state":
+        return _predicate_group(
+            scenario, t.group, (f"s_{{{at}}}", f"a_{{{at}}}"))
+    if k == "not":
+        return r"\neg " + _paren(
+            _predicate_temporal(scenario, kids[0], at, depth))
+    if k in ("and", "or"):
+        joiner = r" \,\wedge\, " if k == "and" else r" \,\vee\, "
+        return joiner.join(
+            _paren(_predicate_temporal(scenario, c, at, depth)) for c in kids)
+    if k == "next":
+        return _predicate_temporal(scenario, kids[0], at + "+1", depth)
+    if k == "eventually":
+        return (rf"\exists\, {nxt} \geq {at}.\; "
+                + _paren(_predicate_temporal(
+                    scenario, kids[0], nxt, depth + 1)))
+    if k == "always":
+        return (rf"\forall\, {nxt} \geq {at}.\; "
+                + _paren(_predicate_temporal(
+                    scenario, kids[0], nxt, depth + 1)))
+    if k == "consecutive":
+        inner = _predicate_temporal(
+            scenario, kids[0], nxt + "+i", depth + 1)
+        return (rf"\exists\, {nxt} \geq {at}.\; "
+                + rf"\bigwedge_{{i=0}}^{{{t.k - 1}}} " + _paren(inner))
+    if k == "then_within":
+        a_ = _predicate_temporal(scenario, kids[0], nxt, depth + 2)
+        b_ = _predicate_temporal(scenario, kids[1], nxt2, depth + 2)
+        return (rf"\exists\, {nxt},\, {nxt2} \geq {at}.\; " + _paren(a_)
+                + r" \,\wedge\, " + _paren(b_)
+                + rf" \,\wedge\, 0 < {nxt2} - {nxt} \leq {t.within}")
+    if k == "until":
+        r_ = _predicate_temporal(scenario, kids[1], nxt, depth + 2)
+        h = _predicate_temporal(scenario, kids[0], nxt2, depth + 2)
+        return (rf"\exists\, {nxt} \geq {at}.\; " + _paren(r_)
+                + rf" \,\wedge\, \forall\, {at} \leq {nxt2} < {nxt}.\; "
+                + _paren(h))
     return r"\bot"
 
 
@@ -454,15 +469,19 @@ def coverage(
     matching_steps = 0
     per_episode_rates = []
     for traj in trajectories:
-        obs = traj["observations"]
-        actions = traj.get("actions", [None] * len(obs))
+        # Already-extracted FEATURES, so match against them directly.
+        # Routing through matches_state would re-run the view on a
+        # feature vector, which is a no-op for an identity view and an
+        # error for one that reads the environment.
+        feats = _feature_seq(traj)
+        actions = traj.get("actions", [None] * len(feats))
         rewards = traj.get("rewards", [None] * len(actions))
         n_steps = len(actions)
         ep_match = 0
         for t in range(n_steps):
             act = actions[t] if t < len(actions) else None
             rwd = rewards[t] if t < len(rewards) else None
-            if scenario.matches_state(np.asarray(obs[t]), act, rwd):
+            if scenario.matches_features(np.asarray(feats[t]), act, rwd):
                 ep_match += 1
         matching_steps += ep_match
         per_episode_rates.append(ep_match / max(n_steps, 1))

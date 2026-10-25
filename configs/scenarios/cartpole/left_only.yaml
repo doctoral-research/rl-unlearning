@@ -11,6 +11,10 @@ env_id: CartPole-v1
 # center -- any_step would catch nearly all trajectories.
 match_mode: proportion
 match_threshold: 0.3
+# Which steps carry the forget label. matching_steps is what the
+# online loop implements: only steps satisfying the predicate, not
+# every step of a selected trajectory.
+applies_to: matching_steps
 
 # obs: [cart_position, cart_velocity, pole_angle, pole_angular_velocity]
 groups:

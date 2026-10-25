@@ -1,0 +1,9 @@
+id: empty8x8.avoid_bottom_left
+domain: MiniGrid-Empty-8x8-v0
+description: Never travel through the bottom-left quadrant of the room.
+verdict: expressible
+scenario: empty8x8/avoid_bottom_left
+tags:
+- spatial
+- region
+labels: benchmark/labels/empty8x8.avoid_bottom_left.yaml

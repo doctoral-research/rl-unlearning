@@ -33,6 +33,49 @@ ENV_OBS_DIMS: dict[str, dict[int, str]] = {
         6: "left_leg_contact",
         7: "right_leg_contact",
     },
+    "Pendulum-v1": {
+        0: "cos_theta",
+        1: "sin_theta",
+        2: "theta_dot",
+    },
+    "MountainCar-v0": {
+        0: "position",
+        1: "velocity",
+    },
+    # Taxi is discrete; utils.env_wrappers.TaxiDecode expands the integer
+    # state into these four semantic fields before the policy sees it.
+    "Taxi-v3": {
+        0: "row",
+        1: "col",
+        2: "passenger_location",
+        3: "destination",
+    },
+    "Taxi-v4": {
+        0: "row",
+        1: "col",
+        2: "passenger_location",
+        3: "destination",
+    },
+    # Gymnasium MuJoCo drops the root x coordinate from the observation,
+    # so obs = qpos[1:] (8) ++ qvel (9) = 17 dims. Names match the model's
+    # own joint names (see views.mujoco_view) so that the SAME name
+    # resolves correctly under either view despite the index offset.
+    "HalfCheetah-v5": {
+        0: "rootz", 1: "rooty",
+        2: "bthigh", 3: "bshin", 4: "bfoot",
+        5: "fthigh", 6: "fshin", 7: "ffoot",
+        8: "v_rootx", 9: "v_rootz", 10: "v_rooty",
+        11: "v_bthigh", 12: "v_bshin", 13: "v_bfoot",
+        14: "v_fthigh", 15: "v_fshin", 16: "v_ffoot",
+    },
+    "Walker2d-v5": {
+        0: "rootz", 1: "rooty",
+        2: "thigh_joint", 3: "leg_joint", 4: "foot_joint",
+        5: "thigh_left_joint", 6: "leg_left_joint", 7: "foot_left_joint",
+        8: "v_rootx", 9: "v_rootz", 10: "v_rooty",
+        11: "v_thigh_joint", 12: "v_leg_joint", 13: "v_foot_joint",
+        14: "v_thigh_left_joint", 15: "v_leg_left_joint", 16: "v_foot_left_joint",
+    },
     # MiniGrid envs go through MiniGridFlatPos: first 3 dims are
     # (agent_x, agent_y, direction); the rest is the FlatObs encoding.
     "MiniGrid-Empty-8x8-v0": {
@@ -68,6 +111,24 @@ ENV_ACTION_DIMS: dict[str, dict[int, str]] = {
     "Acrobot-v1": {0: "torque_negative", 1: "torque_zero", 2: "torque_positive"},
     "LunarLander-v3": {
         0: "noop", 1: "left_engine", 2: "main_engine", 3: "right_engine",
+    },
+    "Pendulum-v1": {0: "torque"},
+    "MountainCar-v0": {0: "push_left", 1: "no_push", 2: "push_right"},
+    "Taxi-v3": {
+        0: "south", 1: "north", 2: "east", 3: "west",
+        4: "pickup", 5: "dropoff",
+    },
+    "MiniGrid-DoorKey-5x5-v0": {
+        0: "turn_left", 1: "turn_right", 2: "forward",
+        3: "pickup", 4: "drop", 5: "toggle", 6: "done",
+    },
+    "MiniGrid-DoorKey-6x6-v0": {
+        0: "turn_left", 1: "turn_right", 2: "forward",
+        3: "pickup", 4: "drop", 5: "toggle", 6: "done",
+    },
+    "MiniGrid-DoorKey-8x8-v0": {
+        0: "turn_left", 1: "turn_right", 2: "forward",
+        3: "pickup", 4: "drop", 5: "toggle", 6: "done",
     },
     "MiniGrid-Empty-8x8-v0": {
         0: "turn_left", 1: "turn_right", 2: "forward",
@@ -130,8 +191,10 @@ VALID_REGION_TYPES = {"box", "complement_of_box", "ellipsoid", "polygon"}
 
 VALID_TEMPORAL_OPERATORS = {
     "consecutive", "then_within", "eventually", "always", "until",
+    # v1.4: formulas nest, so boolean combinators and `next` join the set.
+    "and", "or", "not", "next",
 }
 
 
 # Current schema version. Bumped when grammar changes in a breaking way.
-SCHEMA_VERSION = "1.0"
+SCHEMA_VERSION = "1.4"

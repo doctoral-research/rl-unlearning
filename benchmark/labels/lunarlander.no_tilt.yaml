@@ -1,0 +1,1131 @@
+entry: lunarlander.no_tilt
+env: LunarLander-v3
+description: Stop descending at a steep tilt; keep the lander close to upright.
+annotator: synthetic:fresh-context (A, B, C; per-step majority)
+instructions: Decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+prompt: r01_ABC
+reader_model: claude-opus-5
+features:
+- x
+- y
+- vx
+- vy
+- angle
+- angular_velocity
+- left_leg_contact
+- right_leg_contact
+episodes:
+- id: 0
+  steps:
+  - t: 0
+    x: 0.0033
+    y: 1.4154
+    vx: 0.3319
+    vy: 0.2009
+    angle: -0.0038
+    angular_velocity: -0.0752
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 1
+    x: 0.0066
+    y: 1.4194
+    vx: 0.3431
+    vy: 0.1754
+    angle: -0.0098
+    angular_velocity: -0.1208
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 2
+    x: 0.01
+    y: 1.4227
+    vx: 0.3431
+    vy: 0.1487
+    angle: -0.0159
+    angular_velocity: -0.1207
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 3
+    x: 0.0133
+    y: 1.4267
+    vx: 0.3397
+    vy: 0.176
+    angle: -0.0221
+    angular_velocity: -0.1255
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 4
+    x: 0.0167
+    y: 1.4301
+    vx: 0.3397
+    vy: 0.1493
+    angle: -0.0284
+    angular_velocity: -0.1254
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 5
+    x: 0.02
+    y: 1.4328
+    vx: 0.3317
+    vy: 0.123
+    angle: -0.0331
+    angular_velocity: -0.0932
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 6
+    x: 0.0231
+    y: 1.4361
+    vx: 0.3183
+    vy: 0.1458
+    angle: -0.0385
+    angular_velocity: -0.1091
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 7
+    x: 0.0261
+    y: 1.4388
+    vx: 0.3061
+    vy: 0.12
+    angle: -0.0415
+    angular_velocity: -0.0596
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 8
+    x: 0.0291
+    y: 1.4409
+    vx: 0.3061
+    vy: 0.0933
+    angle: -0.0445
+    angular_velocity: -0.0597
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 9
+    x: 0.0323
+    y: 1.4424
+    vx: 0.3167
+    vy: 0.0662
+    angle: -0.0496
+    angular_velocity: -0.1025
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 10
+    x: 0.0353
+    y: 1.4433
+    vx: 0.3089
+    vy: 0.0396
+    angle: -0.0532
+    angular_velocity: -0.0709
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 11
+    x: 0.0384
+    y: 1.4436
+    vx: 0.3185
+    vy: 0.0121
+    angle: -0.0586
+    angular_velocity: -0.1096
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 12
+    x: 0.0416
+    y: 1.4433
+    vx: 0.3185
+    vy: -0.0145
+    angle: -0.0641
+    angular_velocity: -0.1096
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 13
+    x: 0.0447
+    y: 1.4423
+    vx: 0.3185
+    vy: -0.0412
+    angle: -0.0696
+    angular_velocity: -0.1095
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 14
+    x: 0.0479
+    y: 1.4423
+    vx: 0.3301
+    vy: 0.0004
+    angle: -0.0748
+    angular_velocity: -0.1051
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 15
+    x: 0.0512
+    y: 1.4428
+    vx: 0.3268
+    vy: 0.0205
+    angle: -0.0805
+    angular_velocity: -0.1135
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 16
+    x: 0.0543
+    y: 1.4427
+    vx: 0.3177
+    vy: -0.0053
+    angle: -0.0843
+    angular_velocity: -0.0765
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 17
+    x: 0.0575
+    y: 1.442
+    vx: 0.3268
+    vy: -0.0321
+    angle: -0.09
+    angular_velocity: -0.1128
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 18
+    x: 0.0606
+    y: 1.4407
+    vx: 0.3164
+    vy: -0.0584
+    angle: -0.0935
+    angular_velocity: -0.0709
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 19
+    x: 0.0637
+    y: 1.4394
+    vx: 0.3071
+    vy: -0.0566
+    angle: -0.0977
+    angular_velocity: -0.0839
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 20
+    x: 0.0668
+    y: 1.4375
+    vx: 0.317
+    vy: -0.0843
+    angle: -0.1039
+    angular_velocity: -0.124
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 21
+    x: 0.0699
+    y: 1.435
+    vx: 0.317
+    vy: -0.111
+    angle: -0.1101
+    angular_velocity: -0.124
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 22
+    x: 0.0729
+    y: 1.432
+    vx: 0.307
+    vy: -0.1372
+    angle: -0.1143
+    angular_velocity: -0.0835
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 23
+    x: 0.076
+    y: 1.4283
+    vx: 0.319
+    vy: -0.1652
+    angle: -0.1209
+    angular_velocity: -0.1325
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 24
+    x: 0.0792
+    y: 1.4239
+    vx: 0.3292
+    vy: -0.1925
+    angle: -0.1296
+    angular_velocity: -0.1733
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+- id: 1
+  steps:
+  - t: 0
+    x: -0.0074
+    y: 1.4057
+    vx: -0.7499
+    vy: -0.2325
+    angle: 0.0086
+    angular_velocity: 0.1699
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 1
+    x: -0.0149
+    y: 1.3999
+    vx: -0.7594
+    vy: -0.2577
+    angle: 0.0191
+    angular_velocity: 0.2097
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 2
+    x: -0.0225
+    y: 1.3943
+    vx: -0.7702
+    vy: -0.2504
+    angle: 0.029
+    angular_velocity: 0.1996
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 3
+    x: -0.0301
+    y: 1.388
+    vx: -0.7702
+    vy: -0.277
+    angle: 0.039
+    angular_velocity: 0.1996
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 4
+    x: -0.0377
+    y: 1.3812
+    vx: -0.7702
+    vy: -0.3037
+    angle: 0.049
+    angular_velocity: 0.1996
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 5
+    x: -0.0453
+    y: 1.3738
+    vx: -0.7703
+    vy: -0.3304
+    angle: 0.059
+    angular_velocity: 0.1996
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 6
+    x: -0.0528
+    y: 1.3672
+    vx: -0.7606
+    vy: -0.2927
+    angle: 0.0697
+    angular_velocity: 0.215
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 7
+    x: -0.0604
+    y: 1.36
+    vx: -0.771
+    vy: -0.3196
+    angle: 0.0826
+    angular_velocity: 0.2565
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 8
+    x: -0.068
+    y: 1.3523
+    vx: -0.771
+    vy: -0.3462
+    angle: 0.0954
+    angular_velocity: 0.2564
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 9
+    x: -0.0756
+    y: 1.3439
+    vx: -0.7824
+    vy: -0.374
+    angle: 0.1105
+    angular_velocity: 0.3024
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 10
+    x: -0.0834
+    y: 1.3349
+    vx: -0.7934
+    vy: -0.4019
+    angle: 0.1278
+    angular_velocity: 0.3471
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 11
+    x: -0.0912
+    y: 1.3252
+    vx: -0.8046
+    vy: -0.4297
+    angle: 0.1475
+    angular_velocity: 0.3926
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 12
+    x: -0.099
+    y: 1.315
+    vx: -0.7958
+    vy: -0.4553
+    angle: 0.1653
+    angular_velocity: 0.3562
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 13
+    x: -0.1069
+    y: 1.3042
+    vx: -0.8046
+    vy: -0.4826
+    angle: 0.1849
+    angular_velocity: 0.3916
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 14
+    x: -0.1147
+    y: 1.2928
+    vx: -0.8047
+    vy: -0.5093
+    angle: 0.2044
+    angular_velocity: 0.3915
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: true
+  - t: 15
+    x: -0.1228
+    y: 1.2823
+    vx: -0.8243
+    vy: -0.4714
+    angle: 0.224
+    angular_velocity: 0.392
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: true
+  - t: 16
+    x: -0.1309
+    y: 1.2711
+    vx: -0.8332
+    vy: -0.4991
+    angle: 0.2454
+    angular_velocity: 0.4283
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: true
+  - t: 17
+    x: -0.139
+    y: 1.26
+    vx: -0.8362
+    vy: -0.4983
+    angle: 0.2672
+    angular_velocity: 0.4352
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: true
+  - t: 18
+    x: -0.1472
+    y: 1.2491
+    vx: -0.8361
+    vy: -0.4883
+    angle: 0.2897
+    angular_velocity: 0.4495
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: true
+  - t: 19
+    x: -0.1552
+    y: 1.2376
+    vx: -0.825
+    vy: -0.5131
+    angle: 0.3098
+    angular_velocity: 0.4026
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: true
+  - t: 20
+    x: -0.1634
+    y: 1.2268
+    vx: -0.8338
+    vy: -0.4875
+    angle: 0.3307
+    angular_velocity: 0.4178
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: true
+  - t: 21
+    x: -0.1716
+    y: 1.2153
+    vx: -0.8424
+    vy: -0.5161
+    angle: 0.3534
+    angular_velocity: 0.4549
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: true
+  - t: 22
+    x: -0.1798
+    y: 1.2032
+    vx: -0.8425
+    vy: -0.5428
+    angle: 0.3762
+    angular_velocity: 0.4548
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: true
+  - t: 23
+    x: -0.1882
+    y: 1.1918
+    vx: -0.8674
+    vy: -0.5139
+    angle: 0.3993
+    angular_velocity: 0.462
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: true
+  - t: 24
+    x: -0.1967
+    y: 1.1797
+    vx: -0.8674
+    vy: -0.5407
+    angle: 0.4224
+    angular_velocity: 0.4619
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: true
+- id: 2
+  steps:
+  - t: 0
+    x: 0.0035
+    y: 1.4032
+    vx: 0.3534
+    vy: -0.3428
+    angle: -0.004
+    angular_velocity: -0.08
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 1
+    x: 0.007
+    y: 1.3949
+    vx: 0.3529
+    vy: -0.3684
+    angle: -0.008
+    angular_velocity: -0.0791
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 2
+    x: 0.0104
+    y: 1.386
+    vx: 0.3435
+    vy: -0.3954
+    angle: -0.0101
+    angular_velocity: -0.0412
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 3
+    x: 0.0137
+    y: 1.3765
+    vx: 0.3313
+    vy: -0.4225
+    angle: -0.0097
+    angular_velocity: 0.0076
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 4
+    x: 0.017
+    y: 1.3664
+    vx: 0.3313
+    vy: -0.4492
+    angle: -0.0093
+    angular_velocity: 0.0076
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 5
+    x: 0.0204
+    y: 1.3557
+    vx: 0.342
+    vy: -0.4757
+    angle: -0.011
+    angular_velocity: -0.0351
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 6
+    x: 0.0238
+    y: 1.3452
+    vx: 0.341
+    vy: -0.4687
+    angle: -0.0129
+    angular_velocity: -0.0366
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 7
+    x: 0.0272
+    y: 1.334
+    vx: 0.341
+    vy: -0.4954
+    angle: -0.0147
+    angular_velocity: -0.0366
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 8
+    x: 0.0305
+    y: 1.3223
+    vx: 0.3316
+    vy: -0.5217
+    angle: -0.0146
+    angular_velocity: 0.0012
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 9
+    x: 0.034
+    y: 1.3112
+    vx: 0.3491
+    vy: -0.4913
+    angle: -0.0138
+    angular_velocity: 0.0174
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 10
+    x: 0.0376
+    y: 1.2996
+    vx: 0.3596
+    vy: -0.5177
+    angle: -0.015
+    angular_velocity: -0.0247
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 11
+    x: 0.0413
+    y: 1.2873
+    vx: 0.3684
+    vy: -0.5445
+    angle: -0.018
+    angular_velocity: -0.0602
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 12
+    x: 0.045
+    y: 1.2745
+    vx: 0.38
+    vy: -0.5714
+    angle: -0.0233
+    angular_velocity: -0.1066
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 13
+    x: 0.0488
+    y: 1.261
+    vx: 0.38
+    vy: -0.598
+    angle: -0.0287
+    angular_velocity: -0.1065
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 14
+    x: 0.0526
+    y: 1.247
+    vx: 0.3907
+    vy: -0.6249
+    angle: -0.0361
+    angular_velocity: -0.1495
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 15
+    x: 0.0563
+    y: 1.2323
+    vx: 0.3818
+    vy: -0.6514
+    angle: -0.0418
+    angular_velocity: -0.1132
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 16
+    x: 0.06
+    y: 1.2171
+    vx: 0.3739
+    vy: -0.6777
+    angle: -0.0459
+    angular_velocity: -0.0817
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 17
+    x: 0.0637
+    y: 1.2012
+    vx: 0.3641
+    vy: -0.7039
+    angle: -0.048
+    angular_velocity: -0.0421
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 18
+    x: 0.0674
+    y: 1.1856
+    vx: 0.372
+    vy: -0.6943
+    angle: -0.0498
+    angular_velocity: -0.0369
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 19
+    x: 0.0712
+    y: 1.1694
+    vx: 0.3827
+    vy: -0.7218
+    angle: -0.0538
+    angular_velocity: -0.0799
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 20
+    x: 0.075
+    y: 1.1541
+    vx: 0.3904
+    vy: -0.6803
+    angle: -0.0577
+    angular_velocity: -0.0776
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 21
+    x: 0.0788
+    y: 1.1395
+    vx: 0.3857
+    vy: -0.6487
+    angle: -0.0621
+    angular_velocity: -0.0871
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 22
+    x: 0.0826
+    y: 1.1243
+    vx: 0.3858
+    vy: -0.6753
+    angle: -0.0664
+    angular_velocity: -0.0871
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 23
+    x: 0.0866
+    y: 1.1095
+    vx: 0.3951
+    vy: -0.6574
+    angle: -0.0705
+    angular_velocity: -0.0824
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 24
+    x: 0.0904
+    y: 1.0941
+    vx: 0.3844
+    vy: -0.684
+    angle: -0.0725
+    angular_velocity: -0.0395
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+- id: 3
+  steps:
+  - t: 0
+    x: -0.0019
+    y: 1.4074
+    vx: -0.1942
+    vy: -0.1587
+    angle: 0.0022
+    angular_velocity: 0.044
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 1
+    x: -0.0039
+    y: 1.404
+    vx: -0.1977
+    vy: -0.1471
+    angle: 0.0042
+    angular_velocity: 0.0397
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 2
+    x: -0.006
+    y: 1.4011
+    vx: -0.2136
+    vy: -0.1296
+    angle: 0.0054
+    angular_velocity: 0.0239
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 3
+    x: -0.0082
+    y: 1.3976
+    vx: -0.2239
+    vy: -0.1563
+    angle: 0.0087
+    angular_velocity: 0.0651
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 4
+    x: -0.0103
+    y: 1.3935
+    vx: -0.2124
+    vy: -0.1829
+    angle: 0.0096
+    angular_velocity: 0.0189
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 5
+    x: -0.0124
+    y: 1.3897
+    vx: -0.2078
+    vy: -0.1699
+    angle: 0.0108
+    angular_velocity: 0.0241
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 6
+    x: -0.0145
+    y: 1.3862
+    vx: -0.2158
+    vy: -0.1551
+    angle: 0.0117
+    angular_velocity: 0.0168
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 7
+    x: -0.0167
+    y: 1.3821
+    vx: -0.2158
+    vy: -0.1817
+    angle: 0.0125
+    angular_velocity: 0.0168
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 8
+    x: -0.0188
+    y: 1.3774
+    vx: -0.2158
+    vy: -0.2084
+    angle: 0.0133
+    angular_velocity: 0.0168
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 9
+    x: -0.021
+    y: 1.3732
+    vx: -0.2132
+    vy: -0.1892
+    angle: 0.0143
+    angular_velocity: 0.0202
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 10
+    x: -0.0229
+    y: 1.369
+    vx: -0.1974
+    vy: -0.1867
+    angle: 0.0162
+    angular_velocity: 0.0366
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+  - t: 11
+    x: -0.0249
+    y: 1.3642
+    vx: -0.2054
+    vy: -0.2133
+    angle: 0.0196
+    angular_velocity: 0.0686
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 12
+    x: -0.027
+    y: 1.3595
+    vx: -0.2136
+    vy: -0.2054
+    angle: 0.0227
+    angular_velocity: 0.0615
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 13
+    x: -0.0291
+    y: 1.3543
+    vx: -0.204
+    vy: -0.2323
+    angle: 0.0238
+    angular_velocity: 0.023
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 14
+    x: -0.0311
+    y: 1.3485
+    vx: -0.204
+    vy: -0.2589
+    angle: 0.025
+    angular_velocity: 0.0231
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 15
+    x: -0.033
+    y: 1.3421
+    vx: -0.1933
+    vy: -0.2855
+    angle: 0.024
+    angular_velocity: -0.0201
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 16
+    x: -0.035
+    y: 1.335
+    vx: -0.1933
+    vy: -0.3122
+    angle: 0.023
+    angular_velocity: -0.0201
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 17
+    x: -0.0368
+    y: 1.3274
+    vx: -0.1835
+    vy: -0.3385
+    angle: 0.02
+    angular_velocity: -0.0593
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 18
+    x: -0.0387
+    y: 1.3205
+    vx: -0.1851
+    vy: -0.3053
+    angle: 0.017
+    angular_velocity: -0.0591
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 19
+    x: -0.0406
+    y: 1.3142
+    vx: -0.1845
+    vy: -0.2824
+    angle: 0.0142
+    angular_velocity: -0.0572
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 20
+    x: -0.0425
+    y: 1.3072
+    vx: -0.1845
+    vy: -0.3091
+    angle: 0.0113
+    angular_velocity: -0.0572
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 21
+    x: -0.0444
+    y: 1.3007
+    vx: -0.1944
+    vy: -0.2918
+    angle: 0.008
+    angular_velocity: -0.0662
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 2
+    label: false
+  - t: 22
+    x: -0.0463
+    y: 1.2942
+    vx: -0.1849
+    vy: -0.2887
+    angle: 0.0052
+    angular_velocity: -0.0566
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 3
+    label: false
+  - t: 23
+    x: -0.0481
+    y: 1.2871
+    vx: -0.175
+    vy: -0.3148
+    angle: 0.0004
+    angular_velocity: -0.0965
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 0
+    label: false
+  - t: 24
+    x: -0.0499
+    y: 1.2794
+    vx: -0.175
+    vy: -0.3415
+    angle: -0.0045
+    angular_velocity: -0.0965
+    left_leg_contact: 0.0
+    right_leg_contact: 0.0
+    action: 1
+    label: false
+independent: true
+annotator_note: 'Three annotators worked from fresh contexts with no access to the scenario file, to each
+  other, or to any result; each chose and recorded its own thresholds. Stored labels are the per-step
+  majority of the three. Mean pairwise agreement between readers was 1.000. Polarity aligned before combining
+  for: B. These replace an earlier single-annotator labelling by an annotator familiar with the corpus,
+  whose agreement with the specifications ran systematically higher and is not trusted.'

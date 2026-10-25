@@ -84,7 +84,7 @@ def eval_forget_eff(agent, env, scenario, n_episodes=8, max_steps=200, seed_base
 def compute_landscape(ckpt_path, env_id, scenario, n_grid=15, span=1.0,
                        episodes=8, rng_seed=42, obs_encoding="symbolic"):
     rng = np.random.default_rng(rng_seed)
-    state = torch.load(ckpt_path, map_location="cpu")
+    state = torch.load(ckpt_path, map_location="cpu", weights_only=False)
     base = state["network"] if isinstance(state, dict) and "network" in state else state
 
     # Build a matching agent

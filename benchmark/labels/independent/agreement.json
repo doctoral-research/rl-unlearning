@@ -1,0 +1,59 @@
+{
+  "annotators": [
+    "A",
+    "B",
+    "C"
+  ],
+  "entries": [
+    {
+      "entry": "cartpole.left_only",
+      "mean_pairwise_jaccard": 1.0,
+      "kind": "fixed criterion",
+      "rates": [
+        0.37142857142857144,
+        0.37142857142857144,
+        0.37142857142857144
+      ]
+    },
+    {
+      "entry": "lbf.no_crowding",
+      "mean_pairwise_jaccard": 0.4696602832196053,
+      "kind": "degree word",
+      "rates": [
+        0.18,
+        0.59,
+        0.22
+      ]
+    },
+    {
+      "entry": "lbf.no_freeloading",
+      "mean_pairwise_jaccard": 0.8974358974358975,
+      "kind": "degree word",
+      "rates": [
+        0.26,
+        0.22,
+        0.26
+      ]
+    },
+    {
+      "entry": "lunarlander.no_tilt",
+      "mean_pairwise_jaccard": 1.0,
+      "kind": "fixed criterion",
+      "rates": [
+        0.11,
+        0.11,
+        0.11
+      ]
+    },
+    {
+      "entry": "walker2d.no_forward_fall",
+      "mean_pairwise_jaccard": 0.7665544332211,
+      "kind": "degree word",
+      "rates": [
+        0.23376623376623376,
+        0.2857142857142857,
+        0.35064935064935066
+      ]
+    }
+  ]
+}

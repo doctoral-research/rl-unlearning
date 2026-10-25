@@ -16,14 +16,17 @@ description: >
 env_id: HalfCheetah-v5
 match_mode: proportion
 match_threshold: 0.05
+# Which steps carry the forget label. matching_steps is what the
+# online loop implements: only steps satisfying the predicate, not
+# every step of a selected trajectory.
+applies_to: matching_steps
 
 # Obs[8] is vroot_x (the first velocity component after the 8 position dims;
 # position[0] = root_x is excluded from observation by default).
 groups:
   - name: high_vx
     conditions:
-      - dim: 8
-        dim_name: vroot_x
+      - dim: v_rootx
         op: ">"
         value: 5.0
         target: state

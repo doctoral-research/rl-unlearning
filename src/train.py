@@ -16,6 +16,12 @@ from tqdm import tqdm
 
 from agents import PPOAgent
 from utils import set_seed, get_device, create_directories, setup_logger, save_checkpoint, record_videos
+from utils.checkpointing import (  # noqa: E402
+    build_checkpoint,
+    save_checkpoint_atomic,
+    load_for_resume,
+    resolve_resume,
+)
 from utils.buffers import TrajectoryBuffer
 
 
@@ -72,6 +78,7 @@ def train(cfg: DictConfig):
         exploration_hash_scale=cfg.get("exploration_hash_scale", 1.0),
         obs_encoding=cfg.get("obs_encoding", "image"),
         fixed_goal_pos=cfg.get("fixed_goal_pos", None),
+        include_pos=cfg.get("include_pos", True),
         normalize_obs=cfg.get("normalize_obs", False),
     )
 
@@ -157,12 +164,27 @@ def train(cfg: DictConfig):
         "values": [],
     }
     
-    obs, _ = env.reset(seed=cfg.seed)
+    # ---- Resume ----
+    _ckpt_dir = Path(cfg.training.checkpoint_dir)
+    _resume_path = resolve_resume(cfg.get("resume", False), _ckpt_dir)
+    if _resume_path is not None:
+        _state = load_for_resume(_resume_path, agent, map_location=str(device))
+        global_step = _state.global_step
+        next_eval_step = global_step + cfg.training.eval_frequency
+        next_save_step = global_step + cfg.training.save_frequency
+        logger.info(
+            f"Resumed from {_state.path.name} at step {global_step:,} "
+            f"(rng_restored={_state.restored_rng}); env episodes restart here."
+        )
+        obs, _ = env.reset(seed=cfg.seed + 1_000_003 + global_step)
+    else:
+        obs, _ = env.reset(seed=cfg.seed)
     episode_reward = 0
     episode_length = 0
     current_trajectory = {"observations": [], "actions": [], "rewards": [], "dones": []}
     
-    pbar = tqdm(total=cfg.training.total_timesteps, desc="Training")
+    pbar = tqdm(total=cfg.training.total_timesteps, desc="Training",
+                initial=global_step)
     
     while global_step < cfg.training.total_timesteps:
         # Collect n_steps of experience
@@ -300,13 +322,16 @@ def train(cfg: DictConfig):
 
         # Save checkpoint
         if global_step >= next_save_step:
-            checkpoint_path = f"{cfg.training.checkpoint_dir}/checkpoint_{global_step}.pt"
+            checkpoint_path = (
+                f"{cfg.training.checkpoint_dir}/checkpoint_step{global_step}.pt"
+            )
             Path(cfg.training.checkpoint_dir).mkdir(parents=True, exist_ok=True)
-            save_checkpoint(
-                agent,
-                agent.optimizer,
-                global_step,
-                {"mean_reward": np.mean(episode_rewards[-100:]) if episode_rewards else 0.0},
+            save_checkpoint_atomic(
+                build_checkpoint(
+                    agent, global_step,
+                    eval_mean_return=(float(np.mean(episode_rewards[-100:]))
+                                      if episode_rewards else 0.0),
+                ),
                 checkpoint_path,
             )
             logger.info(f"Saved checkpoint to {checkpoint_path}")
