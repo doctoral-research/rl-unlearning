@@ -1,0 +1,65 @@
+\begin{figure}[t]
+\centering
+\begin{minipage}[t]{0.53\textwidth}
+{\footnotesize\textbf{(a)} Foraging-8x8-3p-2f-v3\\\textit{``Stop the agents from bunching up instead of spreading out to forage.''}}
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt,basicstyle=\ttfamily\fontsize{6.5}{7.6}\selectfont]
+match_mode: proportion
+match_threshold: 0.2
+applies_to: matching_steps
+families: {agent: "p{i}_"}
+derived:
+  closest_pair:
+    over: agent
+    arity: 2
+    reduce: min
+    expr: "abs(a_row - b_row) + abs(a_col - b_col)"
+groups:
+- name: agents_crowded
+  conditions:
+  - {dim: closest_pair, op: "<", value: 2}
+\end{lstlisting}
+\end{minipage}
+\hfill
+\begin{minipage}[t]{0.45\textwidth}
+{\footnotesize\textbf{(b)} MiniGrid-FourRooms-v0\\\textit{``Stop revisiting cells the agent has already been to in this episode.''}}
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt,basicstyle=\ttfamily\fontsize{6.5}{7.6}\selectfont]
+match_mode: trajectory
+applies_to: whole_trajectory
+aggregates:
+  cells_visited:
+    op: count_distinct
+    of: [agent_x, agent_y]
+  path_length: {op: count}
+derived:
+  revisits: "path_length - cells_visited"
+groups:
+- name: backtracks
+  conditions:
+  - {dim: revisits, op: ">", value: 4}
+\end{lstlisting}
+\end{minipage}
+\\[6pt]
+\begin{minipage}[t]{0.9\textwidth}
+{\footnotesize\textbf{(c)} MiniGrid-FourRooms-v0\\\textit{``Stop the reflex of turning left at or immediately after entering the bottom-right room (within one step of crossing the boundary).''}}
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt,basicstyle=\ttfamily\fontsize{7.0}{8.1}\selectfont]
+match_mode: temporal
+applies_to: matching_steps
+temporal:
+  and:
+  - conditions:
+    - {dim: 0, dim_name: agent_x, op: ">", value: 9.5, target: state}
+    - {dim: 1, dim_name: agent_y, op: ">", value: 9.5, target: state}
+    - {dim: 0, dim_name: turn_left, op: "==", value: 0, target: action}
+  - or:
+    - previous:
+        conditions:
+        - {dim: 0, dim_name: agent_x, op: "<", value: 9.5, target: state}
+    - previous:
+        previous:
+          conditions:
+          - {dim: 0, dim_name: agent_x, op: "<", value: 9.5, target: state}
+\end{lstlisting}
+\end{minipage}
+\caption{Three formalisations from the corpus, each under the English description it was written for. \textbf{(a)} A derived feature that quantifies over the members of a family of agents, so one file serves any team size. \textbf{(b)} Two episode aggregates combined by arithmetic. \textbf{(c)} A nested temporal formula. The agent turns left inside the room, and was outside it one or two steps earlier, so the label falls on the turn at the crossing and not on later turns. Features are named, as in (a) and (b), or indexed with a \texttt{dim\_name} that the validator checks against the bound view, as in (c). Comments and the \texttt{name} and \texttt{description} fields are omitted, and (c) also omits a state-level group that serves evaluation only. Appendix~\ref{app:gallery} lists every formalisation.}
+\label{fig:examples}
+\end{figure}

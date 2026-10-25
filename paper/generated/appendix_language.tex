@@ -1,0 +1,314 @@
+\section{Feature views}
+\label{app:views}
+
+Table~\ref{tab:views} lists the view each environment of the corpus resolves to, with its provenance and the names a scenario may use. The MiniGrid and MuJoCo views are introspected from the environment, the level-based foraging view from its \texttt{info} and environment state, and the classic-control and Box2D views come from hand-registered tables. Feature types are boolean, categorical, continuous, ordinal.
+
+\begin{table}[h]\centering\footnotesize
+\caption{Resolved feature views. MiniGrid's three environments share one view.}
+\label{tab:views}
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{2.5cm}lr>{\raggedright\arraybackslash}p{6.4cm}@{}}\toprule
+Environment & Provenance & $n$ & Features \\ \midrule
+CartPole-v1 & \texttt{declared:table} & 4 & \texttt{cart\_position}, \texttt{cart\_velocity}, \texttt{pole\_angle}, \texttt{pole\_angular\_velocity} \\
+Foraging-8x8-3p-2f-v3 & \texttt{auto:lbf} & 14 & \texttt{p0\_row}, \texttt{p0\_col}, \texttt{p0\_level}, \texttt{p0\_score}, \texttt{p1\_row}, \texttt{p1\_col}, \texttt{p1\_level}, \texttt{p1\_score}, \texttt{p2\_row}, \texttt{p2\_col}, \texttt{p2\_level}, \texttt{p2\_score}, \texttt{n\_food}, \texttt{food\_level\_total} \\
+HalfCheetah-v5 & \texttt{auto:mujoco} & 18 & \texttt{rootx}, \texttt{rootz}, \texttt{rooty}, \texttt{bthigh}, \texttt{bshin}, \texttt{bfoot}, \texttt{fthigh}, \texttt{fshin}, \texttt{ffoot}, \texttt{v\_rootx}, \texttt{v\_rootz}, \texttt{v\_rooty}, \texttt{v\_bthigh}, \texttt{v\_bshin}, \texttt{v\_bfoot}, \texttt{v\_fthigh}, \texttt{v\_fshin}, \texttt{v\_ffoot} \\
+LunarLander-v3 & \texttt{declared:table} & 8 & \texttt{x}, \texttt{y}, \texttt{vx}, \texttt{vy}, \texttt{angle}, \texttt{angular\_velocity}, \texttt{left\_leg\_contact}, \texttt{right\_leg\_contact} \\
+MiniGrid: Empty, FourRooms, DoorKey & \texttt{auto:minigrid} & 5 & \texttt{agent\_x}, \texttt{agent\_y}, \texttt{direction}, \texttt{carrying\_key}, \texttt{carrying\_any} \\
+Pendulum-v1 & \texttt{declared:table} & 3 & \texttt{cos\_theta}, \texttt{sin\_theta}, \texttt{theta\_dot} \\
+Walker2d-v5 & \texttt{auto:mujoco} & 18 & \texttt{rootx}, \texttt{rootz}, \texttt{rooty}, \texttt{thigh\_joint}, \texttt{leg\_joint}, \texttt{foot\_joint}, \texttt{thigh\_left\_joint}, \texttt{leg\_left\_joint}, \texttt{foot\_left\_joint}, \texttt{v\_rootx}, \texttt{v\_rootz}, \texttt{v\_rooty}, \texttt{v\_thigh\_joint}, \texttt{v\_leg\_joint}, \texttt{v\_foot\_joint}, \texttt{v\_thigh\_left\_joint}, \texttt{v\_leg\_left\_joint}, \texttt{v\_foot\_left\_joint} \\
+\bottomrule\end{tabular}\end{table}
+
+\section{Every formalisation}
+\label{app:gallery}
+
+The 15 formalisations of the corpus, each under its description, environment and verdict, with $\kappa$ against the reference labels. Listings are the scenario files with comments and the \texttt{name}, \texttt{description}, \texttt{version} and \texttt{env\_id} fields removed. Two behaviours, \texttt{lunarlander.no\_near\_miss} and \texttt{lunarlander.no\_tilt}, share one file: the near miss is approximated by the tilt.
+
+\par\medskip\noindent\texttt{cartpole.left\_only} (CartPole-v1, expressible, $\kappa=1.00$)\\
+\textit{``Stop balancing the pole while the cart is on the right half of the track; keep the skill on the left half.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.3
+applies_to: matching_steps
+groups:
+- name: right_side
+  conditions:
+  - {dim: 0, dim_name: cart_position, op: ">", value: 0.0, target: state}
+\end{lstlisting}
+\par\medskip\noindent\texttt{doorkey.no\_key\_hoarding} (MiniGrid-DoorKey-8x8-v0, expressible, $\kappa=0.53$)\\
+\textit{``Stop picking up the key and then never using it to open the door.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: temporal
+applies_to: whole_trajectory
+defines:
+  holding_key:
+    conditions:
+    - {dim: carrying_key, op: "==", value: 1}
+  opens_door:
+    conditions:
+    - {dim: 0, dim_name: toggle, op: "==", value: 5, target: action}
+temporal:
+  eventually:
+    and:
+    - {$ref: holding_key}
+    - not:
+        eventually: {$ref: opens_door}
+\end{lstlisting}
+\par\medskip\noindent\texttt{empty8x8.avoid\_bottom\_left} (MiniGrid-Empty-8x8-v0, expressible, $\kappa=1.00$)\\
+\textit{``Never travel through the bottom-left quadrant of the room.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.15
+applies_to: matching_steps
+groups:
+- name: bottom_left
+  conditions:
+  - {dim: 0, dim_name: agent_x, op: "<", value: 3.5, target: state}
+  - {dim: 1, dim_name: agent_y, op: ">", value: 3.5, target: state}
+\end{lstlisting}
+\par\medskip\noindent\texttt{fourrooms.avoid\_br\_detour} (MiniGrid-FourRooms-v0, expressible, $\kappa=1.00$)\\
+\textit{``Stop routing through the bottom-right room on the way to the goal.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.15
+applies_to: matching_steps
+groups:
+- name: bottom_right_room
+  conditions:
+  - {dim: 0, dim_name: agent_x, op: ">", value: 9.5, target: state}
+  - {dim: 1, dim_name: agent_y, op: ">", value: 9.5, target: state}
+\end{lstlisting}
+\par\medskip\noindent\texttt{fourrooms.avoid\_br\_tr\_door} (MiniGrid-FourRooms-v0, expressible, $\kappa=0.00$)\\
+\textit{``Stop using the doorway between the bottom-right and top-right rooms.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.1
+applies_to: matching_steps
+groups:
+- name: door_BR_TR
+  conditions:
+  - {dim: 0, dim_name: agent_x, op: ">=", value: 14, target: state}
+  - {dim: 0, dim_name: agent_x, op: "<=", value: 16, target: state}
+  - {dim: 1, dim_name: agent_y, op: ">=", value: 8, target: state}
+  - {dim: 1, dim_name: agent_y, op: "<=", value: 10, target: state}
+\end{lstlisting}
+\par\medskip\noindent\texttt{fourrooms.no\_backtracking} (MiniGrid-FourRooms-v0, expressible, $\kappa=0.06$)\\
+\textit{``Stop revisiting cells the agent has already been to in this episode.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: trajectory
+applies_to: whole_trajectory
+aggregates:
+  cells_visited: {op: count_distinct, of: [agent_x, agent_y]}
+  path_length: {op: count}
+derived: {revisits: "path_length - cells_visited"}
+groups:
+- name: backtracks
+  conditions:
+  - {dim: revisits, op: ">", value: 4}
+\end{lstlisting}
+\par\medskip\noindent\texttt{fourrooms.no\_corner\_turn\_reflex} (MiniGrid-FourRooms-v0, expressible, $\kappa=1.00$)\\
+\textit{``Stop the reflex of turning left at or immediately after entering the bottom-right room (within one step of crossing the boundary).''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: temporal
+applies_to: matching_steps
+temporal:
+  and:
+  - conditions:
+    - {dim: 0, dim_name: agent_x, op: ">", value: 9.5, target: state}
+    - {dim: 1, dim_name: agent_y, op: ">", value: 9.5, target: state}
+    - {dim: 0, dim_name: turn_left, op: "==", value: 0, target: action}
+  - or:
+    - previous:
+        conditions:
+        - {dim: 0, dim_name: agent_x, op: "<", value: 9.5, target: state}
+    - previous:
+        previous:
+          conditions:
+          - {dim: 0, dim_name: agent_x, op: "<", value: 9.5, target: state}
+groups:
+- name: in_BR
+  conditions:
+  - {dim: 0, dim_name: agent_x, op: ">", value: 9.5, target: state}
+  - {dim: 1, dim_name: agent_y, op: ">", value: 9.5, target: state}
+\end{lstlisting}
+\par\medskip\noindent\texttt{fourrooms.no\_pacing} (MiniGrid-FourRooms-v0, partial, $\kappa=0.04$)\\
+\textit{``Stop oscillating back and forth between two adjacent cells.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: trajectory
+applies_to: whole_trajectory
+aggregates:
+  cells_visited: {op: count_distinct, of: [agent_x, agent_y]}
+  path_length: {op: count}
+derived: {steps_per_cell: "path_length / cells_visited"}
+groups:
+- name: paces
+  conditions:
+  - {dim: steps_per_cell, op: ">", value: 2.5}
+\end{lstlisting}
+\par\medskip\noindent\texttt{halfcheetah.no\_front\_flip} (HalfCheetah-v5, expressible, $\kappa=0.11$)\\
+\textit{``Stop performing forward somersaults.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: trajectory
+applies_to: whole_trajectory
+aggregates:
+  total_rotation: {op: sum, of: v_rooty}
+derived: {full_turns: "abs(total_rotation) / 6.283185"}
+groups:
+- name: somersaults
+  conditions:
+  - {dim: full_turns, op: ">=", value: 1.0}
+\end{lstlisting}
+\par\medskip\noindent\texttt{lbf.no\_crowding} (Foraging-8x8-3p-2f-v3, expressible, $\kappa=0.36$)\\
+\textit{``Stop the agents from bunching up instead of spreading out to forage.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.2
+applies_to: matching_steps
+families: {agent: "p{i}_"}
+derived:
+  closest_pair:
+    over: agent
+    arity: 2
+    reduce: min
+    expr: "abs(a_row - b_row) + abs(a_col - b_col)"
+groups:
+- name: agents_crowded
+  conditions:
+  - {dim: closest_pair, op: "<", value: 2}
+\end{lstlisting}
+\par\medskip\noindent\texttt{lbf.no\_freeloading} (Foraging-8x8-3p-2f-v3, expressible, $\kappa=0.24$)\\
+\textit{``Stop one agent letting the others do all the collecting while it idles nearby.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: trajectory
+applies_to: whole_trajectory
+aggregates:
+  contrib_0: {op: max, of: p0_score}
+  contrib_1: {op: max, of: p1_score}
+  contrib_2: {op: max, of: p2_score}
+derived:
+  team_total: "contrib_0 + contrib_1 + contrib_2"
+  share_0: "contrib_0 / team_total"
+groups:
+- name: agent0_freeloads
+  conditions:
+  - {dim: share_0, op: "<", value: 0.15}
+\end{lstlisting}
+\par\medskip\noindent\texttt{lunarlander.no\_near\_miss} (LunarLander-v3, partial, $\kappa=0.27$)\\
+\textit{``Stop landings that only narrowly avoided crashing, even when they succeeded.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.25
+applies_to: matching_steps
+groups:
+- name: tilted
+  conditions:
+  - {dim: 4, dim_name: angle, op: "abs>", value: 0.2, target: state}
+\end{lstlisting}
+\par\medskip\noindent\texttt{lunarlander.no\_tilt} (LunarLander-v3, expressible, $\kappa=1.00$)\\
+\textit{``Stop descending at a steep tilt; keep the lander close to upright.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.25
+applies_to: matching_steps
+groups:
+- name: tilted
+  conditions:
+  - {dim: 4, dim_name: angle, op: "abs>", value: 0.2, target: state}
+\end{lstlisting}
+\par\medskip\noindent\texttt{pendulum.avoid\_left\_swing} (Pendulum-v1, expressible, $\kappa=1.00$)\\
+\textit{``Stop swinging the pendulum through the left half of the circle; keep the swing-up on the right.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.1
+applies_to: matching_steps
+groups:
+- name: left_half
+  conditions:
+  - {dim: 1, dim_name: sin_theta, op: "<", value: 0.0, target: state}
+\end{lstlisting}
+\par\medskip\noindent\texttt{walker2d.no\_forward\_fall} (Walker2d-v5, expressible, $\kappa=0.72$)\\
+\textit{``Stop pitching the torso forward past the angle that precedes a face-first fall.''}\nopagebreak
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.1
+applies_to: matching_steps
+groups:
+- name: forward_lean
+  conditions:
+  - {dim: rooty, op: "<", value: -0.2, target: state}
+\end{lstlisting}
+
+\section{Validator messages}
+\label{app:validator}
+
+Each faulty scenario below is a minimal FourRooms scenario bound to the \texttt{auto:minigrid} view, with one defect. The messages are the validator's output, verbatim. Informational notes are omitted.
+
+\begin{itemize}\setlength{\itemsep}{3pt}
+\item \emph{A feature the view does not have.}
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: any_step
+applies_to: matching_steps
+groups:
+- conditions:
+  - {dim: agent_position, op: ">", value: 9.5}
+\end{lstlisting}
+\textbf{error} \texttt{scenario\_load}:\\{\raggedright\footnotesize\ttfamily feature 'agent\_position' not in view (provenance=auto:minigrid); available: ['agent\_x', 'agent\_y', 'direction', 'carrying\_key', 'carrying\_any']\par}
+\item \emph{Ordering a categorical feature.}
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: any_step
+applies_to: matching_steps
+groups:
+- conditions:
+  - {dim: direction, op: ">", value: 1}
+\end{lstlisting}
+\textbf{warning} \texttt{categorical\_ordering}:\\{\raggedright\footnotesize\ttfamily 'direction' is categorical, so ordering it with '>' is probably not what you mean; use == or != on specific values.\par}
+\item \emph{A threshold outside the feature's range.}
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: any_step
+applies_to: matching_steps
+groups:
+- conditions:
+  - {dim: agent_x, op: ">", value: 25}
+\end{lstlisting}
+\textbf{warning} \texttt{condition\_never\_true}:\\{\raggedright\footnotesize\ttfamily 'agent\_x' ranges over [0, 18], so agent\_x > 25 can never hold — this scenario matches nothing.\par}
+\item \emph{Contradictory conditions.}
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: any_step
+applies_to: matching_steps
+groups:
+- conditions:
+  - {dim: agent_x, op: ">", value: 10}
+  - {dim: agent_x, op: "<", value: 5}
+\end{lstlisting}
+\textbf{error} \texttt{contradictory\_conditions}:\\{\raggedright\footnotesize\ttfamily Conditions on state dim 0 are mutually unsatisfiable (e.g. x > 5 AND x < 0)\par}
+\item \emph{An episode aggregate under a step-level mode.}
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.2
+applies_to: matching_steps
+aggregates:
+  cells: {op: count_distinct, of: [agent_x, agent_y]}
+groups:
+- conditions:
+  - {dim: cells, op: "<", value: 10}
+\end{lstlisting}
+\textbf{error} \texttt{aggregate\_outside\_trajectory}:\\{\raggedright\footnotesize\ttfamily aggregate 'cells' is an episode-level value, only valid in match\_mode=trajectory; saw match\_mode='proportion'\par}
+\item \emph{A trajectory-level mode without a declared scope.}
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: proportion
+match_threshold: 0.2
+groups:
+- conditions:
+  - {dim: agent_x, op: ">", value: 9.5}
+\end{lstlisting}
+\textbf{warning} \texttt{step\_scope\_ambiguous}:\\{\raggedright\footnotesize\ttfamily match\_mode='proportion' selects whole trajectories, but 'applies\_to' is not declared, so which steps carry the forget label is ambiguous. A step-level consumer labels only matching steps; a trajectory-level reading labels every step of a selected trajectory. Set applies\_to: matching\_steps or whole\_trajectory.\par}
+\item \emph{An existential formula labelling steps.}
+\begin{lstlisting}[language=,aboveskip=2pt,belowskip=2pt]
+match_mode: temporal
+applies_to: matching_steps
+temporal:
+  eventually:
+    conditions:
+    - {dim: agent_x, op: ">", value: 9.5}
+\end{lstlisting}
+\textbf{warning} \texttt{temporal\_existential\_step\_scope}:\\{\raggedright\footnotesize\ttfamily top-level 'eventually' with applies\_to=matching\_steps: this operator is anchored existentially, so every step before the pattern occurs is labelled too, giving a prefix rather than the matching step. Use applies\_to=whole\_trajectory, or anchor the rule with 'previous'/'next' on the step you mean.\par}
+\end{itemize}
+

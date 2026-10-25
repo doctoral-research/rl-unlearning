@@ -1,0 +1,319 @@
+\section{The behaviours}
+\label{app:corpus}
+
+Table~\ref{tab:corpus} lists the 15 behaviours with their environments and verdicts. A behaviour is \emph{partial} when its formalisation approximates the description, and the table below it gives what the grammar lacks in each case.
+
+\begin{table}[h]\centering\footnotesize
+\caption{The behaviours of the corpus.}
+\label{tab:corpus}
+\setlength{\tabcolsep}{4pt}
+\begin{tabular}{@{}lll@{}}\toprule
+Behaviour & Environment & Verdict \\ \midrule
+\texttt{cartpole.left\_only} & CartPole-v1 & expressible \\
+\texttt{doorkey.no\_key\_hoarding} & MiniGrid-DoorKey-8x8-v0 & expressible \\
+\texttt{empty8x8.avoid\_bottom\_left} & MiniGrid-Empty-8x8-v0 & expressible \\
+\texttt{fourrooms.avoid\_br\_detour} & MiniGrid-FourRooms-v0 & expressible \\
+\texttt{fourrooms.avoid\_br\_tr\_door} & MiniGrid-FourRooms-v0 & expressible \\
+\texttt{fourrooms.no\_backtracking} & MiniGrid-FourRooms-v0 & expressible \\
+\texttt{fourrooms.no\_corner\_turn\_reflex} & MiniGrid-FourRooms-v0 & expressible \\
+\texttt{fourrooms.no\_pacing} & MiniGrid-FourRooms-v0 & partial \\
+\texttt{halfcheetah.no\_front\_flip} & HalfCheetah-v5 & expressible \\
+\texttt{lbf.no\_crowding} & Foraging-8x8-3p-2f-v3 & expressible \\
+\texttt{lbf.no\_freeloading} & Foraging-8x8-3p-2f-v3 & expressible \\
+\texttt{lunarlander.no\_near\_miss} & LunarLander-v3 & partial \\
+\texttt{lunarlander.no\_tilt} & LunarLander-v3 & expressible \\
+\texttt{pendulum.avoid\_left\_swing} & Pendulum-v1 & expressible \\
+\texttt{walker2d.no\_forward\_fall} & Walker2d-v5 & expressible \\
+\bottomrule\end{tabular}\end{table}
+
+\begin{center}\footnotesize\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{7.4cm}@{}}\toprule
+Partial behaviour & What the grammar lacks \\ \midrule
+\texttt{fourrooms.no\_pacing} & A count of a repeated pattern of cells. Approximated by steps per distinct cell over the episode. \\
+\texttt{lunarlander.no\_near\_miss} & Distance to a failure that did not happen. Approximated by the lander's tilt. \\
+\bottomrule\end{tabular}\end{center}
+
+\paragraph{Fidelity.}
+Table~\ref{tab:fidelity} gives, for each labelled entry, the readers, the number of labelled steps, the mean pairwise $\kappa$ between readers, and the agreement between the formalisation and the reference labels as $\kappa$, Jaccard similarity, precision and recall (taking the reference as ground truth), with the fraction of steps each labels.
+
+\begin{table}[h]\centering\small
+\caption{Reader agreement and fidelity on the labelled entries. $\kappa_{rr}$: mean pairwise $\kappa$ between readers. $\kappa$, $J$, P, R: formalisation against the reference. Rates: fraction of steps labelled by the reference and by the formalisation.}
+\label{tab:fidelity}
+\setlength{\tabcolsep}{4.2pt}
+\begin{tabular}{@{}llrcccccc@{}}\toprule
+Entry & Readers & Steps & $\kappa_{rr}$ & $\kappa$ & $J$ & P & R & Rates \\ \midrule
+\texttt{cartpole.left\_only} & N, O & 186 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.55 / 0.55 \\
+\texttt{empty8x8.avoid\_bottom\_left} & N, O & 600 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.13 / 0.13 \\
+\texttt{fourrooms.avoid\_br\_detour} & N, O & 150 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.21 / 0.21 \\
+\texttt{fourrooms.no\_corner\_turn\_reflex} & N, O & 240 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.00 / 0.00 \\
+\texttt{lunarlander.no\_tilt} & A, B, C & 100 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.11 / 0.11 \\
+\texttt{pendulum.avoid\_left\_swing} & N, O & 150 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.51 / 0.51 \\
+\texttt{walker2d.no\_forward\_fall} & A, B, C & 77 & 0.81 & 0.72 & 0.69 & 0.69 & 1.00 & 0.29 / 0.42 \\
+\texttt{doorkey.no\_key\_hoarding} & L, M & 960 & 1.00 & 0.53 & 0.43 & 0.43 & 1.00 & 0.11 / 0.25 \\
+\texttt{lbf.no\_crowding} & A, B, C & 100 & 0.44 & 0.36 & 0.31 & 0.50 & 0.44 & 0.18 / 0.16 \\
+\texttt{lunarlander.no\_near\_miss} & H, I & 569 & 1.00 & 0.27 & 0.27 & 0.29 & 0.77 & 0.14 / 0.38 \\
+\texttt{lbf.no\_freeloading} & A, B, C & 100 & 0.93 & 0.24 & 0.33 & 0.38 & 0.73 & 0.26 / 0.50 \\
+\texttt{halfcheetah.no\_front\_flip} & J, K & 480 & 1.00 & 0.11 & 0.11 & 0.11 & 1.00 & 0.06 / 0.50 \\
+\texttt{fourrooms.no\_backtracking} & P, Q & 240 & 1.00 & 0.06 & 0.08 & 0.08 & 1.00 & 0.05 / 0.65 \\
+\texttt{fourrooms.no\_pacing} & R, S & 720 & 1.00 & 0.04 & 0.11 & 0.11 & 1.00 & 0.09 / 0.83 \\
+\texttt{fourrooms.avoid\_br\_tr\_door} & P, Q, T & 1600 & 0.71 & 0.00 & 0.00 & 0.00 & 0.00 & 0.01 / 0.00 \\
+\bottomrule\end{tabular}\end{table}
+
+Reader agreement is computed from the readers' raw labels where they were kept (readers A, B and C). Where two readers produced identical labels the label file stores that one set, and $\kappa_{rr}=1$ by construction. On the doorway entry the three readers marked 12, 18 and 29 steps with pairwise Jaccard similarity 12/18, 12/29 and 18/29, which forces the three sets to be nested, so their pairwise tables, and $\kappa$, follow from the counts.
+
+\section{Readers}
+\label{app:readers}
+
+All readers were language-model instances that we ran from a fresh context: Claude Opus~5 for rounds 1 to 10 and Claude Opus~5.5 for round 11. Each received one prompt that we wrote and the task files it named. A task file holds the behaviour description, sometimes a short note on the features (for example the action codes of MiniGrid, or that its $y$ axis points down), and a table with one row per step: episode, time step, the feature values and the action. Readers were told not to open any other file and wrote their labels with a short script applying the rule they had chosen. After the last round we checked every proposed label by hand against its description and feature values (Section~\ref{sec:readers}). Table~\ref{tab:rounds} lists the rounds. An instruction is \emph{strict} when it states that the sentence names a behaviour to be stopped and asks for the steps where it happens, and \emph{neutral} otherwise.
+
+\begin{table}[h]\centering\footnotesize
+\caption{Reader rounds. Every round's full prompt is released with the corpus.}
+\label{tab:rounds}
+\setlength{\tabcolsep}{3pt}
+\begin{tabular}{@{}clll>{\raggedright\arraybackslash}p{5.9cm}>{\raggedright\arraybackslash}p{1.9cm}@{}}\toprule
+Round & Readers & Model & Instr. & Entries & Use \\ \midrule
+1 & A, B, C & Opus 5 & neutral & \texttt{cartpole.left\_only} (goal wording, 105 steps), \texttt{lbf.no\_crowding}, \texttt{lbf.no\_freeloading}, \texttt{lunarlander.no\_tilt}, \texttt{walker2d.no\_forward\_fall} & reference for the last four; polarity \\
+2 & D, E & Opus 5 & neutral & \texttt{pendulum.avoid\_left\_swing}, \texttt{fourrooms.avoid\_br\_detour} (goal wording) & polarity \\
+3 & F, G & Opus 5 & strict & \texttt{fourrooms.no\_pacing}, \texttt{lunarlander.no\_near\_miss} (180 steps each) & discarded (behaviour absent) \\
+4 & H, I & Opus 5 & strict & \texttt{lunarlander.no\_near\_miss} & reference \\
+5 & J, K & Opus 5 & strict & \texttt{halfcheetah.no\_front\_flip} & reference \\
+6 & L, M & Opus 5 & strict & \texttt{doorkey.no\_key\_hoarding} & reference \\
+7 & N, O & Opus 5 & strict & \texttt{cartpole.left\_only}, \texttt{empty8x8.avoid\_bottom\_left}, \texttt{fourrooms.avoid\_br\_detour}, \texttt{fourrooms.no\_corner\_turn\_reflex}, \texttt{pendulum.avoid\_left\_swing} (prohibition wording) & reference \\
+8 & P, Q & Opus 5 & strict & \texttt{fourrooms.avoid\_br\_tr\_door}, \texttt{fourrooms.no\_backtracking} & reference \\
+9 & R, S & Opus 5 & strict & \texttt{fourrooms.no\_pacing} & reference \\
+10 & T & Opus 5 & strict & \texttt{fourrooms.avoid\_br\_tr\_door} & reference (third reader) \\
+11 & U, V & Opus 5.5 & strict & \texttt{cartpole.left\_only}, \texttt{pendulum.avoid\_left\_swing}, \texttt{fourrooms.avoid\_br\_detour} (goal wording, the steps of round 7) & polarity \\
+\bottomrule\end{tabular}\end{table}
+
+\paragraph{Prompts.}
+Rounds 1, 2, 7 and 11 are reproduced in full below, with \texttt{<READER>} standing for the reader's letter. The other strict rounds follow the template of round 7 and differ from it only in the file list and in the rules listed after the full prompts.
+
+\noindent\textit{Round 1 (neutral).}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize,literate={—}{{---}}1]
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+There are 5 labelling tasks, one per file:
+  /tmp/annot/lbf.no_crowding.txt
+  /tmp/annot/lbf.no_freeloading.txt
+  /tmp/annot/walker2d.no_forward_fall.txt
+  /tmp/annot/lunarlander.no_tilt.txt
+  /tmp/annot/cartpole.left_only.txt
+
+Each file contains: a one-sentence description of a BEHAVIOUR, and a table of steps from recorded episodes with named feature values (and an action column).
+
+Your job, for each file: decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config or source code in the repository. Do not search the web.
+- Some descriptions use vague words (e.g. "steep", "nearby", "bunching"). Where the description does not fix a number, YOU must choose a threshold using your own judgement of what the sentence means. State the threshold you chose.
+- Be consistent within a task.
+
+Write your answers to /tmp/annot/annotator_<READER>.json in exactly this format:
+
+{
+  "lbf.no_crowding":   {"reasoning": "<how you read the description, and any threshold you chose and why>",
+                        "labels": [0,1,0, ...]},
+  "lbf.no_freeloading":{"reasoning": "...", "labels": [...]},
+  "walker2d.no_forward_fall": {"reasoning": "...", "labels": [...]},
+  "lunarlander.no_tilt":      {"reasoning": "...", "labels": [...]},
+  "cartpole.left_only":       {"reasoning": "...", "labels": [...]}
+}
+
+"labels" must be a list of 0/1 integers, EXACTLY one per row of that file's table, in the same order as the rows. Row counts: lbf.no_crowding 100, lbf.no_freeloading 100, walker2d.no_forward_fall 77, lunarlander.no_tilt 100, cartpole.left_only 105.
+
+It is fine to write a small Python script to compute the labels from the table once you have decided your rule — that is the reliable way to stay consistent. Verify the list lengths before you finish.
+
+When done, reply with just the threshold you chose for each task, one line each.
+\end{lstlisting}
+\noindent\textit{Round 2 (neutral, polarity left open).}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize,literate={—}{{---}}1]
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+Two labelling tasks, one per file:
+  /tmp/annot2/pendulum.avoid_left_swing.txt
+  /tmp/annot2/fourrooms.avoid_br_detour.txt
+
+Each file contains a one-sentence description of a BEHAVIOUR and a table of steps with named feature values.
+
+For each file, decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config, or source code in the repository. Do not search the web. Do not try to infer anything from the task's filename.
+- Be consistent within a task.
+- Say explicitly, in your reasoning, WHICH set of steps you decided to mark: the sentence may describe a desirable pattern or an undesirable one, and you must state which reading you took and why.
+
+Write /tmp/annot2/annotator_<READER>.json in exactly this format:
+
+{
+  "pendulum.avoid_left_swing": {"reasoning": "<your reading, including which set you marked and any threshold>", "labels": [0,1,...]},
+  "fourrooms.avoid_br_detour": {"reasoning": "...", "labels": [...]}
+}
+
+"labels" must be a list of 0/1 integers, EXACTLY one per table row, same order. Row counts: pendulum.avoid_left_swing 100, fourrooms.avoid_br_detour 150.
+
+Writing a small Python script to apply your rule to the table is the reliable way to stay consistent. Verify list lengths before finishing.
+
+Reply with one line per task saying which set of steps you marked.
+\end{lstlisting}
+\noindent\textit{Round 7 (strict).}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize,literate={—}{{---}}1]
+You are acting as a human data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+Five labelling tasks, one per file:
+  /tmp/annot7/cartpole.left_only.txt                (186 rows)
+  /tmp/annot7/empty8x8.avoid_bottom_left.txt        (600 rows)
+  /tmp/annot7/fourrooms.avoid_br_detour.txt         (150 rows)
+  /tmp/annot7/fourrooms.no_corner_turn_reflex.txt   (240 rows)
+  /tmp/annot7/pendulum.avoid_left_swing.txt         (150 rows)
+
+Each file has a one-sentence description of a BEHAVIOUR, sometimes a short note on the features, and a table of steps with named feature values.
+
+For each file, decide for EVERY step whether the described behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config or source code in the repository. Do not search the web. Do not infer anything from the filename.
+- Each sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening, NOT the steps where the agent is behaving well.
+- Where the description does not fix a number or a boundary, choose one and state it.
+- Some behaviours depend on neighbouring steps (for instance one about entering somewhere, or about a reflex following an event). Decide which steps carry the label and say so.
+- Be consistent within each task.
+
+Write /tmp/annot7/annotator_<READER>.json in exactly this format:
+
+{
+  "cartpole.left_only":              {"reasoning": "...", "labels": [0,1,...]},
+  "empty8x8.avoid_bottom_left":      {"reasoning": "...", "labels": [...]},
+  "fourrooms.avoid_br_detour":       {"reasoning": "...", "labels": [...]},
+  "fourrooms.no_corner_turn_reflex": {"reasoning": "...", "labels": [...]},
+  "pendulum.avoid_left_swing":       {"reasoning": "...", "labels": [...]}
+}
+
+Each "labels" list must be 0/1 integers, EXACTLY one per table row of that file, in order. Lengths: 186, 600, 150, 240, 150.
+
+Write a small Python script per task to apply your rule to the table — that is the reliable way to stay consistent. Verify all five lengths before finishing.
+
+If any behaviour never occurs in its data, say so plainly and label all zeros rather than inventing positives.
+
+Reply with one line per task: your rule and how many steps you marked.
+\end{lstlisting}
+\noindent\textit{Round 11 (strict).}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize,literate={—}{{---}}1]
+You are acting as a data annotator for a reinforcement-learning research dataset. Work independently and use your own judgement.
+
+Three labelling tasks, one per file:
+  /tmp/annot_confound/cartpole.left_only.txt          (186 rows)
+  /tmp/annot_confound/pendulum.avoid_left_swing.txt   (150 rows)
+  /tmp/annot_confound/fourrooms.avoid_br_detour.txt   (150 rows)
+
+Each file has a one-sentence description, a short note on the features, and a table of steps with named feature values.
+
+For each file, decide for EVERY step whether the behaviour is occurring AT THAT STEP.
+
+Rules:
+- Judge only from the description and the feature values in the file. Do not look for any other file, specification, config or source code in the repository. Do not search the web. Do not infer anything from the filename.
+- Each sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening, NOT the steps where the agent is behaving well.
+- Where the description does not fix a number or a boundary, choose one and state it.
+- Be consistent within each task.
+
+Write /tmp/annot_confound/annotator_<READER>.json in exactly this format:
+
+{
+  "cartpole.left_only":        {"reasoning": "...", "labels": [0,1,...]},
+  "pendulum.avoid_left_swing": {"reasoning": "...", "labels": [...]},
+  "fourrooms.avoid_br_detour": {"reasoning": "...", "labels": [...]}
+}
+
+Each "labels" list must be 0/1 integers, EXACTLY one per table row, in order. Lengths: 186, 150, 150.
+
+Write a small Python script per task to apply your rule to the table. Verify all three lengths before finishing.
+
+Reply with one line per task: your rule, which set of steps you marked, and how many.
+\end{lstlisting}
+\noindent\textit{Rules of the remaining strict rounds that are not in round 7.}
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize,literate={—}{{---}}1]
+Round 3:
+  - Judge only from the description and the feature values in the file. Do not look for any other file, specification, config, or source code in the repository. Do not search the web. Do not infer anything from the task filename.
+  - These descriptions are deliberately hard. Where the description does not fix a number (how many oscillations count as "back and forth"? how close is "narrowly avoided"?), YOU must choose, and must state exactly what you chose.
+  - Say explicitly which set of steps you marked: the sentence names a behaviour to be STOPPED, so mark the steps where that undesirable behaviour is happening, not the steps where the agent is behaving well.
+  - Be consistent within a task. Note that some behaviours depend on nearby steps (an oscillation is visible only across several steps), so you may use a window around each step.
+Round 4:
+  - Judge only from the description and the feature values in the file. Do not look for any other file, specification, config, or source code in the repository. Do not search the web. Do not infer anything from the filename.
+  - The description does not fix a number: how close counts as "narrowly avoided crashing" is yours to decide. State exactly what you chose and why.
+  - The sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening, not the steps where the lander is doing well.
+  - Be consistent. The behaviour may be a property of a landing rather than of one instant, so you may use a window, or attribute a whole descent to its outcome; say which you did.
+Round 5:
+  - Judge only from the description and the feature values in the file. Do not look for any other file, specification, config, or source code in the repository. Do not search the web. Do not infer anything from the filename.
+  - The description does not fix a number. How much rotation counts as a somersault, and which direction counts as "forward", are yours to decide. State exactly what you chose and why.
+  - The sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+  - A rotation happens over many steps, so decide whether you mark only the instants of fastest rotation or the whole span of a rotation, and say which.
+  - Be consistent.
+Round 6:
+  - Judge only from the description and the feature values in the file. Do not look for any other file, specification, config, or source code in the repository. Do not search the web. Do not infer anything from the filename.
+  - The sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+  - This behaviour spans time: it is about holding the key and then not using it. You must decide which steps carry the label — for example only the steps while holding an unused key, or the whole episode once it happens, or only after some delay. State your choice and your reasoning.
+  - Where the description does not fix a number (how long counts as "never using it"?), choose and state it.
+  - Be consistent.
+Round 8:
+  - Each sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+  - These behaviours span steps: one is about passing through a particular doorway, the other about returning to cells already visited. Decide which steps carry the label and say so explicitly.
+Round 9:
+  - The sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+  - Read the feature note carefully: turning does not move the agent, so a move out to an adjacent cell and back occupies several rows and the cell column repeats. Decide how you detect an out-and-back on that basis, and how many repetitions you require before calling it the described behaviour. State both choices.
+  - Decide which steps carry the label (only the moves, or the whole stretch including the turns in between) and say so.
+  - Be consistent.
+Round 10:
+  - The sentence names a behaviour to be STOPPED. Mark the steps where that undesirable behaviour is happening.
+  - You will need to decide how wide the behaviour is in time: whether it is confined to the step(s) in the doorway itself, or extends to the approach and the exit around it. State your decision and your reasoning for it explicitly — this choice is the main judgement call in the task.
+  - Be consistent.
+\end{lstlisting}
+
+\paragraph{Polarity.}
+Table~\ref{tab:polarity-pairs} lists every reader--entry pair on a goal-voice description, with $\kappa$ against the formalisation before and after flipping the reader's labels. Readers D and E were scored when they wrote their labels (Jaccard 0.00, and 1.00 after flipping, on both entries), and their raw labels were not kept. On prohibition-voice descriptions under the neutral instruction, reader B labelled 41, 78, 89 and 55 per cent of steps on its four entries where readers A and C labelled 11 to 35 per cent, the complement of the other two ($\kappa$ with reader A between $-0.24$ and $-0.54$). No reader under a strict instruction marked the complement (23 pairs).
+
+\begin{table}[h]\centering\small
+\caption{Reader--entry pairs on goal-voice descriptions.}
+\label{tab:polarity-pairs}
+\begin{tabular}{@{}lllcc@{}}\toprule
+Reader & Entry & Instruction & $\kappa$ & $\kappa$ flipped \\ \midrule
+A & \texttt{cartpole.left\_only} & neutral & $-$0.88 & 1.00 \\
+B & \texttt{cartpole.left\_only} & neutral & $-$0.88 & 1.00 \\
+C & \texttt{cartpole.left\_only} & neutral & $-$0.88 & 1.00 \\
+D & \texttt{pendulum.avoid\_left\_swing} & neutral & -- & -- \\
+D & \texttt{fourrooms.avoid\_br\_detour} & neutral & -- & -- \\
+E & \texttt{pendulum.avoid\_left\_swing} & neutral & -- & -- \\
+E & \texttt{fourrooms.avoid\_br\_detour} & neutral & -- & -- \\
+U & \texttt{cartpole.left\_only} & strict & $-$0.98 & 1.00 \\
+V & \texttt{cartpole.left\_only} & strict & $-$0.98 & 1.00 \\
+U & \texttt{pendulum.avoid\_left\_swing} & strict & $-$1.00 & 1.00 \\
+V & \texttt{pendulum.avoid\_left\_swing} & strict & $-$1.00 & 1.00 \\
+U & \texttt{fourrooms.avoid\_br\_detour} & strict & $-$0.49 & 0.98 \\
+V & \texttt{fourrooms.avoid\_br\_detour} & strict & $-$0.49 & 0.98 \\
+\bottomrule\end{tabular}\end{table}
+
+\section{Description lint}
+\label{app:lint}
+
+The lint passes a description when it opens with a prohibition. The rule is the regular expression
+
+\begin{lstlisting}[basicstyle=\ttfamily\scriptsize]
+^\s*(stop|never|don'?t|do not|avoid|no longer|forget|prevent|cease|refrain)\b
+\end{lstlisting}
+matched case-insensitively at the start of the description. Over the original wording of the behaviours it flags 3 descriptions, listed below with their rewrites, and it flags none of the current ones. Readers have labelled 18 distinct descriptions: the 15 current descriptions of the labelled entries and the original wording of 3 of the flagged ones. Taking a description as defective when every reader of it marked the complement of the formalisation, the lint flags all 3 defective descriptions and none of the other 15.
+
+\begin{center}\footnotesize\begin{tabular}{@{}l>{\raggedright\arraybackslash}p{3.9cm}>{\raggedright\arraybackslash}p{3.9cm}@{}}\toprule
+Entry & Original wording (flagged) & Current wording \\ \midrule
+\texttt{cartpole.left\_only} & Balance the pole only while the cart stays on the left half of the track. & Stop balancing the pole while the cart is on the right half of the track; keep the skill on the left half. \\
+\texttt{fourrooms.avoid\_br\_detour} & Reach the goal without routing through the bottom-right room. & Stop routing through the bottom-right room on the way to the goal. \\
+\texttt{pendulum.avoid\_left\_swing} & Swing up using only the right half of the circle. & Stop swinging the pendulum through the left half of the circle; keep the swing-up on the right. \\
+\bottomrule\end{tabular}\end{center}
+
+\section{Validator stress test}
+\label{app:authoring}
+
+Two open code models, Qwen2.5-Coder 7B and 32B served locally, were given an English behaviour description, the names, types and ranges of the bound view's features, and a summary of the grammar, and asked for a scenario. The schema-only test used fifteen descriptions that the grammar states exactly: the thirteen exact behaviours of the corpus and two that never occur in our rollouts and are not otherwise used here. A rejected scenario was returned to the model with the validator's messages, for up to three attempts in all. Without rollouts the validator runs its schema and view stages only. With rollouts it also rejects scenarios that label no step or every step, which we ran on the FourRooms entries.
+
+\begin{center}\small\begin{tabular}{@{}lccc@{}}\toprule
+Validator stages & Entries & 7B accepted & 32B accepted \\ \midrule
+schema and view & 15 & 80\% & 47\% \\
+schema, view and rollouts & 4 & 0\% & 25\% \\
+\bottomrule\end{tabular}\end{center}
+The single scenario accepted with rollouts shared no labelled step with the reference ($J=0.00$) and agreed with it on 92.6\% of steps, because both label few steps. With no shared positive, $\kappa$ is negative.
+

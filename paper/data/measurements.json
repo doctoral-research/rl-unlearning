@@ -1,0 +1,1584 @@
+{
+  "_provenance": "Values measured during development; each entry records the command that produced it.",
+  "label_scope": {
+    "_source": "paper/data/make_scope_data.py (seeded); FourRooms seed-42 policy, one 2048-step buffer",
+    "matching_steps": 0.1533,
+    "whole_trajectory_episode": 0.2188,
+    "whole_trajectory_buffer": 1.0,
+    "disagreement_vs_episode": 0.1094,
+    "disagreement_vs_buffer": 0.8467,
+    "n_episodes": 20,
+    "n_steps": 2048
+  },
+  "learned_views": {
+    "_source": "scripts/demo_learned_view.py, 4769 samples, ridge probe, held-out split",
+    "gate": 0.9,
+    "full_grid": {
+      "width": 17328,
+      "agent_x": 0.947,
+      "agent_y": 0.959,
+      "accepted": true
+    },
+    "egocentric": {
+      "width": 147,
+      "agent_x": 0.063,
+      "agent_y": 0.057,
+      "accepted": false
+    },
+    "scenario_agreement_full_grid": 1.0
+  },
+  "corpus": {
+    "_source": "scenarios.corpus.score_corpus over benchmark/behaviours",
+    "expressible": 15,
+    "partial": 2,
+    "inexpressible": 4,
+    "expressibility": 0.762,
+    "fidelity": [
+      {
+        "entry": "cartpole.left_only",
+        "verdict": "expressible",
+        "n_steps": 186,
+        "jaccard": 1.0,
+        "kappa": 1.0,
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "label_rate": 0.5483870967741935,
+        "spec_rate": 0.5483870967741935,
+        "annotator": "synthetic:fresh-context (N, O)",
+        "independent": true
+      },
+      {
+        "entry": "doorkey.no_key_hoarding",
+        "verdict": "expressible",
+        "n_steps": 960,
+        "jaccard": 0.42916666666666664,
+        "kappa": 0.530017152658662,
+        "accuracy": 0.8572916666666667,
+        "precision": 0.42916666666666664,
+        "recall": 1.0,
+        "label_rate": 0.10729166666666666,
+        "spec_rate": 0.25,
+        "annotator": "synthetic:fresh-context (L, M)",
+        "independent": true
+      },
+      {
+        "entry": "empty8x8.avoid_bottom_left",
+        "verdict": "expressible",
+        "n_steps": 600,
+        "jaccard": 1.0,
+        "kappa": 1.0,
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "label_rate": 0.13,
+        "spec_rate": 0.13,
+        "annotator": "synthetic:fresh-context (N, O)",
+        "independent": true
+      },
+      {
+        "entry": "fourrooms.avoid_br_detour",
+        "verdict": "expressible",
+        "n_steps": 150,
+        "jaccard": 1.0,
+        "kappa": 1.0,
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "label_rate": 0.20666666666666667,
+        "spec_rate": 0.20666666666666667,
+        "annotator": "synthetic:fresh-context (N, O)",
+        "independent": true
+      },
+      {
+        "entry": "fourrooms.avoid_br_tr_door",
+        "verdict": "expressible",
+        "n_steps": 1600,
+        "jaccard": 0.0,
+        "kappa": -0.00410771337290389,
+        "accuracy": 0.98625,
+        "precision": 0.0,
+        "recall": 0.0,
+        "label_rate": 0.01125,
+        "spec_rate": 0.0025,
+        "annotator": "synthetic:fresh-context (P, Q, T; per-step majority)",
+        "independent": true
+      },
+      {
+        "entry": "fourrooms.no_backtracking",
+        "verdict": "expressible",
+        "n_steps": 240,
+        "jaccard": 0.07692307692307693,
+        "kappa": 0.05511811023622052,
+        "accuracy": 0.4,
+        "precision": 0.07692307692307693,
+        "recall": 1.0,
+        "label_rate": 0.05,
+        "spec_rate": 0.65,
+        "annotator": "synthetic:fresh-context (P, Q)",
+        "independent": true
+      },
+      {
+        "entry": "fourrooms.no_corner_turn_reflex",
+        "verdict": "expressible",
+        "n_steps": 240,
+        "jaccard": 1.0,
+        "kappa": 1.0,
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "label_rate": 0.004166666666666667,
+        "spec_rate": 0.004166666666666667,
+        "annotator": "synthetic:fresh-context (N, O)",
+        "independent": true
+      },
+      {
+        "entry": "fourrooms.no_pacing",
+        "verdict": "partial",
+        "n_steps": 720,
+        "jaccard": 0.11166666666666666,
+        "kappa": 0.040216086434573875,
+        "accuracy": 0.25972222222222224,
+        "precision": 0.11166666666666666,
+        "recall": 1.0,
+        "label_rate": 0.09305555555555556,
+        "spec_rate": 0.8333333333333334,
+        "annotator": "synthetic:fresh-context (R, S)",
+        "independent": true
+      },
+      {
+        "entry": "halfcheetah.no_front_flip",
+        "verdict": "expressible",
+        "n_steps": 480,
+        "jaccard": 0.1125,
+        "kappa": 0.11250000000000004,
+        "accuracy": 0.55625,
+        "precision": 0.1125,
+        "recall": 1.0,
+        "label_rate": 0.05625,
+        "spec_rate": 0.5,
+        "annotator": "synthetic:fresh-context (J, K)",
+        "independent": true
+      },
+      {
+        "entry": "lbf.no_crowding",
+        "verdict": "expressible",
+        "n_steps": 100,
+        "jaccard": 0.3076923076923077,
+        "kappa": 0.3626062322946171,
+        "accuracy": 0.82,
+        "precision": 0.5,
+        "recall": 0.4444444444444444,
+        "label_rate": 0.18,
+        "spec_rate": 0.16,
+        "annotator": "synthetic:fresh-context (A, B, C; per-step majority)",
+        "independent": true
+      },
+      {
+        "entry": "lbf.no_freeloading",
+        "verdict": "expressible",
+        "n_steps": 100,
+        "jaccard": 0.3333333333333333,
+        "kappa": 0.24,
+        "accuracy": 0.62,
+        "precision": 0.38,
+        "recall": 0.7307692307692307,
+        "label_rate": 0.26,
+        "spec_rate": 0.5,
+        "annotator": "synthetic:fresh-context (A, B, C; per-step majority)",
+        "independent": true
+      },
+      {
+        "entry": "lunarlander.no_near_miss",
+        "verdict": "partial",
+        "n_steps": 569,
+        "jaccard": 0.2669491525423729,
+        "kappa": 0.26836030116765636,
+        "accuracy": 0.6959578207381371,
+        "precision": 0.2903225806451613,
+        "recall": 0.7682926829268293,
+        "label_rate": 0.14411247803163443,
+        "spec_rate": 0.38137082601054484,
+        "annotator": "synthetic:fresh-context (H, I)",
+        "independent": true
+      },
+      {
+        "entry": "lunarlander.no_tilt",
+        "verdict": "expressible",
+        "n_steps": 100,
+        "jaccard": 1.0,
+        "kappa": 1.0,
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "label_rate": 0.11,
+        "spec_rate": 0.11,
+        "annotator": "synthetic:fresh-context (A, B, C; per-step majority)",
+        "independent": true
+      },
+      {
+        "entry": "pendulum.avoid_left_swing",
+        "verdict": "expressible",
+        "n_steps": 150,
+        "jaccard": 1.0,
+        "kappa": 1.0,
+        "accuracy": 1.0,
+        "precision": 1.0,
+        "recall": 1.0,
+        "label_rate": 0.5066666666666667,
+        "spec_rate": 0.5066666666666667,
+        "annotator": "synthetic:fresh-context (N, O)",
+        "independent": true
+      },
+      {
+        "entry": "walker2d.no_forward_fall",
+        "verdict": "expressible",
+        "n_steps": 77,
+        "jaccard": 0.6875,
+        "kappa": 0.7199999999999999,
+        "accuracy": 0.8701298701298701,
+        "precision": 0.6875,
+        "recall": 1.0,
+        "label_rate": 0.2857142857142857,
+        "spec_rate": 0.4155844155844156,
+        "annotator": "synthetic:fresh-context (A, B, C; per-step majority)",
+        "independent": true
+      }
+    ],
+    "_fidelity_note": "Labels written from the description and feature values only; no scenario file was read before labelling it, and every threshold choice was recorded in the label file's annotator_note before scoring.",
+    "fidelity_measured": 15,
+    "fidelity_blocked": {
+      "halfcheetah.no_front_flip": "no somersault occurs under random actuation",
+      "halfcheetah.no_sprint": "behaviour absent and not a compute limit: retrained to 6M steps (4x), peak v_rootx 4.31 against a threshold of 5.0, versus 4.48 at 1.5M. More training did not make this policy sprint.",
+      "doorkey.avoid_pre_goal_corner": "region never reached and not a compute limit: retrained to 10M steps (5x), mean reward still 0.00 and 0 of 12 episodes reach x>=5 while the target corner is at x in {5,6}. This PPO implementation does not solve DoorKey-8x8 exploration.",
+      "doorkey.no_key_hoarding": "annotator had already read this scenario file, so could not label it independently"
+    },
+    "fidelity_ceiling": {
+      "scoreable": 17,
+      "labelled": 15,
+      "note": "The 4 inexpressible entries have no formalisation, so fidelity is undefined rather than missing. Of the 17 scoreable entries, 15 are labelled; the 2 remaining are blocked because the behaviour does not occur under any policy we could train, which 4-5x more compute did not change."
+    }
+  },
+  "authoring": {
+    "_source": "scripts/run_authoring_eval.py, ollama qwen2.5-coder, FourRooms subset with rollouts",
+    "gate_only": {
+      "7b": 0.8,
+      "32b": 0.467,
+      "n": 15
+    },
+    "with_rollouts": {
+      "7b": 0.0,
+      "32b": 0.25,
+      "n": 4
+    },
+    "best_accepted_jaccard": 0.0
+  },
+  "readers": {
+    "entries": [
+      {
+        "entry": "cartpole.left_only",
+        "readers": [
+          "N",
+          "O"
+        ],
+        "prompt": "r07_NO",
+        "model": "claude-opus-5",
+        "n_steps": 186,
+        "pair_kappa": [
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0
+        ],
+        "polarity_aligned": [],
+        "source": "identical labels, stored once",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "doorkey.no_key_hoarding",
+        "readers": [
+          "L",
+          "M"
+        ],
+        "prompt": "r06_LM",
+        "model": "claude-opus-5",
+        "n_steps": 960,
+        "pair_kappa": [
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0
+        ],
+        "polarity_aligned": [],
+        "source": "identical labels, stored once",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "empty8x8.avoid_bottom_left",
+        "readers": [
+          "N",
+          "O"
+        ],
+        "prompt": "r07_NO",
+        "model": "claude-opus-5",
+        "n_steps": 600,
+        "pair_kappa": [
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0
+        ],
+        "polarity_aligned": [],
+        "source": "identical labels, stored once",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "fourrooms.avoid_br_detour",
+        "readers": [
+          "N",
+          "O"
+        ],
+        "prompt": "r07_NO",
+        "model": "claude-opus-5",
+        "n_steps": 150,
+        "pair_kappa": [
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0
+        ],
+        "polarity_aligned": [],
+        "source": "identical labels, stored once",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "fourrooms.avoid_br_tr_door",
+        "readers": [
+          "P",
+          "Q",
+          "T"
+        ],
+        "prompt": [
+          "r08_PQ",
+          "r10_T"
+        ],
+        "model": "claude-opus-5",
+        "n_steps": 1600,
+        "pair_kappa": [
+          0.79818365287588,
+          0.7626624952802208,
+          0.5809195118944901
+        ],
+        "pair_jaccard": [
+          0.6666666666666666,
+          0.6206896551724138,
+          0.41379310344827586
+        ],
+        "reader_positives": {
+          "Q": 12,
+          "P": 18,
+          "T": 29
+        },
+        "polarity_aligned": [],
+        "source": "nested label sets, determined by counts",
+        "mean_kappa": 0.7139218866835303,
+        "mean_jaccard": 0.5670498084291188
+      },
+      {
+        "entry": "fourrooms.no_backtracking",
+        "readers": [
+          "P",
+          "Q"
+        ],
+        "prompt": "r08_PQ",
+        "model": "claude-opus-5",
+        "n_steps": 240,
+        "pair_kappa": [
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0
+        ],
+        "polarity_aligned": [],
+        "source": "identical labels, stored once",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "fourrooms.no_corner_turn_reflex",
+        "readers": [
+          "N",
+          "O"
+        ],
+        "prompt": "r07_NO",
+        "model": "claude-opus-5",
+        "n_steps": 240,
+        "pair_kappa": [
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0
+        ],
+        "polarity_aligned": [],
+        "source": "identical labels, stored once",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "fourrooms.no_pacing",
+        "readers": [
+          "R",
+          "S"
+        ],
+        "prompt": "r09_RS",
+        "model": "claude-opus-5",
+        "n_steps": 720,
+        "pair_kappa": [
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0
+        ],
+        "polarity_aligned": [],
+        "source": "identical labels, stored once",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "halfcheetah.no_front_flip",
+        "readers": [
+          "J",
+          "K"
+        ],
+        "prompt": "r05_JK",
+        "model": "claude-opus-5",
+        "n_steps": 480,
+        "pair_kappa": [
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0
+        ],
+        "polarity_aligned": [],
+        "source": "identical labels, stored once",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "lbf.no_crowding",
+        "readers": [
+          "A",
+          "B",
+          "C"
+        ],
+        "prompt": "r01_ABC",
+        "model": "claude-opus-5",
+        "n_steps": 100,
+        "pair_kappa": [
+          0.2647058823529411,
+          0.8753117206982542,
+          0.1824127906976745
+        ],
+        "pair_jaccard": [
+          0.3050847457627119,
+          0.8181818181818182,
+          0.2857142857142857
+        ],
+        "polarity_aligned": [
+          "B"
+        ],
+        "source": "raw labels",
+        "mean_kappa": 0.4408101312496233,
+        "mean_jaccard": 0.4696602832196053
+      },
+      {
+        "entry": "lbf.no_freeloading",
+        "readers": [
+          "A",
+          "B",
+          "C"
+        ],
+        "prompt": "r01_ABC",
+        "model": "claude-opus-5",
+        "n_steps": 100,
+        "pair_kappa": [
+          0.8905908096280086,
+          1.0,
+          0.8905908096280086
+        ],
+        "pair_jaccard": [
+          0.8461538461538461,
+          1.0,
+          0.8461538461538461
+        ],
+        "polarity_aligned": [
+          "B"
+        ],
+        "source": "raw labels",
+        "mean_kappa": 0.9270605397520058,
+        "mean_jaccard": 0.8974358974358975
+      },
+      {
+        "entry": "lunarlander.no_near_miss",
+        "readers": [
+          "H",
+          "I"
+        ],
+        "prompt": "r04_HI",
+        "model": "claude-opus-5",
+        "n_steps": 569,
+        "pair_kappa": [
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0
+        ],
+        "polarity_aligned": [],
+        "source": "identical labels, stored once",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "lunarlander.no_tilt",
+        "readers": [
+          "A",
+          "B",
+          "C"
+        ],
+        "prompt": "r01_ABC",
+        "model": "claude-opus-5",
+        "n_steps": 100,
+        "pair_kappa": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0,
+          1.0,
+          1.0
+        ],
+        "polarity_aligned": [
+          "B"
+        ],
+        "source": "raw labels",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "pendulum.avoid_left_swing",
+        "readers": [
+          "N",
+          "O"
+        ],
+        "prompt": "r07_NO",
+        "model": "claude-opus-5",
+        "n_steps": 150,
+        "pair_kappa": [
+          1.0
+        ],
+        "pair_jaccard": [
+          1.0
+        ],
+        "polarity_aligned": [],
+        "source": "identical labels, stored once",
+        "mean_kappa": 1.0,
+        "mean_jaccard": 1.0
+      },
+      {
+        "entry": "walker2d.no_forward_fall",
+        "readers": [
+          "A",
+          "B",
+          "C"
+        ],
+        "prompt": "r01_ABC",
+        "model": "claude-opus-5",
+        "n_steps": 77,
+        "pair_kappa": [
+          0.8653846153846153,
+          0.7220216606498194,
+          0.851063829787234
+        ],
+        "pair_jaccard": [
+          0.8181818181818182,
+          0.6666666666666666,
+          0.8148148148148148
+        ],
+        "polarity_aligned": [
+          "B"
+        ],
+        "source": "raw labels",
+        "mean_kappa": 0.8128233686072229,
+        "mean_jaccard": 0.7665544332211
+      }
+    ],
+    "polarity": [
+      {
+        "reader": "A",
+        "entry": "cartpole.left_only",
+        "voice": "goal",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa": -0.8759571209800919,
+        "kappa_flipped": 1.0,
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "inverted": true,
+        "source": "raw labels"
+      },
+      {
+        "reader": "B",
+        "entry": "cartpole.left_only",
+        "voice": "goal",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa": -0.8759571209800919,
+        "kappa_flipped": 1.0,
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "inverted": true,
+        "source": "raw labels"
+      },
+      {
+        "reader": "C",
+        "entry": "cartpole.left_only",
+        "voice": "goal",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa": -0.8759571209800919,
+        "kappa_flipped": 1.0,
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "inverted": true,
+        "source": "raw labels"
+      },
+      {
+        "reader": "D",
+        "entry": "pendulum.avoid_left_swing",
+        "voice": "goal",
+        "prompt": "r02_DE",
+        "instruction": "neutral",
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "kappa": null,
+        "kappa_flipped": null,
+        "inverted": true,
+        "source": "scored when written, raw labels not kept"
+      },
+      {
+        "reader": "D",
+        "entry": "fourrooms.avoid_br_detour",
+        "voice": "goal",
+        "prompt": "r02_DE",
+        "instruction": "neutral",
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "kappa": null,
+        "kappa_flipped": null,
+        "inverted": true,
+        "source": "scored when written, raw labels not kept"
+      },
+      {
+        "reader": "E",
+        "entry": "pendulum.avoid_left_swing",
+        "voice": "goal",
+        "prompt": "r02_DE",
+        "instruction": "neutral",
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "kappa": null,
+        "kappa_flipped": null,
+        "inverted": true,
+        "source": "scored when written, raw labels not kept"
+      },
+      {
+        "reader": "E",
+        "entry": "fourrooms.avoid_br_detour",
+        "voice": "goal",
+        "prompt": "r02_DE",
+        "instruction": "neutral",
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "kappa": null,
+        "kappa_flipped": null,
+        "inverted": true,
+        "source": "scored when written, raw labels not kept"
+      },
+      {
+        "reader": "U",
+        "entry": "cartpole.left_only",
+        "voice": "goal",
+        "prompt": "r11_UV",
+        "instruction": "strict",
+        "kappa": -0.981443298969072,
+        "kappa_flipped": 1.0,
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "inverted": true,
+        "source": "raw labels"
+      },
+      {
+        "reader": "V",
+        "entry": "cartpole.left_only",
+        "voice": "goal",
+        "prompt": "r11_UV",
+        "instruction": "strict",
+        "kappa": -0.981443298969072,
+        "kappa_flipped": 1.0,
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "inverted": true,
+        "source": "raw labels"
+      },
+      {
+        "reader": "U",
+        "entry": "pendulum.avoid_left_swing",
+        "voice": "goal",
+        "prompt": "r11_UV",
+        "instruction": "strict",
+        "kappa": -0.9996445076430855,
+        "kappa_flipped": 1.0,
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "inverted": true,
+        "source": "raw labels"
+      },
+      {
+        "reader": "V",
+        "entry": "pendulum.avoid_left_swing",
+        "voice": "goal",
+        "prompt": "r11_UV",
+        "instruction": "strict",
+        "kappa": -0.9996445076430855,
+        "kappa_flipped": 1.0,
+        "jaccard": 0.0,
+        "jaccard_flipped": 1.0,
+        "inverted": true,
+        "source": "raw labels"
+      },
+      {
+        "reader": "U",
+        "entry": "fourrooms.avoid_br_detour",
+        "voice": "goal",
+        "prompt": "r11_UV",
+        "instruction": "strict",
+        "kappa": -0.4866303046428097,
+        "kappa_flipped": 0.9799089204393249,
+        "jaccard": 0.0,
+        "jaccard_flipped": 0.96875,
+        "inverted": true,
+        "source": "raw labels"
+      },
+      {
+        "reader": "V",
+        "entry": "fourrooms.avoid_br_detour",
+        "voice": "goal",
+        "prompt": "r11_UV",
+        "instruction": "strict",
+        "kappa": -0.4866303046428097,
+        "kappa_flipped": 0.9799089204393249,
+        "jaccard": 0.0,
+        "jaccard_flipped": 0.96875,
+        "inverted": true,
+        "source": "raw labels"
+      },
+      {
+        "reader": "A",
+        "entry": "lbf.no_crowding",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": 1.0,
+        "inverted": false,
+        "positives": 18,
+        "n_steps": 100,
+        "source": "raw labels"
+      },
+      {
+        "reader": "B",
+        "entry": "lbf.no_crowding",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": -0.33363471971066944,
+        "inverted": true,
+        "positives": 41,
+        "n_steps": 100,
+        "source": "raw labels"
+      },
+      {
+        "reader": "C",
+        "entry": "lbf.no_crowding",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": 0.8753117206982542,
+        "inverted": false,
+        "positives": 22,
+        "n_steps": 100,
+        "source": "raw labels"
+      },
+      {
+        "reader": "A",
+        "entry": "lbf.no_freeloading",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": 1.0,
+        "inverted": false,
+        "positives": 26,
+        "n_steps": 100,
+        "source": "raw labels"
+      },
+      {
+        "reader": "B",
+        "entry": "lbf.no_freeloading",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": -0.5132408575031525,
+        "inverted": true,
+        "positives": 78,
+        "n_steps": 100,
+        "source": "raw labels"
+      },
+      {
+        "reader": "C",
+        "entry": "lbf.no_freeloading",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": 1.0,
+        "inverted": false,
+        "positives": 26,
+        "n_steps": 100,
+        "source": "raw labels"
+      },
+      {
+        "reader": "A",
+        "entry": "lunarlander.no_tilt",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": 1.0,
+        "inverted": false,
+        "positives": 11,
+        "n_steps": 100,
+        "source": "raw labels"
+      },
+      {
+        "reader": "B",
+        "entry": "lunarlander.no_tilt",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": -0.24347177319074853,
+        "inverted": true,
+        "positives": 89,
+        "n_steps": 100,
+        "source": "raw labels"
+      },
+      {
+        "reader": "C",
+        "entry": "lunarlander.no_tilt",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": 1.0,
+        "inverted": false,
+        "positives": 11,
+        "n_steps": 100,
+        "source": "raw labels"
+      },
+      {
+        "reader": "A",
+        "entry": "walker2d.no_forward_fall",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": 1.0,
+        "inverted": false,
+        "positives": 18,
+        "n_steps": 77,
+        "source": "raw labels"
+      },
+      {
+        "reader": "B",
+        "entry": "walker2d.no_forward_fall",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": -0.5438066465256796,
+        "inverted": true,
+        "positives": 55,
+        "n_steps": 77,
+        "source": "raw labels"
+      },
+      {
+        "reader": "C",
+        "entry": "walker2d.no_forward_fall",
+        "voice": "prohibition",
+        "prompt": "r01_ABC",
+        "instruction": "neutral",
+        "kappa_vs_reader_A": 0.7220216606498194,
+        "inverted": false,
+        "positives": 27,
+        "n_steps": 77,
+        "source": "raw labels"
+      },
+      {
+        "reader": "N",
+        "entry": "cartpole.left_only",
+        "voice": "prohibition",
+        "prompt": "r07_NO",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "O",
+        "entry": "cartpole.left_only",
+        "voice": "prohibition",
+        "prompt": "r07_NO",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "L",
+        "entry": "doorkey.no_key_hoarding",
+        "voice": "prohibition",
+        "prompt": "r06_LM",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "M",
+        "entry": "doorkey.no_key_hoarding",
+        "voice": "prohibition",
+        "prompt": "r06_LM",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "N",
+        "entry": "empty8x8.avoid_bottom_left",
+        "voice": "prohibition",
+        "prompt": "r07_NO",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "O",
+        "entry": "empty8x8.avoid_bottom_left",
+        "voice": "prohibition",
+        "prompt": "r07_NO",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "N",
+        "entry": "fourrooms.avoid_br_detour",
+        "voice": "prohibition",
+        "prompt": "r07_NO",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "O",
+        "entry": "fourrooms.avoid_br_detour",
+        "voice": "prohibition",
+        "prompt": "r07_NO",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "P",
+        "entry": "fourrooms.avoid_br_tr_door",
+        "voice": "prohibition",
+        "prompt": "r08_PQ",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "Q",
+        "entry": "fourrooms.avoid_br_tr_door",
+        "voice": "prohibition",
+        "prompt": "r08_PQ",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "T",
+        "entry": "fourrooms.avoid_br_tr_door",
+        "voice": "prohibition",
+        "prompt": "r10_T",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "P",
+        "entry": "fourrooms.no_backtracking",
+        "voice": "prohibition",
+        "prompt": "r08_PQ",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "Q",
+        "entry": "fourrooms.no_backtracking",
+        "voice": "prohibition",
+        "prompt": "r08_PQ",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "N",
+        "entry": "fourrooms.no_corner_turn_reflex",
+        "voice": "prohibition",
+        "prompt": "r07_NO",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "O",
+        "entry": "fourrooms.no_corner_turn_reflex",
+        "voice": "prohibition",
+        "prompt": "r07_NO",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "R",
+        "entry": "fourrooms.no_pacing",
+        "voice": "prohibition",
+        "prompt": "r09_RS",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "S",
+        "entry": "fourrooms.no_pacing",
+        "voice": "prohibition",
+        "prompt": "r09_RS",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "J",
+        "entry": "halfcheetah.no_front_flip",
+        "voice": "prohibition",
+        "prompt": "r05_JK",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "K",
+        "entry": "halfcheetah.no_front_flip",
+        "voice": "prohibition",
+        "prompt": "r05_JK",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "H",
+        "entry": "lunarlander.no_near_miss",
+        "voice": "prohibition",
+        "prompt": "r04_HI",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "I",
+        "entry": "lunarlander.no_near_miss",
+        "voice": "prohibition",
+        "prompt": "r04_HI",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "N",
+        "entry": "pendulum.avoid_left_swing",
+        "voice": "prohibition",
+        "prompt": "r07_NO",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      },
+      {
+        "reader": "O",
+        "entry": "pendulum.avoid_left_swing",
+        "voice": "prohibition",
+        "prompt": "r07_NO",
+        "instruction": "strict",
+        "inverted": false,
+        "source": "stored labels mark the behaviour named"
+      }
+    ],
+    "polarity_cells": {
+      "goal|neutral": {
+        "inverted": 7,
+        "pairs": 7
+      },
+      "goal|strict": {
+        "inverted": 6,
+        "pairs": 6
+      },
+      "prohibition|neutral": {
+        "inverted": 4,
+        "pairs": 12
+      },
+      "prohibition|strict": {
+        "inverted": 0,
+        "pairs": 23
+      }
+    },
+    "models": {
+      "claude-opus-5": "readers A-T",
+      "claude-opus-5-5": "readers U, V"
+    }
+  },
+  "drift": {
+    "FourRooms": {
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56
+      ],
+      "n_states": 4000,
+      "n_actions": 7,
+      "baseline_agreement": [
+        0.4102500081062317,
+        0.5044999718666077,
+        0.43799999356269836,
+        0.5709999799728394,
+        0.6669999957084656,
+        0.5099999904632568,
+        0.5839999914169312,
+        0.5325000286102295,
+        0.5317500233650208,
+        0.578000009059906,
+        0.5450000166893005,
+        0.5147500038146973,
+        0.4869999885559082,
+        0.5559999942779541,
+        0.5932499766349792
+      ],
+      "reference_return": [
+        0.31037499999999996,
+        0.419,
+        0.36887499999999995,
+        0.40275,
+        0.4296875,
+        0.422375,
+        0.5025,
+        0.3829375,
+        0.38125,
+        0.4055625,
+        0.42524999999999996,
+        0.518125,
+        0.5355625,
+        0.5011875,
+        0.3053125
+      ],
+      "label_disagreement": {
+        "mean_disagreement": 0.1935546875,
+        "min": 0.109375,
+        "max": 0.34423828125,
+        "mean_rate_ms": 0.24759114583333333,
+        "mean_rate_wt": 0.4192708333333333
+      },
+      "arms": {
+        "wt": {
+          "suffix": "ab_wt",
+          "label_noise": null,
+          "agreement": [
+            0.5357499718666077,
+            0.36274999380111694,
+            0.6322500109672546,
+            0.6067500114440918,
+            0.5212500095367432,
+            0.5544999837875366,
+            0.5370000004768372,
+            0.5360000133514404,
+            0.578499972820282,
+            0.562250018119812,
+            0.5460000038146973,
+            0.5554999709129333,
+            0.5180000066757202,
+            0.5299999713897705,
+            0.5492500066757202
+          ],
+          "occupancy_shift": [
+            0.09350011056660035,
+            0.09126351261177099,
+            0.1584479101132121,
+            -0.059893976132743804,
+            -0.005603947896941519,
+            0.12699360341151383,
+            0.05703572632288509,
+            0.19963590772316953,
+            0.02189503280224929,
+            0.03669986380660539,
+            -0.022735365332573698,
+            0.05562597907701172,
+            0.0289269506660811,
+            -0.06215080346106304,
+            0.030324650450105323
+          ],
+          "return": [
+            0.2371875,
+            0.210625,
+            0.22862499999999997,
+            0.366625,
+            0.42637499999999995,
+            0.415625,
+            0.39993749999999995,
+            0.38125,
+            0.3560625,
+            0.41,
+            0.42700000000000005,
+            0.5795625,
+            0.33625,
+            0.4640625,
+            0.4325
+          ],
+          "p_occupancy_shift": 0.02162007808876057
+        },
+        "n1": {
+          "suffix": "ab_n1",
+          "label_noise": 0.01,
+          "agreement": [
+            0.5839999914169312,
+            0.5632500052452087,
+            0.7072499990463257,
+            0.7005000114440918,
+            0.6875,
+            0.5992500185966492,
+            0.6167500019073486,
+            0.593500018119812,
+            0.5607500076293945,
+            0.6292499899864197,
+            0.5202500224113464,
+            0.5044999718666077,
+            0.5070000290870667,
+            0.659250020980835,
+            0.6315000057220459
+          ],
+          "occupancy_shift": [
+            -0.013462624092968167,
+            0.006871191561267864,
+            0.013936102376921222,
+            -0.112100341210666,
+            0.004131599954384779,
+            0.14889836531627576,
+            0.050905797101449296,
+            0.03670765660209328,
+            0.013699530516431926,
+            0.0974864681679761,
+            -0.005567022585638862,
+            -0.028520700171282942,
+            0.09899151063889795,
+            -0.043018213622153495,
+            -0.02521104033215238
+          ],
+          "return": [
+            0.36324999999999996,
+            0.3914375,
+            0.45562499999999995,
+            0.4134375,
+            0.41675,
+            0.513625,
+            0.561,
+            0.44825,
+            0.3571875,
+            0.40831249999999997,
+            0.48212499999999997,
+            0.6341249999999999,
+            0.39818749999999997,
+            0.5085625,
+            0.39256250000000004
+          ],
+          "p_occupancy_shift": 0.3446763718192264,
+          "p_agreement_vs_spec": 0.003915638298959059,
+          "p_agreement_vs_spec_wilcoxon": 0.0042724609375,
+          "seeds_spec_lower": 11
+        },
+        "n10": {
+          "suffix": "ab_n10",
+          "label_noise": 0.1,
+          "agreement": [
+            0.6222500205039978,
+            0.5379999876022339,
+            0.7607499957084656,
+            0.609749972820282,
+            0.6862499713897705,
+            0.53125,
+            0.5642499923706055,
+            0.6152499914169312,
+            0.5745000243186951,
+            0.6347500085830688,
+            0.5230000019073486,
+            0.512499988079071,
+            0.6039999723434448,
+            0.6072499752044678,
+            0.5602499842643738
+          ],
+          "occupancy_shift": [
+            0.032790605881192036,
+            0.04400055820562265,
+            -0.07157797277107926,
+            -0.06262676166207293,
+            -0.0057354699832575795,
+            0.03847289335234226,
+            0.08920226359985398,
+            0.0278721004376231,
+            -0.012002103049421661,
+            -0.06828647499120882,
+            0.07288385580720964,
+            0.0061176606899747965,
+            0.08147761453749967,
+            -0.03042513974424889,
+            -0.056000184514611265
+          ],
+          "return": [
+            0.33,
+            0.4865625,
+            0.43937499999999996,
+            0.422375,
+            0.44775,
+            0.4809375,
+            0.4364375,
+            0.4775625,
+            0.4213125,
+            0.332375,
+            0.37793750000000004,
+            0.464625,
+            0.5153125,
+            0.44775,
+            0.4190625
+          ],
+          "p_occupancy_shift": 0.6930371561385718,
+          "p_agreement_vs_spec": 0.008199386232408741,
+          "p_agreement_vs_spec_wilcoxon": 0.01507568359375,
+          "seeds_spec_lower": 11
+        }
+      }
+    },
+    "CartPole": {
+      "seeds": [
+        42,
+        43,
+        44,
+        45,
+        46,
+        47,
+        48,
+        49,
+        50,
+        51,
+        52,
+        53,
+        54,
+        55,
+        56
+      ],
+      "n_states": 4000,
+      "n_actions": 2,
+      "baseline_agreement": [
+        0.6050000190734863,
+        0.9207500219345093,
+        0.9350000023841858,
+        0.5580000281333923,
+        0.9315000176429749,
+        0.7147499918937683,
+        0.5454999804496765,
+        0.9240000247955322,
+        0.8740000128746033,
+        0.7160000205039978,
+        0.8264999985694885,
+        0.921750009059906,
+        0.8317499756813049,
+        0.7867500185966492,
+        0.9210000038146973
+      ],
+      "reference_return": [
+        500.0,
+        489.5,
+        495.3125,
+        500.0,
+        499.1875,
+        227.6875,
+        476.25,
+        500.0,
+        473.625,
+        283.125,
+        454.125,
+        401.375,
+        500.0,
+        500.0,
+        500.0
+      ],
+      "label_disagreement": {
+        "mean_disagreement": 0.32587890625,
+        "min": 0.0322265625,
+        "max": 0.72509765625,
+        "mean_rate_ms": 0.5914388020833333,
+        "mean_rate_wt": 0.9130208333333333
+      },
+      "arms": {
+        "wt": {
+          "suffix": "cp_wt",
+          "label_noise": null,
+          "agreement": [
+            0.9254999756813049,
+            0.921999990940094,
+            0.6712499856948853,
+            0.47350001335144043,
+            0.828249990940094,
+            0.9422500133514404,
+            0.7795000076293945,
+            0.8240000009536743,
+            0.8257499933242798,
+            0.7007499933242798,
+            0.5074999928474426,
+            0.8552500009536743,
+            0.952750027179718,
+            0.828499972820282,
+            0.7105000019073486
+          ],
+          "occupancy_shift": [
+            0.16724999999999995,
+            -0.1546030388151175,
+            0.30775591482649844,
+            -0.006749999999999923,
+            0.4266072837110304,
+            0.19868140955256663,
+            -0.700358595800525,
+            0.28625,
+            0.4288015637371338,
+            0.24672847682119203,
+            0.25799822329919775,
+            -0.5380167782622236,
+            -0.26887500000000003,
+            0.028374999999999984,
+            -0.33875
+          ],
+          "return": [
+            500.0,
+            500.0,
+            500.0,
+            500.0,
+            500.0,
+            500.0,
+            500.0,
+            500.0,
+            500.0,
+            500.0,
+            490.375,
+            500.0,
+            500.0,
+            500.0,
+            500.0
+          ],
+          "p_occupancy_shift": 0.8053390442587218
+        },
+        "n1": {
+          "suffix": "cp_n1",
+          "label_noise": 0.01,
+          "agreement": [
+            0.9505000114440918,
+            0.9267500042915344,
+            0.8199999928474426,
+            0.4959999918937683,
+            0.9047499895095825,
+            0.37674999237060547,
+            0.43424999713897705,
+            0.6830000281333923,
+            0.6522499918937683,
+            0.7022500038146973,
+            0.8824999928474426,
+            0.878250002861023,
+            0.8790000081062317,
+            0.8215000033378601,
+            0.7857499718666077
+          ],
+          "occupancy_shift": [
+            -0.393,
+            -0.13947803881511744,
+            -0.24911908517350156,
+            -0.03439401252282803,
+            -0.13299106383694398,
+            0.14596757360974832,
+            -0.33756027589574567,
+            0.30320727014985827,
+            0.12666564670656616,
+            -0.01234935685741112,
+            0.17782929847922546,
+            -0.20664177826222357,
+            0.2520472427929119,
+            0.015999999999999986,
+            -0.509625
+          ],
+          "return": [
+            500.0,
+            500.0,
+            500.0,
+            479.125,
+            469.0,
+            367.25,
+            341.3125,
+            462.9375,
+            229.0,
+            211.1875,
+            301.8125,
+            500.0,
+            472.625,
+            500.0,
+            500.0
+          ],
+          "p_occupancy_shift": 0.3100389479864597,
+          "p_agreement_vs_spec": 0.5177448119824912,
+          "p_agreement_vs_spec_wilcoxon": 1.0,
+          "seeds_spec_lower": 9
+        }
+      }
+    }
+  }
+}

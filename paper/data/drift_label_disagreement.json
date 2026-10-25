@@ -1,0 +1,200 @@
+{
+  "FourRooms": {
+    "per_seed": [
+      {
+        "seed": 42,
+        "rate_ms": 0.1533203125,
+        "rate_wt": 0.21875,
+        "disagreement": 0.109375
+      },
+      {
+        "seed": 43,
+        "rate_ms": 0.29736328125,
+        "rate_wt": 0.4033203125,
+        "disagreement": 0.13525390625
+      },
+      {
+        "seed": 44,
+        "rate_ms": 0.12646484375,
+        "rate_wt": 0.22314453125,
+        "disagreement": 0.1123046875
+      },
+      {
+        "seed": 45,
+        "rate_ms": 0.236328125,
+        "rate_wt": 0.3837890625,
+        "disagreement": 0.166015625
+      },
+      {
+        "seed": 46,
+        "rate_ms": 0.22998046875,
+        "rate_wt": 0.4599609375,
+        "disagreement": 0.25244140625
+      },
+      {
+        "seed": 47,
+        "rate_ms": 0.30322265625,
+        "rate_wt": 0.40966796875,
+        "disagreement": 0.115234375
+      },
+      {
+        "seed": 48,
+        "rate_ms": 0.3369140625,
+        "rate_wt": 0.498046875,
+        "disagreement": 0.1748046875
+      },
+      {
+        "seed": 49,
+        "rate_ms": 0.29833984375,
+        "rate_wt": 0.46728515625,
+        "disagreement": 0.173828125
+      },
+      {
+        "seed": 50,
+        "rate_ms": 0.2861328125,
+        "rate_wt": 0.56396484375,
+        "disagreement": 0.29052734375
+      },
+      {
+        "seed": 51,
+        "rate_ms": 0.25146484375,
+        "rate_wt": 0.400390625,
+        "disagreement": 0.17236328125
+      },
+      {
+        "seed": 52,
+        "rate_ms": 0.25390625,
+        "rate_wt": 0.47265625,
+        "disagreement": 0.2392578125
+      },
+      {
+        "seed": 53,
+        "rate_ms": 0.23046875,
+        "rate_wt": 0.3310546875,
+        "disagreement": 0.130859375
+      },
+      {
+        "seed": 54,
+        "rate_ms": 0.154296875,
+        "rate_wt": 0.39111328125,
+        "disagreement": 0.26708984375
+      },
+      {
+        "seed": 55,
+        "rate_ms": 0.2666015625,
+        "rate_wt": 0.470703125,
+        "disagreement": 0.2197265625
+      },
+      {
+        "seed": 56,
+        "rate_ms": 0.2890625,
+        "rate_wt": 0.59521484375,
+        "disagreement": 0.34423828125
+      }
+    ],
+    "mean_disagreement": 0.1935546875,
+    "min": 0.109375,
+    "max": 0.34423828125,
+    "mean_rate_ms": 0.24759114583333333,
+    "mean_rate_wt": 0.4192708333333333
+  },
+  "CartPole": {
+    "per_seed": [
+      {
+        "seed": 42,
+        "rate_ms": 0.8427734375,
+        "rate_wt": 1.0,
+        "disagreement": 0.1572265625
+      },
+      {
+        "seed": 43,
+        "rate_ms": 0.4921875,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.484375
+      },
+      {
+        "seed": 44,
+        "rate_ms": 0.0322265625,
+        "rate_wt": 0.0,
+        "disagreement": 0.0322265625
+      },
+      {
+        "seed": 45,
+        "rate_ms": 0.71826171875,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.25830078125
+      },
+      {
+        "seed": 46,
+        "rate_ms": 0.546875,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.4296875
+      },
+      {
+        "seed": 47,
+        "rate_ms": 0.7578125,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.21875
+      },
+      {
+        "seed": 48,
+        "rate_ms": 0.6796875,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.296875
+      },
+      {
+        "seed": 49,
+        "rate_ms": 0.46533203125,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.51123046875
+      },
+      {
+        "seed": 50,
+        "rate_ms": 0.623046875,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.353515625
+      },
+      {
+        "seed": 51,
+        "rate_ms": 0.794921875,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.181640625
+      },
+      {
+        "seed": 52,
+        "rate_ms": 0.7001953125,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.2763671875
+      },
+      {
+        "seed": 53,
+        "rate_ms": 0.25146484375,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.72509765625
+      },
+      {
+        "seed": 54,
+        "rate_ms": 0.7236328125,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.2529296875
+      },
+      {
+        "seed": 55,
+        "rate_ms": 0.59033203125,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.38623046875
+      },
+      {
+        "seed": 56,
+        "rate_ms": 0.65283203125,
+        "rate_wt": 0.9765625,
+        "disagreement": 0.32373046875
+      }
+    ],
+    "mean_disagreement": 0.32587890625,
+    "min": 0.0322265625,
+    "max": 0.72509765625,
+    "mean_rate_ms": 0.5914388020833333,
+    "mean_rate_wt": 0.9130208333333333
+  }
+}

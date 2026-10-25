@@ -1,0 +1,778 @@
+\documentclass{article}
+\usepackage{iclr2026_conference,times}
+
+\usepackage{graphicx}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{url}
+
+\definecolor{codebg}{HTML}{F6F7F9}
+\definecolor{codekey}{HTML}{1F3B57}
+\lstset{
+  basicstyle=\ttfamily\scriptsize,
+  backgroundcolor=\color{codebg},
+  keywordstyle=\color{codekey}\bfseries,
+  commentstyle=\color{gray}\itshape,
+  frame=none, xleftmargin=6pt, framexleftmargin=6pt,
+  aboveskip=5pt, belowskip=3pt, showstringspaces=false,
+  columns=fullflexible, breaklines=true,
+}
+
+\title{Specifying What to Forget:\\A Domain-Agnostic Language\\for Behavioural Unlearning in RL}
+
+\author{Anonymous authors\\Paper under double-blind review}
+
+\newcommand{\fix}{\marginpar{FIX}}
+\newcommand{\new}{\marginpar{NEW}}
+
+% Uncomment for the camera-ready version only; submissions are anonymous.
+% \iclrfinalcopy
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+Methods for removing a behaviour from a trained reinforcement-learning
+policy take the behaviour as given. In practice it is fixed by a few lines
+of environment-specific code that select which steps of a rollout to
+forget, and the English description those lines implement often leaves
+the selection open. We present \textsc{ForgetScenario}, a declarative
+language for stating what to forget. Its only contact with a domain is a
+\emph{feature view}, a map from observations, environment state and the
+\texttt{info} dictionary to named, typed quantities that records how each
+name was obtained, so a specification refers to quantities by name and
+runs unchanged wherever a view supplies them. Over the view the language
+provides conditions, regions, episode aggregates, quantifiers over agents
+and a nestable temporal fragment with a formal semantics, together with a
+validator that checks names, types and vacuity and a gate that admits a
+learned view only above a stated held-out accuracy. We
+instantiate the language in nine environments from five families and
+evaluate it on fifteen behaviours, comparing each formalisation, step by step, with reference labels that language-model readers proposed from the
+description alone and that we checked by hand. Six reproduce them
+exactly. Agreement among the
+readers locates each
+remaining disagreement in the sentence or in the formalisation, and a
+controlled comparison shows that a description phrased as a goal is read
+as its complement under every instruction we tried. Finally, choosing
+which steps of an episode carry the label shifts the unlearned policy
+beyond the effect of random label noise in a gridworld, and not in
+continuous control.
+\end{abstract}
+
+\section{Introduction}
+
+Suppose a deployed agent does something its operator wants stopped. It
+routes through a region it should avoid, exploits a shortcut, or adopts a
+gait that looks wrong. The unlearning literature offers a growing set of
+procedures for removing such behaviour from a trained policy
+\citep{bourtoule2021machine,cao2015towards,zhang2024npo}. Each of them
+starts from a partition of experience into steps to forget and steps to
+retain. How that partition is produced is rarely part of the
+contribution.
+
+In practice it is a predicate written by hand over whatever the
+observation vector contains, applied to a rollout buffer, written
+separately for each environment and seldom published with the method. It
+also settles questions that the English description leaves open: where a
+threshold lies, which steps of an episode count once the behaviour has
+occurred, and which side of the sentence names the behaviour. Two papers
+that report a forget rate on the same environment can therefore be
+measuring different sets of steps.
+
+We treat the specification as an artefact in its own right, with a
+syntax, a semantics, a checker and an evaluation. Our contributions are
+the following.
+
+\begin{itemize}
+\item \textbf{A language} (Section~\ref{sec:language}). A specification
+never reads a policy's observation. It reads a feature view
+$\Sigma:(o,\texttt{info},\texttt{env})\rightarrow\mathbb{R}^{n}$ whose
+features carry names, types, ranges and a provenance recording how the
+names were obtained. Over the view sits a grammar of conditions, regions,
+derived features, episode aggregates, quantifiers over indexed agents and
+a nestable temporal fragment, with a formal syntax and semantics
+(Appendix~\ref{app:formal}). A validator checks names, types, ranges and
+vacuity, and a learned view is admitted only above a stated held-out
+fidelity.
+
+\item \textbf{An evaluation protocol for specifications}
+(Section~\ref{sec:eval}). Fidelity is measured step by step, with
+chance-corrected agreement, against independent readings of the English
+description, and the agreement among those readings decides whether a
+disagreement belongs to the sentence or to the formalisation.
+
+\item \textbf{Two measured consequences} (Sections~\ref{sec:polarity}
+and~\ref{sec:drift}). Whether a description names the behaviour to remove
+or the behaviour to keep decides which side readers label, whatever the
+instruction. Which steps of an episode carry the label changes the
+unlearned policy beyond the effect of random label noise in one of the two
+domains we test.
+\end{itemize}
+
+\section{Related work}
+\label{sec:related}
+
+\paragraph{Machine unlearning.} Exact unlearning retrains without the
+forgotten data \citep{bourtoule2021machine,cao2015towards}. Approximate
+methods edit the trained model directly, and work on language models
+supplies both benchmarks \citep{maini2024tofu} and objectives such as
+negative preference optimisation \citep{zhang2024npo}. Throughout, the
+forget set is given as a set of examples, so the question of how to
+specify it does not arise.
+
+\paragraph{Unlearning in reinforcement learning.}
+\citet{ye2025reinforcement} unlearn an environment or one of its features.
+\citet{gong2025trajdeleter} unlearn recorded trajectories from offline
+agents, and \citet{zhang2025rule} use reinforcement learning as the
+mechanism for unlearning in language models. In each case the target
+arrives already delimited, as an environment, a set of episodes or a set
+of queries. A behaviour is different. It has no extensional listing, every
+policy realises it differently, and it changes under the unlearning update
+itself, so it has to be described rather than enumerated. We are not
+aware of prior work that treats that description as an object with a
+syntax, a semantics and a measured fidelity.
+
+\paragraph{Temporal logics and monitoring.} Linear temporal logic
+\citep{pnueli1977temporal} underlies TLTL, whose quantitative semantics
+turn a formula into a reward \citep{li2017tltl}, and reward machines expose
+a reward function as an automaton over high-level events
+\citep{icarte2018reward}. Monitors for signal temporal logic evaluate
+formulas over finite recorded signals \citep{maler2004monitoring}, which is
+also how our temporal fragment is used: a formula is checked at each
+position of a finite episode. TLTL and reward machines specify behaviour
+to be acquired, and all three assume a given map from states to the
+propositions or signals a formula mentions. Our language makes that map
+an explicit, typed object with a recorded provenance.
+
+\paragraph{Constraints and shields.} Constrained policy optimisation
+\citep{achiam2017cpo} and shielding \citep{alshiekh2018shielding} keep an
+agent away from forbidden behaviour during training or execution. A
+ForgetScenario can serve as their cost function or unsafe set, and the
+reward-penalty baseline we run is an instance of that use.
+Both lines of work take the forbidden set as given.
+
+\paragraph{From natural language to formal specifications.} nl2spec
+\citep{cosler2023nl2spec} and Lang2LTL \citep{liu2023lang2ltl} translate
+English into temporal logic with language models and score a translation
+against a reference formula. We compare at the level an unlearning method
+consumes, the per-step labels a specification induces on trajectories,
+and we also measure how far the English determines those labels at all.
+Ambiguity in natural-language requirements is a long-standing concern of
+requirements engineering \citep{berry2004ambiguity}, and the degree words
+and polarity effects we measure are instances of its lexical and
+pragmatic ambiguity.
+
+\paragraph{Reward misspecification.} An objective that differs from the
+intended one yields policies that exploit the difference
+\citep{pan2022effects,skalse2022defining}. A misspecified forget target is
+the mirror image. The method removes something, and the reported number
+says that the intended behaviour is gone.
+
+\paragraph{Language models as annotators.} Language models can match or
+exceed crowd workers on text annotation \citep{gilardi2023chatgpt}, but
+models of one family are not independent judges and tend to favour their
+own outputs \citep{panickssery2024llm}. Our reference labels come from
+such readers, and Section~\ref{sec:limitations} discusses what that does
+and does not allow us to conclude. We report agreement as Cohen's
+$\kappa$ \citep{cohen1960coefficient}.
+
+\paragraph{Environments.} We use MiniGrid \citep{chevalier2023minigrid},
+Gymnasium classic control and Box2D \citep{towers2024gymnasium}, MuJoCo
+\citep{todorov2012mujoco} and level-based foraging
+\citep{papoudakis2021benchmarking}.
+
+\section{The language}
+\label{sec:language}
+
+\subsection{Feature views}
+\label{sec:views}
+
+The observation is frequently the wrong place to look. A MiniGrid agent
+may observe a $7\times7\times3$ egocentric image in which no index means
+\texttt{agent\_x}, and Gymnasium's MuJoCo wrappers drop the root $x$
+coordinate so that policies stay translation invariant. A language that
+reads observations directly inherits both problems.
+
+A view is a map
+$\Sigma:(o,\texttt{info},\texttt{env})\rightarrow\mathbb{R}^{n}$ together
+with the names, types and ranges of its $n$ features. Because $\Sigma$
+may read the \texttt{info} dictionary and the environment object, a
+scenario can be written over quantities the agent never observes. Views
+resolve through a cascade of tiers, and each view records how it was
+obtained:
+
+\begin{center}
+\begin{tabular}{@{}lll@{}}
+\toprule
+Provenance & Tier & How the names were obtained \\
+\midrule
+\texttt{auto:<domain>} & environment & introspected from the environment \\
+\texttt{declared:table} & table & hand-registered name table \\
+\texttt{auto:info\_dict} & generic & scalar keys read from \texttt{info} \\
+\texttt{declared:identity} & fallback & anonymous \texttt{dim\_0, dim\_1, \dots} \\
+\texttt{learned:<kind>} & learned & fitted from data, with a fidelity score \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+Provenance makes portability checkable, and it exposes a failure that
+integer indices hide. Under a hand-written HalfCheetah table
+\texttt{rooty} is index 1, while under \texttt{auto:mujoco}, which indexes
+$q_{\text{pos}}\mathbin\Vert q_{\text{vel}}$ including the dropped root
+coordinate, it is index 2. A scenario written as \texttt{dim: rooty} is
+correct under both, and one written as \texttt{dim: 1} under only one.
+Appendix~\ref{app:views} lists the view of every environment in the
+corpus.
+
+\subsection{Scenarios}
+\label{sec:grammar}
+
+A scenario is a YAML document checked against a JSON Schema. Its
+state-level core is a group expression: a conjunction of conditions on
+named features, boolean combinations of groups, and region shorthands
+(boxes, their complements, ellipsoids and polygons). \texttt{derived}
+defines new features by arithmetic over a whitelist of functions.
+\texttt{aggregates} reduce an episode to scalars such as sums, extrema and
+distinct counts. \texttt{families} index repeated blocks of features, such
+as one block per agent, and a derived feature can quantify over their
+members with \texttt{min}, \texttt{max}, \texttt{any} or \texttt{all}, so
+that the scenario does not depend on team size. A temporal formula
+combines group expressions with \texttt{not}, \texttt{and}, \texttt{or},
+\texttt{next}, \texttt{previous}, \texttt{eventually}, \texttt{always},
+\texttt{until}, \texttt{consecutive} and \texttt{then\_within}, nested to
+any depth and evaluated at a position of a finite episode.
+
+Two fields turn a predicate into training labels. \texttt{match\_mode}
+decides which episodes are selected: an episode is selected when any step
+matches, when all steps match, when the fraction of matching steps reaches
+a threshold, when a condition on its aggregates holds, or when a temporal
+formula holds at its first step. \texttt{applies\_to} decides which steps
+carry the label. Under \texttt{matching\_steps} a step is labelled when
+the state predicate, or the temporal formula, holds at that step. Under
+\texttt{whole\_trajectory} every step of a selected episode is labelled.
+Selection is made per episode, so a rollout buffer that concatenates
+several episodes is first split at episode boundaries.
+Appendix~\ref{app:formal} gives the grammar and the labelling function
+formally. Figure~\ref{fig:examples} shows three formalisations from the
+corpus, one quantifying over agents, one built from episode aggregates and
+one temporal, and Appendix~\ref{app:gallery} lists every formalisation
+next to its description.
+
+\input{generated/examples}
+
+\subsection{Validation}
+\label{sec:validation}
+
+The validator works in three stages. The schema stage checks structure.
+The view stage resolves every feature name against the bound view and
+rejects unknown names, contradictory conditions and aggregates outside a
+trajectory-level match mode. It warns when a comparison does not suit a
+feature's type, such as ordering a categorical feature, and when a
+threshold lies outside a feature's declared range, so that a condition can
+never hold or always holds. When rollouts are supplied, the empirical
+stage rejects a specification that labels no step or every step. Further
+warnings flag constructions whose labels are probably not what the author
+meant, and Appendix~\ref{app:validator} shows the validator's messages on a
+set of faulty scenarios.
+An existential temporal operator at the top level of a
+\texttt{matching\_steps} formula, for example, labels every step up to the
+last witness rather than the witness itself.
+
+These checks establish that a specification is well formed and not
+vacuous. They do not establish that it means what its description says. We
+stress-tested them with two open code models, Qwen2.5-Coder 7B and 32B,
+writing scenarios from behaviour descriptions
+(Appendix~\ref{app:authoring}). Without rollouts the validator accepted
+80\% and 47\% of their scenarios. With the empirical stage enabled on the
+FourRooms entries acceptance fell to 0\% and 25\%, and the one accepted
+scenario shared no labelled step with the reference while agreeing with
+it on 92.6\% of steps, because both label few steps. We therefore make no
+claim that models can author scenarios, and we measure fidelity
+separately (Section~\ref{sec:eval}).
+
+One further check reads the description rather than the specification. A
+behaviour description must name the behaviour to remove, and a lint run
+over the corpus flags a description that does not open with a prohibition
+such as \emph{stop}, \emph{never} or \emph{avoid}. Section~\ref{sec:polarity}
+measures why this matters.
+
+\subsection{Learned views}
+\label{sec:learned}
+
+Every tier above rests on someone already knowing what the features mean.
+A raw pixel observation offers no such foothold. A probe closes the gap:
+it is fitted from raw observations to the semantic features a scenario
+needs, and its predictions are exposed as a view. A fitted view can be
+wrong, and a wrong view is worse than a missing one, because every
+scenario written against it inherits the error silently. The probe is
+therefore fitted on one split and scored on another, per feature, and the
+view carries the score of its weakest feature, since a scenario may
+depend on any of them. A view scoring below a stated threshold (0.9 here)
+is refused.
+
+Both outcomes occur (Figure~\ref{fig:probe}). From a full-grid render of
+FourRooms, position is recovered with exact-match accuracy 0.947 and
+0.959, and a spatial scenario runs unchanged on pixels, agreeing with the
+ground-truth labels on 400 of 400 steps. From the egocentric observation
+the same procedure scores 0.06 and the view is refused. That is the
+correct outcome, because a partially observed view does not determine
+absolute position.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=0.80\textwidth]{figures/fig_probe.pdf}
+\caption{Held-out probe predictions against ground truth on
+MiniGrid-FourRooms, 4769 samples, with $x$ and $y$ jittered horizontally
+for legibility. The dashed line is $y=x$. \textbf{(a)} The full-grid
+render determines the agent's position and the probe recovers it, so the
+view is admitted. \textbf{(b)} The egocentric observation does not
+determine it. The probe collapses onto the mean and is refused. Scores are
+exact match after rounding, the criterion the gate applies to an ordinal
+feature.}
+\label{fig:probe}
+\end{figure}
+
+\section{Evaluating specifications}
+\label{sec:eval}
+
+\subsection{The behaviours}
+\label{sec:corpus}
+
+The evaluation covers fifteen behaviours over nine environments in five
+families, each stated in one English sentence of the kind an operator
+would write when asking for a behaviour to be removed. Thirteen are
+formalised exactly. Two are formalised approximately (\emph{partial}),
+because the grammar cannot count a repeated pattern of cells or measure
+the distance to a failure that did not happen, and each records the
+approximation it uses. Appendix~\ref{app:corpus} lists them.
+
+\subsection{Reference labels}
+\label{sec:readers}
+
+Fidelity needs a reference that owes nothing to the formalisation it
+judges. We built ours in two stages over the recorded rollouts of the
+fifteen entries, 6272 steps in all and between 77 and 1600 per entry. In
+the first stage, language-model readers proposed a label for every step
+from the description alone. Each reader was an instance of Claude Opus~5
+that we started from a fresh context under prompts we wrote. It saw the
+English sentence and a table of per-step feature values and nothing
+else: no scenario file, no other reader's labels and no result. Where the
+sentence left a threshold or a time span open, the reader had to choose
+one and state it before labelling, so every choice that a sentence leaves
+to its reader is on record. Two or three readers read each entry, and
+their common labels, or the per-step majority where they differed,
+formed the proposal. In the second stage we checked every proposed label
+by hand against the description and the feature values. The first stage
+keeps the reading independent of the formalisation, and the second makes
+a person answerable for every label. The reference labels are ours. Our
+check confirmed every proposal, so the reference coincides with the
+readers' labels and the analyses of reader agreement below apply to it
+directly. Appendix~\ref{app:readers} gives every round of readers, our
+prompts in full and the proposals we discarded.
+
+The first round used a neutral instruction, to decide for every step
+whether the described behaviour is occurring. One of its three readers
+marked the complementary set on all four of its entries, and its labels
+were aligned in polarity to those of the other two readers, never to the
+formalisation, before the majority was taken. Later rounds stated that the
+sentence names a behaviour to be stopped and asked for the steps where it
+happens. Section~\ref{sec:polarity} measures what that instruction does.
+
+\subsection{Fidelity}
+\label{sec:fidelity}
+
+Fidelity is the per-step agreement between the labels a formalisation
+produces and the reference. We report Cohen's $\kappa$, because Jaccard
+similarity ignores agreement on unlabelled steps and loses resolution on
+rare behaviours (Appendix~\ref{app:corpus} gives both, with precision and
+recall). Mean $\kappa$ over the fifteen entries is 0.555 and the
+distribution is bimodal (Figure~\ref{fig:fidelity}). Six formalisations
+reproduce the reference exactly. Five of their descriptions fix a
+criterion: a half of the track, a quadrant of the room, a turn within one
+step of entering a room. The sixth asks for no ``steep tilt'', and its
+three readers and its formalisation all chose the same threshold of
+0.2~rad. Four entries score below 0.12.
+
+A low score does not say by itself whether the formalisation or the
+sentence is at fault. Agreement among the readers decides it. On eleven
+of the fifteen entries the readers labelled exactly the same steps, so for
+them the sentence determined a set of steps, and a formalisation that
+differs from that set is the outlier. Five formalisations are in this
+position. Four of them label whole episodes, where the readers label
+only the steps of the act itself: holding a key that is never used,
+revisiting cells, pacing between two cells, and turning a somersault.
+Their recall is 1.00 and their precision at most 0.43. None of the four
+narrower readings can be written with the views and operators we have.
+For the key it needs a feature recording whether the door is open, which
+the MiniGrid view does not expose, and the toggle action is no substitute
+because a toggle need not open anything. For the other three, marking a single step as a
+revisit, an oscillation or part of a rotation means relating it to values
+at earlier steps, which the fragment cannot do. Their formalisations settle for an episode-level reading, and the
+readers show what that reading leaves out. The fifth formalisation
+approximates a near miss through the lander's tilt.
+
+On the remaining four entries the readers disagree with one another
+($\kappa$ from 0.44 to 0.93), and there the sentence is underdetermined.
+Three rest on a degree word: ``bunching up'', ``idles nearby'' and ``past
+the angle that precedes a face-first fall''. The readers chose
+different thresholds, and the formalisation is one more such choice. The
+fourth, ``stop using the doorway between the bottom-right and top-right
+rooms'', is underdetermined in time rather than in degree. Its three
+readers found the same seven doorway steps in the same six episodes and
+then labelled 12, 18 and 29 steps, because the sentence says where the act
+happens and not how long it lasts. Its formalisation also fails for a
+reason of its own. It places the doorway at a fixed cell, while the
+environment moves the doorways at every reset, so it labels four steps
+that no reader chose ($\kappa=0.00$). The validator accepts it, since it
+is well typed and labels some steps but not all.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_fidelity.pdf}
+\caption{Agreement on the fifteen labelled entries. Open circles:
+agreement between readers of the same description (mean pairwise
+$\kappa$). Dots: agreement between the formalisation and the reference
+labels. Entries are grouped by where the disagreement lies. Where the
+readers agree with each other, a low dot points at the formalisation.
+Where they do not, the sentence leaves the labels open. $^{\dagger}$Partial
+entries, formalised approximately.}
+\label{fig:fidelity}
+\end{figure}
+
+\subsection{Polarity}
+\label{sec:polarity}
+
+A description can name the behaviour to keep rather than the one to
+remove. Three descriptions in the corpus had such a goal wording, for
+example ``Balance the pole only while the cart stays on the left half of
+the track''. Readers given such a sentence label the
+behaviour it names, which is the behaviour to keep, and so mark the exact
+complement of the formalisation. Table~\ref{tab:polarity} separates the
+sentence from the instruction. Their goal wording was read under
+neutral instructions and under the strict one,
+which states that the sentence names a behaviour to be stopped, and it
+was read as its complement in all 13 reader--entry pairs. For the nine
+pairs whose labels were kept, $\kappa$ against the formalisation lies
+between $-0.49$ and $-1.00$, and between 0.98 and 1.00 after flipping.
+Prohibitions, among them the rewrites of the same three behaviours
+(``Stop balancing the pole while the cart is on the right half of the
+track''), were read correctly in all 23 pairs under the strict
+instruction. Under a neutral instruction, one of three readers inverted
+all four prohibitions it saw and the other two inverted none.
+
+\begin{table}[t]
+\centering
+\caption{Reader--entry pairs whose labels mark the complement of the
+formalisation, by the voice of the description and the instruction given
+to the reader. The strict instruction states that the sentence names a
+behaviour to be stopped.}
+\label{tab:polarity}
+\begin{tabular}{@{}lcc@{}}
+\toprule
+Description & Neutral instruction & Strict instruction \\
+\midrule
+Goal (names the behaviour to keep) & 7 of 7 & 6 of 6 \\
+Prohibition (names the behaviour to remove) & 4 of 12 & 0 of 23 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The defect lies in the sentence. Stating the convention in the
+instruction removes readers' errors on prohibitions but not on goals, and
+the readers that inverted goal-voice sentences under that instruction did
+what it said. They took the sentence to name the behaviour to stop. A
+description should therefore carry its own polarity, which is what the
+lint checks. On the eighteen descriptions that readers have labelled, it
+flags the three that every reader inverted and none of the other fifteen.
+Every current description passes (Appendix~\ref{app:lint}).
+
+\section{Label scope and the unlearned policy}
+\label{sec:drift}
+
+The field \texttt{applies\_to} exists because ``stop routing through the
+bottom-right room'' does not say whether the label belongs to the steps in
+the room or to every step of an episode that routes through it. We test
+whether that choice changes the outcome of unlearning. Two scenario files
+that differ only in this field were used to unlearn from the same
+baseline checkpoints in FourRooms and CartPole, fifteen seeds per arm,
+with a reward penalty of $\lambda=0.1$ on labelled steps
+(Appendix~\ref{app:methods}). The pipeline is deterministic given a
+configuration and a seed, so two runs on one seed differ only through
+their labels. On rollouts of the baselines, the two readings label 19\% of
+steps differently in FourRooms and 33\% in CartPole.
+
+Training amplifies any change to the labels, so the size of a difference
+between two policies means little without a reference. We therefore add
+control runs that flip a random 1\% of labels, and in FourRooms also
+10\%, using a random generator separate from action sampling and
+environment resets. Every arm is compared with the \texttt{matching\_steps}
+run on the same seed, by the fraction of states, drawn from the baseline,
+on which the two policies choose the same action, and by the shift in
+forget-region occupancy after the last update.
+
+\begin{figure}[t]
+\centering
+\includegraphics[width=\textwidth]{figures/fig_drift.pdf}
+\caption{Each arm against the \texttt{matching\_steps} run on the same
+seed. \emph{scope}: the \texttt{whole\_trajectory} reading. \emph{1\%},
+\emph{10\%}: the \texttt{matching\_steps} reading with that fraction of
+labels flipped at random. Small dots are seeds, and bars are 95\%
+intervals over fifteen seeds. \textbf{(a)} Fraction of shared states on
+which the two policies choose the same action. The dashed line is the
+agreement of the \texttt{matching\_steps} run with its baseline.
+\textbf{(b, c)} Shift in final forget-region occupancy, on separate scales
+for the two domains.}
+\label{fig:drift}
+\end{figure}
+
+Random flips alone move the policy about as far as unlearning moved it
+from its baseline (Figure~\ref{fig:drift}a). With 1\% of labels flipped,
+FourRooms policies agree with the unperturbed run on 60\% of states,
+against 54\% between that run and its baseline, and flipping 10\% of
+labels gives the same 60\%. Agreement between two runs is therefore no
+evidence by itself that a specification matters. Against this floor the
+two domains differ. In FourRooms the other reading moves the policy
+further than either noise level (agreement 0.54, $p\le0.008$, and lower on
+11 of 15 seeds in each comparison), and it raises forget-region occupancy
+by 0.050 ($p=0.02$) where the noise runs shift it by 0.016 and 0.006
+(both $p>0.3$). Compared directly with the 10\% control, the occupancy
+shift is larger by 0.044 ($p=0.07$). In CartPole the other reading cannot
+be told apart from 1\% noise on either measure. On the baselines'
+rollouts the \texttt{whole\_trajectory} reading labels 91\% of CartPole
+steps, so the penalty it adds is close to a constant and carries little
+information about where the cart is.
+
+\section{Limitations}
+\label{sec:limitations}
+
+\paragraph{Readers.} All 22 readers are language models of one family:
+twenty instances of Claude Opus~5, which proposed every reference label,
+and two of Claude Opus~5.5 in the polarity experiment. They are not
+independent in
+the way a panel of people is. Models of one family share priors and
+favour their own outputs \citep{panickssery2024llm}, so unanimity among
+them can reflect a shared bias, and agreement between readers is best
+read as an upper bound on what people would show. The exact agreement on
+a ``steep tilt'', where every reader chose 0.2~rad, may be such a shared
+prior. The diagnostic of
+Section~\ref{sec:fidelity} relies on that agreement, and its attribution
+of an error to the formalisation is only as good as the readers'
+independence. Our check of every label by hand guards against a
+reader's mistake but not against our own reading, since we also wrote
+the formalisations. The polarity effect held in every pair, but it too
+was measured within one family. Labels from annotators outside the
+author team, on a subset of the entries, would remove both dependences. The
+instructions also differed between rounds. Later rounds named the choice
+of span for behaviours that extend in time, which may have influenced the
+spans readers chose (Appendix~\ref{app:readers}).
+
+\paragraph{Scale.} The corpus has fifteen behaviours, labelled on
+77 to 1600 steps each. The label-scope experiment varies one construct on one
+scenario per domain, with one unlearning method and fifteen seeds per arm,
+and its effect appears in one of the two domains. The method comparison
+in Appendix~\ref{app:comparison} uses five seeds, and no difference in it
+survives correction for multiple comparisons.
+
+\paragraph{Authorship.} We wrote the corpus, its formalisations and the
+readers' prompts, so the choice of behaviours reflects our judgement of
+what an operator would want removed.
+
+\section{Conclusion}
+
+Unlearning in reinforcement learning cannot be separated from the
+question of what is to be unlearned. We have argued that the
+specification should be built like any other component of the method:
+typed, checked, connected to the domain through an explicit interface,
+and evaluated for what it can and cannot say. Measured that way, the
+specifications in our corpus fail in identifiable places. Several
+formalisations label whole episodes where readers label only the act, and
+the language cannot yet state the narrower reading. Some
+descriptions do not determine a set of steps at all, and a description in
+the wrong voice is read as its own complement. The first is a measured
+limit of the grammar, the second a property of the English that no
+formalisation can repair, and the third is caught by a lint. Each becomes
+visible only because the specification is an explicit object that can be
+compared with an independent reading of its description.
+
+\subsubsection*{Reproducibility statement}
+
+All environments are publicly available. The training pipeline is
+deterministic given a configuration and a seed.
+Appendix~\ref{app:methods} lists the training and unlearning settings and
+Appendix~\ref{app:readers} the reader prompts. We will release the
+language, the validator, the corpus with its formalisations, the reference
+labels with every reader prompt, and the scripts that produce each number
+and figure in the paper.
+
+\bibliography{references}
+\bibliographystyle{iclr2026_conference}
+
+\appendix
+
+\section{Syntax and semantics}
+\label{app:formal}
+
+\paragraph{Syntax.} The concrete syntax is YAML validated by a JSON
+Schema. Abstracting from it, a scenario is generated by the following
+grammar, where $f$ ranges over feature names (including derived ones),
+$c$ over numeric constants, $k,w$ over positive integers and $\theta$ over
+$[0,1]$.
+\begin{align*}
+\mathit{scenario} &::= \mathit{decls}\;\; \texttt{match\_mode}\;m\;\;[\texttt{match\_threshold}\;\theta]\\
+&\quad\;\;\texttt{applies\_to}\;s\;\;(\mathit{groups}\mid\varphi)\\
+m &::= \texttt{any\_step}\mid\texttt{all\_steps}\mid\texttt{proportion}\\
+&\quad\;\;\mid\texttt{top\_percentile}\mid\texttt{trajectory}\mid\texttt{temporal}\\
+s &::= \texttt{matching\_steps}\mid\texttt{whole\_trajectory}\\
+\mathit{groups} &::= G_1,\dots,G_m \qquad\text{(disjunction)}\\
+G &::= C_1\wedge\dots\wedge C_k \mid \texttt{all\_of}(G,\dots)\mid\texttt{any\_of}(G,\dots)\\
+&\quad\;\;\mid\texttt{not}(G)\mid R\mid\texttt{\$ref}\;\mathit{name}\\
+C &::= f\;\mathit{op}\;c \;\;[\texttt{target}\;t] \mid \texttt{action\_sequence}(a_1,\dots,a_k)\\
+\mathit{op} &::= \;>\;\mid\;\ge\;\mid\;<\;\mid\;\le\;\mid\;=\;\mid\;\ne\;\mid\;\texttt{abs>}\;\mid\;\texttt{abs>=}\;\mid\;\texttt{abs<}\;\mid\;\texttt{abs<=}\\
+t &::= \texttt{state}\mid\texttt{action}\mid\texttt{reward}\mid\texttt{return}\mid\texttt{length}\\
+R &::= \texttt{box}(\vec f,\vec{lo},\vec{hi})\mid\texttt{complement\_of\_box}(\vec f,\vec{lo},\vec{hi})\\
+&\quad\;\;\mid\texttt{ellipsoid}(\vec f,\vec c,\vec r)\mid\texttt{polygon}(f_1,f_2,\vec v)\\
+\varphi &::= G\mid\neg\varphi\mid\varphi\wedge\dots\wedge\varphi\mid\varphi\vee\dots\vee\varphi\mid\mathsf{X}\varphi\mid\mathsf{Y}\varphi\\
+&\quad\;\;\mid\mathsf{F}\varphi\mid\mathsf{G}\varphi\mid\varphi\,\mathsf{U}\,\varphi\mid\mathsf{C}_k\varphi\mid\varphi\,\mathsf{T}_w\,\varphi
+\end{align*}
+Here $\mathsf{X}$, $\mathsf{Y}$, $\mathsf{F}$, $\mathsf{G}$, $\mathsf{U}$,
+$\mathsf{C}_k$ and $\mathsf{T}_w$ are \texttt{next}, \texttt{previous},
+\texttt{eventually}, \texttt{always}, \texttt{until}, \texttt{consecutive}
+and \texttt{then\_within}. The declarations $\mathit{decls}$ are
+\begin{itemize}
+\item \texttt{defines}: named group expressions, referenced with \texttt{\$ref};
+\item \texttt{derived}: $f := e$, where $e$ is an arithmetic expression
+over feature names and constants with $+,-,\times,/$ and the functions
+\texttt{abs}, \texttt{min}, \texttt{max}, \texttt{sqrt}, \texttt{hypot},
+\texttt{floor}, \texttt{ceil} and \texttt{sign}, or a quantified
+expression $f := \rho_{\,b_1,\dots,b_a\in F}\,e$ over the members of a
+family $F$ with arity $a\le 8$ and reduction
+$\rho\in\{\min,\max,\Sigma,\text{mean},\text{count},\exists,\forall\}$;
+\item \texttt{aggregates}: $g := \alpha(f)$ with
+$\alpha\in\{$sum, mean, min, max, std, range, first, last, abs\_sum,
+n\_distinct, count, count\_distinct$\}$, optionally restricted to the
+steps satisfying a group;
+\item \texttt{families}: a name template containing \texttt{\{i\}}, whose
+members are discovered in the bound view.
+\end{itemize}
+
+\paragraph{Typing.} Each feature of the bound view has a type in
+$\{$continuous, ordinal, categorical, boolean$\}$ and an optional range.
+A condition must name a feature of the view or a declared derived feature
+or aggregate, and an aggregate may be used only under
+\texttt{match\_mode: trajectory}. Violations are errors. An order
+comparison on a categorical or boolean feature, and a constant outside a
+feature's range, which makes a condition constant, produce warnings.
+
+\paragraph{Semantics.} Let an episode be $\tau=(x_t,a_t,r_t)_{t=0}^{n-1}$,
+where $x_t=\Sigma(o_t,\texttt{info}_t,\texttt{env}_t)$ is extended with
+the derived features. A condition $f\,\mathit{op}\,c$ holds at $t$ when
+$\mathit{op}(x_t[f],c)$ holds, reading $a_t$ or $r_t$ instead of $x_t$
+for the targets \texttt{action} and \texttt{reward}. A conjunction holds
+when all its conditions do, combinators are interpreted as usual, and a
+box holds when $lo_j\le x_t[f_j]\le hi_j$ for every listed feature. A
+list of groups holds when one of them does. We write $t\models G$.
+
+A temporal formula is evaluated at a position $0\le t<n$ and is false at
+any position outside the episode:
+\begin{align*}
+t\models\mathsf{X}\varphi &\iff t+1\models\varphi\\
+t\models\mathsf{Y}\varphi &\iff t-1\models\varphi\\
+t\models\mathsf{F}\varphi &\iff \exists u\in[t,n).\;u\models\varphi\\
+t\models\mathsf{G}\varphi &\iff \forall u\in[t,n).\;u\models\varphi\\
+t\models\varphi\,\mathsf{U}\,\psi &\iff \exists u\in[t,n).\;u\models\psi\wedge\forall v\in[t,u).\;v\models\varphi\\
+t\models\mathsf{C}_k\varphi &\iff \exists u\in[t,n-k].\;\forall i<k.\;u+i\models\varphi\\
+t\models\varphi\,\mathsf{T}_w\,\psi &\iff \exists u\ge t.\;u\models\varphi\wedge\exists v\in(u,\min(u+w,n-1)].\;v\models\psi
+\end{align*}
+with $\neg$, $\wedge$ and $\vee$ interpreted pointwise. $\mathsf{U}$ is
+the strong until. $\mathsf{C}_k$ and $\mathsf{T}_w$ are existential over
+later positions.
+
+\paragraph{Selection and labels.} An episode is selected,
+$\tau\in\mathrm{Sel}$, under
+\begin{center}
+\begin{tabular}{@{}ll@{}}
+\texttt{any\_step} & $\exists t.\;t\models G$ \\
+\texttt{all\_steps} & $\forall t.\;t\models G$ \\
+\texttt{proportion} & $|\{t: t\models G\}|/n\ge\theta$ \\
+\texttt{trajectory} & $G$ holds of the episode's aggregates, \texttt{return} and \texttt{length} \\
+\texttt{temporal} & $0\models\varphi$ \\
+\texttt{top\_percentile} & $\tau$ is in the top $\theta$ fraction of the batch by return or length
+\end{tabular}
+\end{center}
+Only \texttt{top\_percentile} depends on other episodes. The label of step
+$t$ is
+\[
+L(\tau)_t=\begin{cases}
+[\tau\in\mathrm{Sel}] & \texttt{applies\_to}=\texttt{whole\_trajectory},\\
+[t\models\varphi] & \texttt{applies\_to}=\texttt{matching\_steps},\ \texttt{match\_mode}=\texttt{temporal},\\
+[t\models G] & \texttt{applies\_to}=\texttt{matching\_steps},\ \text{otherwise}.
+\end{cases}
+\]
+Under \texttt{matching\_steps} a non-temporal match mode therefore
+affects which episodes are reported as matching but not which steps are
+labelled. A rollout buffer $B$ is split at its episode boundaries,
+$B=\tau^{1}\cdots\tau^{m}$, and labelled episode by episode,
+$L(B)=L(\tau^{1})\cdots L(\tau^{m})$. With \texttt{matching\_steps}, a
+top-level $\mathsf{F}\varphi$ labels every step up to the last position
+at which $\varphi$ holds, and the validator warns about this
+construction.
+
+\input{generated/appendix_language}
+\input{generated/appendix}
+
+\section{Training and unlearning}
+\label{app:methods}
+
+\paragraph{Baselines.} All policies are PPO agents with a two-layer
+$64\times64$ tanh MLP for actor and critic, orthogonal initialisation,
+discount 0.99, GAE $\lambda=0.95$, clip range 0.2 with value clipping,
+value coefficient 0.5, entropy coefficient 0.01, gradient-norm clip 0.5,
+rollouts of 2048 steps, 10 epochs per update, minibatches of 64 and Adam
+with learning rate $3\times10^{-4}$ and $\epsilon=10^{-5}$. FourRooms
+agents observe a symbolic encoding of the grid with the goal fixed at cell
+$(13,3)$ and are trained for 5M steps. CartPole agents are trained for
+500k steps. Each seed has its own baseline.
+
+\paragraph{Online unlearning.} Starting from a baseline, each of 200
+iterations collects a 2048-step on-policy rollout, labels it with the
+scenario episode by episode, performs a PPO update and then an unlearning
+step that depends on the method. Every five iterations the policy is
+evaluated on 16 stochastic episodes, recording return and forget-region
+occupancy, the fraction of steps whose state satisfies the scenario's
+state predicate. The methods are:
+\begin{itemize}
+\item \emph{control}: the labels are used for evaluation only;
+\item \emph{reward penalty}: $r_t\leftarrow r_t-\lambda L_t$, with PPO
+otherwise unchanged ($\lambda\in\{0.1,1.0\}$);
+\item \emph{disjoint objective}: PPO's policy-gradient term is masked on
+labelled steps, so PPO does not reinforce them, while the value targets
+are kept;
+\item \emph{NegGrad}: on the labelled steps of the current rollout,
+minimise $\mathbb{E}[\log\pi(a\mid s)]-\mathbb{E}[\mathcal{H}(\pi(\cdot\mid s))]$,
+with weight 0.5, optionally with a KL anchor to the baseline policy
+(weight 0.5);
+\item \emph{IS-replay}: labelled transitions enter a replay buffer of
+4096 with their log-probabilities at collection, and each iteration takes
+up to four steps on batches of 256 of the same objective with the
+importance ratio clipped to $[0.8,1.2]$, stopping when the KL divergence
+from the collecting policy exceeds 0.05;
+\item \emph{NPO} \citep{zhang2024npo}: the same buffer, with the frozen
+baseline as reference policy $\pi_{\mathrm{ref}}$, $\beta=0.1$ and the loss
+\[
+-\frac{2}{\beta}\log\sigma\!\left(-\beta\left(\log\pi(a\mid s)-\log\pi_{\mathrm{ref}}(a\mid s)\right)\right).
+\]
+\end{itemize}
+The label-scope experiment of Section~\ref{sec:drift} uses the reward
+penalty with $\lambda=0.1$ and no masking. Its noise arms flip each label
+independently with probability $p$, using a generator seeded separately
+from action sampling and environment resets, so that only the labels
+change.
+
+\input{generated/appendix_rl}
+
+\end{document}
