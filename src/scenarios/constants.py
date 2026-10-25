@@ -44,12 +44,6 @@ ENV_OBS_DIMS: dict[str, dict[int, str]] = {
     },
     # Taxi is discrete; utils.env_wrappers.TaxiDecode expands the integer
     # state into these four semantic fields before the policy sees it.
-    "Taxi-v3": {
-        0: "row",
-        1: "col",
-        2: "passenger_location",
-        3: "destination",
-    },
     "Taxi-v4": {
         0: "row",
         1: "col",
@@ -114,7 +108,7 @@ ENV_ACTION_DIMS: dict[str, dict[int, str]] = {
     },
     "Pendulum-v1": {0: "torque"},
     "MountainCar-v0": {0: "push_left", 1: "no_push", 2: "push_right"},
-    "Taxi-v3": {
+    "Taxi-v4": {
         0: "south", 1: "north", 2: "east", 3: "west",
         4: "pickup", 5: "dropoff",
     },

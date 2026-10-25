@@ -2,8 +2,7 @@ defaults:
   - _self_
   - env: cartpole
   - agent: ppo
-  - unlearn: trajectory_selective
-  - logging: tensorboard
+  - logging: local
 
 # Experiment settings
 seed: 42
@@ -15,7 +14,7 @@ scenario: null
 
 # Deterministic naming: {env}_{agent}_seed{seed}
 # Training outputs go to: experiments/{checkpoints,logs,outputs}/{experiment_name}/
-# Unlearning outputs nest under the same experiment with method suffix
+# Online unlearning writes to experiments/outputs/online_unlearn_{env}_seed{seed}_{method}/
 experiment_name: ${env_name}_${name}_seed${seed}
 
 # Resume training from a checkpoint.
@@ -34,16 +33,9 @@ training:
   num_eval_episodes: 10
   checkpoint_dir: experiments/checkpoints/${experiment_name}
 
-# Unlearning
-unlearning:
-  enabled: false
-  start_timestep: 500_000
-  frequency: 10_000
-
 # Logging
 output_dir: experiments/outputs/${experiment_name}
 log_dir: experiments/logs/${experiment_name}
-save_video: false
 
 # Hydra settings
 hydra:

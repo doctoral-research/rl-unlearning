@@ -7,7 +7,6 @@ and gives the operators their standard LTL meanings.
 
 from __future__ import annotations
 
-import numpy as np
 import pytest
 
 from scenarios import ForgetScenario, ScenarioError

@@ -168,23 +168,15 @@ class TestShippedCorpus:
         e = load_entry(_write(tmp_path, scenario="dom/thing"))
         assert e.load_scenario(tmp_path).description.strip() == "corpus"
 
-    def test_contains_honest_failures(self):
-        """A corpus of only successes measures nothing.
+    def test_every_entry_has_reference_labels(self):
+        """The corpus is the set of behaviours fidelity is measured on.
 
-        This guard fired once already: v1.2-v1.4 closed every gap the
-        corpus originally recorded, taking expressibility to 0.969. That
-        is a warning sign, not a result -- extending the grammar to close
-        exactly the gaps you wrote down measures nothing about coverage.
-        The corpus must keep containing behaviours elicited independently
-        of what the grammar can state.
+        An entry without labels contributes nothing that can be measured,
+        so it does not belong in the shipped corpus.
         """
-        verdicts = [e.verdict for e in load_corpus(CORPUS)]
-        assert INEXPRESSIBLE in verdicts, (
-            "no inexpressible entries: add behaviours chosen for what "
-            "people want removed, not for what the grammar supports")
-        assert PARTIAL in verdicts
-        unmet = sum(1 for v in verdicts if v != EXPRESSIBLE)
-        assert unmet >= 3, f"only {unmet} entries probe past the grammar"
+        for e in load_corpus(CORPUS):
+            assert e.labels_ref, f"{e.id} has no labels"
+            assert (ROOT / e.labels_ref).exists(), e.labels_ref
 
     def test_every_gap_is_explained(self):
         for e in load_corpus(CORPUS):

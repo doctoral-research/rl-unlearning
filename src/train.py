@@ -9,20 +9,18 @@ sys.path.insert(0, str(Path(__file__).parent))
 
 import hydra
 from omegaconf import DictConfig, OmegaConf
-import gymnasium as gym
 import numpy as np
 import torch
 from tqdm import tqdm
 
 from agents import PPOAgent
-from utils import set_seed, get_device, create_directories, setup_logger, save_checkpoint, record_videos
+from utils import set_seed, get_device, create_directories, setup_logger, record_videos
 from utils.checkpointing import (  # noqa: E402
     build_checkpoint,
     save_checkpoint_atomic,
     load_for_resume,
     resolve_resume,
 )
-from utils.buffers import TrajectoryBuffer
 
 
 def init_wandb(cfg: DictConfig):
@@ -120,30 +118,6 @@ def train(cfg: DictConfig):
         device=str(device),
     )
     
-    # Trajectory buffer for saving experiences
-    trajectory_buffer = TrajectoryBuffer(capacity=1000)
-
-    # Optional Intrinsic Curiosity Module (Pathak et al. 2017). Needed
-    # for sparse-reward envs where count-based bonus isn't enough — e.g.
-    # Taxi-v3, where vanilla PPO and PPO+count-based both train at -200.
-    icm = None
-    if cfg.get("use_icm", False):
-        from utils.icm import ICM
-        icm = ICM(
-            obs_dim=cfg.observation_dim,
-            action_dim=cfg.action_dim,
-            feature_dim=int(cfg.get("icm_feature_dim", 32)),
-            hidden=int(cfg.get("icm_hidden", 64)),
-            eta=float(cfg.get("icm_eta", 0.1)),
-            beta=float(cfg.get("icm_beta", 0.2)),
-            lr=float(cfg.get("icm_lr", 1e-3)),
-            device=str(device),
-        )
-        logger.info(
-            f"ICM enabled: feature_dim={icm.feature_dim}, eta={icm.eta}, "
-            f"beta={icm.beta}"
-        )
-
     # Training loop
     logger.info("Starting training...")
     
@@ -181,8 +155,6 @@ def train(cfg: DictConfig):
         obs, _ = env.reset(seed=cfg.seed)
     episode_reward = 0
     episode_length = 0
-    current_trajectory = {"observations": [], "actions": [], "rewards": [], "dones": []}
-    
     pbar = tqdm(total=cfg.training.total_timesteps, desc="Training",
                 initial=global_step)
     
@@ -196,21 +168,12 @@ def train(cfg: DictConfig):
             rollout_buffer["log_probs"].append(info["log_prob"])
             rollout_buffer["values"].append(info["value"])
             
-            current_trajectory["observations"].append(obs.copy())
-            current_trajectory["actions"].append(action.copy() if isinstance(action, np.ndarray) else action)
-            
             # Step environment
             next_obs, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
 
-            if icm is not None:
-                reward = reward + icm.intrinsic_reward(obs, action, next_obs)
-
             rollout_buffer["rewards"].append(reward)
             rollout_buffer["dones"].append(done)
-            
-            current_trajectory["rewards"].append(reward)
-            current_trajectory["dones"].append(done)
             
             episode_reward += reward
             episode_length += 1
@@ -223,14 +186,10 @@ def train(cfg: DictConfig):
                 episode_lengths.append(episode_length)
                 episode_count += 1
                 
-                # Save trajectory
-                trajectory_buffer.add_trajectory(current_trajectory.copy())
-                
                 # Reset
                 obs, _ = env.reset()
                 episode_reward = 0
                 episode_length = 0
-                current_trajectory = {"observations": [], "actions": [], "rewards": [], "dones": []}
                 
                 # Log episode stats
                 log_freq = cfg.get("log_frequency", 10)
@@ -269,16 +228,6 @@ def train(cfg: DictConfig):
         # Update policy
         update_info = agent.update(rollout_buffer)
 
-        # Update ICM on the same rollout (next_obs from buffer shift; the
-        # last step's next_obs is the current `obs`).
-        if icm is not None:
-            obs_arr = np.asarray(rollout_buffer["observations"], dtype=np.float32)
-            act_arr = np.asarray(rollout_buffer["actions"])
-            next_obs_arr = np.concatenate(
-                [obs_arr[1:], np.asarray(obs, dtype=np.float32)[None]], axis=0,
-            )
-            icm_info = icm.update(obs_arr, act_arr, next_obs_arr)
-            update_info.update(icm_info)
         
         if wandb_run:
             import wandb
@@ -327,13 +276,7 @@ def train(cfg: DictConfig):
             )
             Path(cfg.training.checkpoint_dir).mkdir(parents=True, exist_ok=True)
             save_checkpoint_atomic(
-                build_checkpoint(
-                    agent, global_step,
-                    eval_mean_return=(float(np.mean(episode_rewards[-100:]))
-                                      if episode_rewards else 0.0),
-                ),
-                checkpoint_path,
-            )
+                build_checkpoint(agent, global_step), checkpoint_path)
             logger.info(f"Saved checkpoint to {checkpoint_path}")
             next_save_step += cfg.training.save_frequency
 
@@ -345,14 +288,6 @@ def train(cfg: DictConfig):
     final_path = f"{cfg.training.checkpoint_dir}/final_model.pt"
     agent.save(final_path)
     logger.info(f"Training completed. Final model saved to {final_path}")
-    
-    # Save trajectories
-    import pickle
-    traj_path = f"{cfg.output_dir}/trajectories.pkl"
-    Path(cfg.output_dir).mkdir(parents=True, exist_ok=True)
-    with open(traj_path, "wb") as f:
-        pickle.dump(trajectory_buffer.get_all(), f)
-    logger.info(f"Saved {len(trajectory_buffer)} trajectories to {traj_path}")
     
     env.close()
 

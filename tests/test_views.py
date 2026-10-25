@@ -282,7 +282,6 @@ class TestScenarioWithView:
 
 from scenarios.views import (  # noqa: E402
     TIER_ENV,
-    TIER_GENERIC,
     describe_domain,
     domain_report,
     info_view,

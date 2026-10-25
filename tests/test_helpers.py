@@ -6,7 +6,6 @@ Covers:
 - get_device: auto, cpu, cuda
 - create_directories: directory creation
 - setup_logger: console/file logging
-- save_checkpoint / load_checkpoint: round-trip
 - RunningMeanStd: online mean/std computation
 """
 import pytest
@@ -15,17 +14,13 @@ import numpy as np
 import torch
 import tempfile
 import os
-import shutil
 import logging
 
-from agents import PPOAgent
 from utils.helpers import (
     set_seed,
     get_device,
     create_directories,
     setup_logger,
-    save_checkpoint,
-    load_checkpoint,
     RunningMeanStd,
 )
 
@@ -146,65 +141,6 @@ class TestSetupLogger:
                 h.flush()
             assert os.path.exists(log_path)
             logger.handlers.clear()
-
-
-# ---------------------------------------------------------------------------
-# save_checkpoint / load_checkpoint
-# ---------------------------------------------------------------------------
-
-class TestCheckpoint:
-    def test_save_load_roundtrip(self):
-        agent = PPOAgent(observation_dim=4, action_dim=2, device="cpu")
-
-        with tempfile.NamedTemporaryFile(suffix=".pt", delete=False) as f:
-            path = f.name
-        try:
-            save_checkpoint(
-                agent, agent.optimizer,
-                timestep=1000,
-                metrics={"mean_reward": 42.0},
-                path=path,
-            )
-
-            agent2 = PPOAgent(observation_dim=4, action_dim=2, device="cpu")
-            ts, metrics = load_checkpoint(path, agent2, agent2.optimizer)
-            assert ts == 1000
-            assert metrics["mean_reward"] == pytest.approx(42.0)
-
-            # Weights should match
-            for (_, p1), (_, p2) in zip(
-                agent.network.named_parameters(),
-                agent2.network.named_parameters()
-            ):
-                assert torch.allclose(p1, p2)
-        finally:
-            os.unlink(path)
-
-    def test_load_without_optimizer(self):
-        agent = PPOAgent(observation_dim=4, action_dim=2, device="cpu")
-        with tempfile.NamedTemporaryFile(suffix=".pt", delete=False) as f:
-            path = f.name
-        try:
-            save_checkpoint(agent, agent.optimizer, 500, {"r": 1.0}, path)
-            agent2 = PPOAgent(observation_dim=4, action_dim=2, device="cpu")
-            ts, metrics = load_checkpoint(path, agent2, optimizer=None)
-            assert ts == 500
-        finally:
-            os.unlink(path)
-
-    def test_checkpoint_contains_all_keys(self):
-        agent = PPOAgent(observation_dim=4, action_dim=2, device="cpu")
-        with tempfile.NamedTemporaryFile(suffix=".pt", delete=False) as f:
-            path = f.name
-        try:
-            save_checkpoint(agent, agent.optimizer, 100, {"x": 1.0}, path)
-            ckpt = torch.load(path, map_location="cpu")
-            assert "timestep" in ckpt
-            assert "agent_state_dict" in ckpt
-            assert "optimizer_state_dict" in ckpt
-            assert "metrics" in ckpt
-        finally:
-            os.unlink(path)
 
 
 # ---------------------------------------------------------------------------

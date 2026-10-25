@@ -14,26 +14,3 @@ wandb:
   # Wandb config
   mode: online  # online, offline, disabled
   save_code: true
-  
-# Metrics (same as tensorboard)
-metrics:
-  - episode_reward
-  - episode_length
-  - policy_loss
-  - value_loss
-  - entropy
-  - learning_rate
-  - explained_variance
-
-unlearning_metrics:
-  - forget_effectiveness
-  - retain_stability
-  - selectivity
-  - aufc
-  - privacy_auc
-
-# Video recording
-video:
-  enabled: true
-  frequency: 50000
-  length: 1

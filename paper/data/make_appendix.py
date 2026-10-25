@@ -51,7 +51,9 @@ def f2(x):
 
 
 def sg(x, d=3):
-    """Signed number with a typographic minus."""
+    """Signed number with a typographic minus, and no sign on a rounded zero."""
+    if round(x, d) == 0:
+        return f"${0:.{d}f}$"
     return f"${x:+.{d}f}$"
 
 
@@ -283,32 +285,57 @@ for eid in sorted(ORIGINAL):
 L.append(r"\bottomrule\end{tabular}\end{center}" + "\n")
 
 # --------------------------------------------------------------- authoring
-au = meas["authoring"]
+au = json.loads((RT / "paper/data/authoring_eval.json").read_text())
+gate, roll = au["gate_only"], au["with_rollouts"]
+MODELS = ("7b", "32b")
+SPELL = {2: "two", 4: "four", 13: "thirteen"}
+accepted = [r for m in MODELS for r in roll[m] if r["accepted"]]
+# The text below states three facts about the run. Check them, so a rerun
+# that changes them fails here instead of leaving the prose wrong.
+for m in MODELS:
+    fr = {r["id"] for r in roll[m]}
+    assert ({r["id"] for r in gate[m] if r["accepted"] and r["id"] in fr}
+            == {r["id"] for r in roll[m] if r["accepted"]})
+assert not any(r["vacuous"] for r in accepted)
+assert all("YAML" in x or "schema" in x or "properties" in x
+           for m in MODELS for rows in (gate[m], roll[m]) for r in rows
+           if not r["accepted"] for att in r["rejections"] for x in att)
+
+
+def rate(rows):
+    return 100 * sum(r["accepted"] for r in rows) / len(rows)
+
+
 L.append(r"\section{Validator stress test}" + "\n" + r"\label{app:authoring}" + "\n")
 L.append(
     "Two open code models, Qwen2.5-Coder 7B and 32B served locally, were "
     "given an English behaviour description, the names, types and ranges "
     "of the bound view's features, and a summary of the grammar, and asked "
-    "for a scenario. The schema-only test used fifteen descriptions that the "
-    "grammar states exactly: the thirteen exact behaviours of the corpus "
-    "and two that never occur in our rollouts and are not otherwise used "
-    "here. A rejected scenario was returned to "
-    "the model with the validator's messages, for up to three attempts in "
-    "all. Without rollouts the "
-    "validator runs its schema and view stages only. With rollouts it also "
-    "rejects scenarios that label no step or every step, which we ran on the "
-    "FourRooms entries.\n")
+    f"for a scenario. We used the {SPELL[len(gate['7b'])]} descriptions that "
+    "the grammar states exactly. A rejected scenario was returned to the "
+    "model with the validator's messages, for up to three attempts in all. "
+    "Without rollouts the validator runs its schema and view stages only. "
+    "With rollouts it also rejects scenarios that label no step or every "
+    f"step, which we ran on the {SPELL[len(roll['7b'])]} FourRooms entries "
+    "with 25 rollouts of 60 steps from the seed-42 baseline.\n")
 L.append(r"\begin{center}\small\begin{tabular}{@{}lccc@{}}\toprule")
 L.append(r"Validator stages & Entries & 7B accepted & 32B accepted \\ \midrule")
-L.append(f"schema and view & {au['gate_only']['n']} & "
-         f"{100 * au['gate_only']['7b']:.0f}\\% & {100 * au['gate_only']['32b']:.0f}\\% \\\\")
-L.append(f"schema, view and rollouts & {au['with_rollouts']['n']} & "
-         f"{100 * au['with_rollouts']['7b']:.0f}\\% & {100 * au['with_rollouts']['32b']:.0f}\\% \\\\")
+L.append(f"schema and view & {len(gate['7b'])} & "
+         f"{rate(gate['7b']):.0f}\\% & {rate(gate['32b']):.0f}\\% \\\\")
+L.append(f"schema, view and rollouts & {len(roll['7b'])} & "
+         f"{rate(roll['7b']):.0f}\\% & {rate(roll['32b']):.0f}\\% \\\\")
 L.append(r"\bottomrule\end{tabular}\end{center}")
+ag = [r["agreement"] for r in accepted]
+jc = [r["jaccard"] for r in accepted]
 L.append(
-    "The single scenario accepted with rollouts shared no labelled step with "
-    "the reference ($J=0.00$) and agreed with it on 92.6\\% of steps, because "
-    "both label few steps. With no shared positive, $\\kappa$ is negative.\n")
+    "Every rejected scenario either failed to parse or broke the schema. The "
+    "empirical stage rejected nothing further: each model had the same "
+    "FourRooms scenarios accepted with and without rollouts, and none of "
+    f"them was vacuous. The {SPELL[len(accepted)]} accepted scenarios agreed "
+    f"with our formalisations on {min(ag) * 100:.0f}\\% to "
+    f"{max(ag) * 100:.0f}\\% of steps, yet their Jaccard similarity with "
+    f"them lay between {min(jc):.2f} and {max(jc):.2f}. Both label few steps, "
+    "and rarely the same ones.\n")
 
 # -------------------------------------------------------------- comparison
 KEY = "eval/forget_region_fraction"
@@ -318,7 +345,7 @@ ORDER = [("noop_disjoint", "disjoint objective"),
          ("npo", "NPO"), ("kl_neggrad", "NegGrad + KL anchor"),
          ("neggrad", "NegGrad"), ("neg_reward_1.0", r"reward penalty $\lambda=1.0$"),
          ("neg_reward_0.1", r"reward penalty $\lambda=0.1$")]
-fin, ret = {}, {}
+fin, ret, start = {}, {}, {}
 labels = [CONTROL] + [o for o, _ in ORDER]
 for p in glob.glob(str(RT / "experiments/outputs/online_unlearn_fourrooms_seed*_*/history.json")):
     name = Path(p).parent.name
@@ -328,11 +355,31 @@ for p in glob.glob(str(RT / "experiments/outputs/online_unlearn_fourrooms_seed*_
     seed = int(re.search(r"seed(\d+)", name).group(1))
     h = json.load(open(p))
     fin.setdefault(lab, {})[seed] = [x[KEY] for x in h if KEY in x][-1]
+    start.setdefault(lab, {})[seed] = [x[KEY] for x in h if KEY in x][0]
     ret.setdefault(lab, {})[seed] = [x["eval/mean_return"] for x in h if "eval/mean_return" in x][-1]
 SPLIT = len(L)  # what follows depends on the training details in main.tex
 L.append(r"\section{Method comparison against a no-pressure control}" + "\n"
          + r"\label{app:comparison}" + "\n")
 seeds_c = sorted(fin[CONTROL])
+
+
+def mean_of(d):
+    return float(np.mean(list(d.values())))
+
+
+def p_vs_control(lab):
+    s = sorted(set(fin[lab]) & set(fin[CONTROL]))
+    return float(stats.ttest_rel([fin[lab][x] for x in s],
+                                 [fin[CONTROL][x] for x in s]).pvalue)
+
+
+# The paragraph states these about the runs. Check them, so a rerun that
+# changes them fails here instead of leaving the prose wrong.
+rose = {lab for lab in labels if mean_of(fin[lab]) > mean_of(start[lab])}
+assert CONTROL in rose and len(rose & {o for o, _ in ORDER}) == 6
+assert abs(mean_of(fin["neg_reward_0.1"]) - mean_of(start["neg_reward_0.1"])) < 0.03
+assert [o for o, _ in ORDER if p_vs_control(o) < 0.05] == ["neg_reward_0.1"]
+assert 7 * p_vs_control("neg_reward_0.1") > 0.05
 L.append(
     "In FourRooms, with the target \\texttt{avoid\\_bottom\\_right}, the "
     "control and six of the seven methods end with higher mean forget-region "

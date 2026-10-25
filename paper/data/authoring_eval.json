@@ -1,0 +1,484 @@
+{
+ "_source": {
+  "gate_only": "python scripts/run_authoring_eval.py --backend ollama:qwen2.5-coder:{7b,32b}",
+  "with_rollouts": "python scripts/run_authoring_eval.py --backend ollama:qwen2.5-coder:{7b,32b} --domain MiniGrid-FourRooms-v0 --rollouts 25 --max-steps 60 --checkpoint experiments/checkpoints/fourrooms_ppo_seed42/best_model.pt --env-overrides env=fourrooms",
+  "models": "ollama, temperature 0"
+ },
+ "gate_only": {
+  "7b": [
+   {
+    "id": "cartpole.left_only",
+    "domain": "CartPole-v1",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "doorkey.no_key_hoarding",
+    "domain": "MiniGrid-DoorKey-8x8-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "empty8x8.avoid_bottom_left",
+    "domain": "MiniGrid-Empty-8x8-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.avoid_br_detour",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.avoid_br_tr_door",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": false,
+    "attempts": 3,
+    "repaired": false,
+    "rejections": [
+     [
+      "not valid YAML: while parsing a flow node\nexpected the node content, but found '<stream end>'\n  in \"<unicode string>\", line 72, column 12:\n        - {dim:\n               ^"
+     ],
+     [
+      "not valid YAML: while parsing a flow node\nexpected the node content, but found '<stream end>'\n  in \"<unicode string>\", line 72, column 12:\n        - {dim:\n               ^"
+     ],
+     [
+      "not valid YAML: while parsing a flow node\nexpected the node content, but found '<stream end>'\n  in \"<unicode string>\", line 72, column 12:\n        - {dim:\n               ^"
+     ]
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.no_backtracking",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": false,
+    "attempts": 3,
+    "repaired": false,
+    "rejections": [
+     [
+      "{'conditions': [{'dim': 'agent_x', 'op': '!='}, {'dim': 'agent_y', 'op': '!='}, {'dim': 'agent_x', 'target': 'state', 'op': '==', 'derived': {'last_agent_x': 'agent_x'}}, {'dim': 'agent_y', 'target': 'state', 'op': '==', 'derived': {'last_agent_y': 'agent_y'}}]} is not valid under any of the given schemas"
+     ],
+     [
+      "{'conditions': [{'dim': 'agent_x', 'op': '!='}, {'dim': 'agent_y', 'op': '!='}, {'dim': 'agent_x', 'target': 'state', 'op': '==', 'derived': {'last_agent_x': 'agent_x'}}, {'dim': 'agent_y', 'target': 'state', 'op': '==', 'derived': {'last_agent_y': 'agent_y'}}]} is not valid under any of the given schemas"
+     ],
+     [
+      "{'conditions': [{'dim': 'agent_x', 'op': '!='}, {'dim': 'agent_y', 'op': '!='}, {'dim': 'agent_x', 'target': 'state', 'op': '==', 'derived': {'last_agent_x': 'agent_x'}}, {'dim': 'agent_y', 'target': 'state', 'op': '==', 'derived': {'last_agent_y': 'agent_y'}}]} is not valid under any of the given schemas"
+     ]
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.no_corner_turn_reflex",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "halfcheetah.no_front_flip",
+    "domain": "HalfCheetah-v5",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "lbf.no_crowding",
+    "domain": "Foraging-8x8-3p-2f-v3",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "lbf.no_freeloading",
+    "domain": "Foraging-8x8-3p-2f-v3",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "lunarlander.no_tilt",
+    "domain": "LunarLander-v3",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "pendulum.avoid_left_swing",
+    "domain": "Pendulum-v1",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "walker2d.no_forward_fall",
+    "domain": "Walker2d-v5",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   }
+  ],
+  "32b": [
+   {
+    "id": "cartpole.left_only",
+    "domain": "CartPole-v1",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "doorkey.no_key_hoarding",
+    "domain": "MiniGrid-DoorKey-8x8-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "empty8x8.avoid_bottom_left",
+    "domain": "MiniGrid-Empty-8x8-v0",
+    "accepted": false,
+    "attempts": 3,
+    "repaired": false,
+    "rejections": [
+     [
+      "Additional properties are not allowed ('condition' was unexpected)"
+     ],
+     [
+      "Additional properties are not allowed ('condition' was unexpected)"
+     ],
+     [
+      "Additional properties are not allowed ('condition' was unexpected)"
+     ]
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.avoid_br_detour",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.avoid_br_tr_door",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.no_backtracking",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": false,
+    "attempts": 3,
+    "repaired": false,
+    "rejections": [
+     [
+      "'count_distinct(agent_x, agent_y)' is not valid under any of the given schemas",
+      "{'all_of': [{'derived': {'visited': 'count_distinct(agent_x, agent_y)'}, 'op': '==', 'value': 1}]} is not valid under any of the given schemas"
+     ],
+     [
+      "not valid YAML: while parsing a flow mapping\n  in \"<unicode string>\", line 10, column 5:\n      - {all_of: [{aggregates: {visited: ... \n        ^\nexpected ',' or '}', but got '<stream end>'\n  in \"<unicode string>\", line 10, column 61:\n     ... visited: {op: \"==\", value: 1}}}]\n                                         ^"
+     ],
+     [
+      "'count_distinct(concat(agent_x, agent_y))' is not valid under any of the given schemas",
+      "{'all_of': [{'aggregates': {'visited': {'op': '==', 'value': 1}}}]} is not valid under any of the given schemas"
+     ]
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.no_corner_turn_reflex",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": false,
+    "attempts": 3,
+    "repaired": false,
+    "rejections": [
+     [
+      "{'condition': {'dim': 'direction', 'op': '==', 'value': 2, 'target': 'action'}} is not valid under any of the given schemas"
+     ],
+     [
+      "{'condition': {'dim': 'direction', 'op': '==', 'value': 2, 'target': 'state'}} is not valid under any of the given schemas"
+     ],
+     [
+      "{'condition': {'dim': 'direction', 'op': '==', 'value': 2}} is not valid under any of the given schemas"
+     ]
+    ],
+    "agreement": null
+   },
+   {
+    "id": "halfcheetah.no_front_flip",
+    "domain": "HalfCheetah-v5",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "lbf.no_crowding",
+    "domain": "Foraging-8x8-3p-2f-v3",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "lbf.no_freeloading",
+    "domain": "Foraging-8x8-3p-2f-v3",
+    "accepted": true,
+    "attempts": 2,
+    "repaired": true,
+    "rejections": [
+     [
+      "'p0_score' is continuous; exact '==' comparison will almost never fire. Use a threshold or a range instead."
+     ],
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "lunarlander.no_tilt",
+    "domain": "LunarLander-v3",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "pendulum.avoid_left_swing",
+    "domain": "Pendulum-v1",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   },
+   {
+    "id": "walker2d.no_forward_fall",
+    "domain": "Walker2d-v5",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": null
+   }
+  ]
+ },
+ "with_rollouts": {
+  "7b": [
+   {
+    "id": "fourrooms.avoid_br_detour",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": 0.7389078498293515,
+    "jaccard": 0.1752021563342318,
+    "ref_rate": 0.3165529010238908,
+    "vacuous": false
+   },
+   {
+    "id": "fourrooms.avoid_br_tr_door",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": false,
+    "attempts": 3,
+    "repaired": false,
+    "rejections": [
+     [
+      "not valid YAML: while parsing a flow node\nexpected the node content, but found '<stream end>'\n  in \"<unicode string>\", line 72, column 12:\n        - {dim:\n               ^"
+     ],
+     [
+      "not valid YAML: while parsing a flow node\nexpected the node content, but found '<stream end>'\n  in \"<unicode string>\", line 72, column 12:\n        - {dim:\n               ^"
+     ],
+     [
+      "not valid YAML: while parsing a flow node\nexpected the node content, but found '<stream end>'\n  in \"<unicode string>\", line 72, column 12:\n        - {dim:\n               ^"
+     ]
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.no_backtracking",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": false,
+    "attempts": 3,
+    "repaired": false,
+    "rejections": [
+     [
+      "{'conditions': [{'dim': 'agent_x', 'op': '!='}, {'dim': 'agent_y', 'op': '!='}, {'dim': 'agent_x', 'target': 'state', 'op': '==', 'derived': {'last_agent_x': 'agent_x'}}, {'dim': 'agent_y', 'target': 'state', 'op': '==', 'derived': {'last_agent_y': 'agent_y'}}]} is not valid under any of the given schemas"
+     ],
+     [
+      "{'conditions': [{'dim': 'agent_x', 'op': '!='}, {'dim': 'agent_y', 'op': '!='}, {'dim': 'agent_x', 'target': 'state', 'op': '==', 'derived': {'last_agent_x': 'agent_x'}}, {'dim': 'agent_y', 'target': 'state', 'op': '==', 'derived': {'last_agent_y': 'agent_y'}}]} is not valid under any of the given schemas"
+     ],
+     [
+      "{'conditions': [{'dim': 'agent_x', 'op': '!='}, {'dim': 'agent_y', 'op': '!='}, {'dim': 'agent_x', 'target': 'state', 'op': '==', 'derived': {'last_agent_x': 'agent_x'}}, {'dim': 'agent_y', 'target': 'state', 'op': '==', 'derived': {'last_agent_y': 'agent_y'}}]} is not valid under any of the given schemas"
+     ]
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.no_corner_turn_reflex",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": 0.6928327645051194,
+    "jaccard": 0.029649595687331536,
+    "ref_rate": 0.3165529010238908,
+    "vacuous": false
+   }
+  ],
+  "32b": [
+   {
+    "id": "fourrooms.avoid_br_detour",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": 0.6834008097165991,
+    "jaccard": 0.08644859813084112,
+    "ref_rate": 0.3465587044534413,
+    "vacuous": false
+   },
+   {
+    "id": "fourrooms.avoid_br_tr_door",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": true,
+    "attempts": 1,
+    "repaired": false,
+    "rejections": [
+     []
+    ],
+    "agreement": 0.9319838056680162,
+    "jaccard": 0.0,
+    "ref_rate": 0.012955465587044534,
+    "vacuous": false
+   },
+   {
+    "id": "fourrooms.no_backtracking",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": false,
+    "attempts": 3,
+    "repaired": false,
+    "rejections": [
+     [
+      "'count_distinct(agent_x, agent_y)' is not valid under any of the given schemas",
+      "{'all_of': [{'derived': {'visited': 'count_distinct(agent_x, agent_y)'}, 'op': '==', 'value': 1}]} is not valid under any of the given schemas"
+     ],
+     [
+      "not valid YAML: while parsing a flow mapping\n  in \"<unicode string>\", line 10, column 5:\n      - {all_of: [{aggregates: {visited: ... \n        ^\nexpected ',' or '}', but got '<stream end>'\n  in \"<unicode string>\", line 10, column 61:\n     ... visited: {op: \"==\", value: 1}}}]\n                                         ^"
+     ],
+     [
+      "'count_distinct(concat(agent_x, agent_y))' is not valid under any of the given schemas",
+      "{'all_of': [{'aggregates': {'visited': {'op': '==', 'value': 1}}}]} is not valid under any of the given schemas"
+     ]
+    ],
+    "agreement": null
+   },
+   {
+    "id": "fourrooms.no_corner_turn_reflex",
+    "domain": "MiniGrid-FourRooms-v0",
+    "accepted": false,
+    "attempts": 3,
+    "repaired": false,
+    "rejections": [
+     [
+      "{'condition': {'dim': 'direction', 'op': '==', 'value': 2, 'target': 'action'}} is not valid under any of the given schemas"
+     ],
+     [
+      "{'condition': {'dim': 'direction', 'op': '==', 'value': 2, 'target': 'state'}} is not valid under any of the given schemas"
+     ],
+     [
+      "{'condition': {'dim': 'direction', 'op': '==', 'value': 2}} is not valid under any of the given schemas"
+     ]
+    ],
+    "agreement": null
+   }
+  ]
+ }
+}

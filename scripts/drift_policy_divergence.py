@@ -31,7 +31,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from hydra import compose, initialize_config_dir        # noqa: E402
 
 from agents import PPOAgent                              # noqa: E402
-from utils.checkpointing import load_checkpoint          # noqa: E402
+from utils.checkpointing import baseline_checkpoint, load_checkpoint  # noqa: E402
 from utils.env_wrappers import make_env                  # noqa: E402
 
 SEEDS = tuple(range(42, 57))
@@ -79,7 +79,9 @@ def logits(agent, states):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--env-overrides", default="env=fourrooms,scenario=fourrooms/avoid_bottom_right")
-    ap.add_argument("--baseline-glob", default="experiments/checkpoints/fourrooms_ppo_seed{seed}/final_model.pt")
+    ap.add_argument("--baseline-glob", default=None,
+                    help="checkpoint pattern with {seed}; default: each "
+                         "seed's baseline from utils.checkpointing")
     ap.add_argument("--arms", nargs=2, default=["ab_ms", "ab_wt"],
                     help="output-dir suffixes for the two readings")
     ap.add_argument("--policy-file", default="unlearned_no_op.pt")
@@ -100,7 +102,8 @@ def main():
     print("-" * 58)
     kls, agrees, base_agrees = [], [], []
     for seed in SEEDS:
-        base_ck = Path(args.baseline_glob.format(seed=seed))
+        base_ck = (Path(args.baseline_glob.format(seed=seed)) if args.baseline_glob
+                   else baseline_checkpoint(cfg.env_name, seed))
         base = build(cfg)
         base.network.load_state_dict(load_checkpoint(base_ck, map_location="cpu")["network"])
         states = collect_states(base, env, N_STATES, seed=seed)

@@ -1,10 +1,9 @@
 """On-policy online RL unlearning.
 
-Unlike src/unlearn.py (which loads a pre-collected trajectory buffer and
-runs an offline unlearning loop), this script keeps the agent rolling
-out under PPO while interleaving unlearning steps. There is NO offline
-buffer of forget data — every forget transition has to come from the
-agent's current on-policy distribution.
+This script keeps the agent rolling out under PPO while interleaving
+unlearning steps. There is NO offline buffer of forget data — every
+forget transition has to come from the agent's current on-policy
+distribution.
 
 The chicken-and-egg failure this exposes: one unlearning step shifts
 the policy away from the forget region, the next rollout produces fewer
@@ -15,9 +14,9 @@ unlearning halts prematurely.
 Run:
     python src/online_unlearn.py env=fourrooms \\
         scenario=fourrooms/avoid_bottom_right \\
-        load_baseline=experiments/checkpoints/fourrooms_ppo_seed42/final_model.pt \\
-        unlearn_method=gradient_reversal \\
-        unlearn_weight=0.5
+        +load_baseline=experiments/checkpoints/fourrooms_ppo_seed43/final_model.pt \\
+        +unlearn_method=gradient_reversal \\
+        +unlearn_weight=0.5
 
 Reports per rollout iteration:
     - n_forget_transitions:  forget-region transitions in this rollout
@@ -194,8 +193,8 @@ def _policy_log_probs_entropy(agent, observations, actions):
 
 def gradient_reversal_loss(agent, observations, actions, **_):
     """Ascend on forget-action log-prob, push policy toward uniform on
-    forget states. Same as trajectory_selective._compute_forget_loss but
-    on data freshly sampled from the current on-policy distribution."""
+    forget states, on data freshly sampled from the current on-policy
+    distribution."""
     if len(observations) == 0:
         return torch.tensor(0.0, device=next(agent.network.parameters()).device)
     log_probs, entropy = _policy_log_probs_entropy(agent, observations, actions)

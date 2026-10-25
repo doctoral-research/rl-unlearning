@@ -133,8 +133,10 @@ def agreement(labels: LabelSet, masks: Sequence[np.ndarray]) -> Dict[str, float]
             raise LabelError(
                 f"episode length mismatch: labelled {len(ref)}, "
                 f"predicted {len(pred)}")
-        tp += int(np.sum(ref & pred));  fp += int(np.sum(~ref & pred))
-        fn += int(np.sum(ref & ~pred)); tn += int(np.sum(~ref & ~pred))
+        tp += int(np.sum(ref & pred))
+        fp += int(np.sum(~ref & pred))
+        fn += int(np.sum(ref & ~pred))
+        tn += int(np.sum(~ref & ~pred))
     n = tp + fp + fn + tn
     inter, union = tp, tp + fp + fn
     return {

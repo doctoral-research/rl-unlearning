@@ -12,6 +12,7 @@ import torch
 from agents import PPOAgent
 from utils.checkpointing import (
     CHECKPOINT_FORMAT,
+    baseline_checkpoint,
     build_checkpoint,
     find_latest_checkpoint,
     is_readable_checkpoint,
@@ -56,11 +57,6 @@ class TestPayload:
 
     def test_records_that_env_state_is_not_restored(self):
         assert build_checkpoint(_agent(), 0)["env_state_restored"] is False
-
-    def test_keeps_legacy_keys_for_older_readers(self):
-        p = build_checkpoint(_agent(), 77, eval_mean_return=1.5)
-        assert p["eval_step"] == 77
-        assert p["eval_mean_return"] == 1.5
 
     def test_extra_fields_pass_through(self):
         p = build_checkpoint(_agent(), 0, extra={"note": "hi"})
@@ -248,3 +244,13 @@ class TestCrashSafety:
         torch.save({"network": _agent().network.state_dict()},
                    tmp_path / "checkpoint_step200.pt")
         assert find_latest_checkpoint(tmp_path).name == "checkpoint_step100.pt"
+
+
+class TestBaselineCheckpoint:
+    def test_final_checkpoint_by_default(self):
+        assert baseline_checkpoint("fourrooms", 43) == Path(
+            "experiments/checkpoints/fourrooms_ppo_seed43/final_model.pt")
+        assert baseline_checkpoint("cartpole", 42).name == "final_model.pt"
+
+    def test_collapsed_run_uses_its_best_checkpoint(self):
+        assert baseline_checkpoint("fourrooms", 42).name == "best_model.pt"

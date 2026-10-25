@@ -308,12 +308,12 @@ Entry & Original wording (flagged) & Current wording \\ \midrule
 \section{Validator stress test}
 \label{app:authoring}
 
-Two open code models, Qwen2.5-Coder 7B and 32B served locally, were given an English behaviour description, the names, types and ranges of the bound view's features, and a summary of the grammar, and asked for a scenario. The schema-only test used fifteen descriptions that the grammar states exactly: the thirteen exact behaviours of the corpus and two that never occur in our rollouts and are not otherwise used here. A rejected scenario was returned to the model with the validator's messages, for up to three attempts in all. Without rollouts the validator runs its schema and view stages only. With rollouts it also rejects scenarios that label no step or every step, which we ran on the FourRooms entries.
+Two open code models, Qwen2.5-Coder 7B and 32B served locally, were given an English behaviour description, the names, types and ranges of the bound view's features, and a summary of the grammar, and asked for a scenario. We used the thirteen descriptions that the grammar states exactly. A rejected scenario was returned to the model with the validator's messages, for up to three attempts in all. Without rollouts the validator runs its schema and view stages only. With rollouts it also rejects scenarios that label no step or every step, which we ran on the four FourRooms entries with 25 rollouts of 60 steps from the seed-42 baseline.
 
 \begin{center}\small\begin{tabular}{@{}lccc@{}}\toprule
 Validator stages & Entries & 7B accepted & 32B accepted \\ \midrule
-schema and view & 15 & 80\% & 47\% \\
-schema, view and rollouts & 4 & 0\% & 25\% \\
+schema and view & 13 & 85\% & 77\% \\
+schema, view and rollouts & 4 & 50\% & 50\% \\
 \bottomrule\end{tabular}\end{center}
-The single scenario accepted with rollouts shared no labelled step with the reference ($J=0.00$) and agreed with it on 92.6\% of steps, because both label few steps. With no shared positive, $\kappa$ is negative.
+Every rejected scenario either failed to parse or broke the schema. The empirical stage rejected nothing further: each model had the same FourRooms scenarios accepted with and without rollouts, and none of them was vacuous. The four accepted scenarios agreed with our formalisations on 68\% to 93\% of steps, yet their Jaccard similarity with them lay between 0.00 and 0.18. Both label few steps, and rarely the same ones.
 

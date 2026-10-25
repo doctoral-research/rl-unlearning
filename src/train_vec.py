@@ -14,17 +14,16 @@ proven code path.
 
 Usage:
     python src/train_vec.py env=halfcheetah seed=42 \\
-        num_envs=8 experiment_name=halfcheetah_ppo_seed42
+        +num_envs=8 experiment_name=halfcheetah_ppo_seed42
 
 Continues to use the same hydra config layout as train.py; just add
-`num_envs` (default 8) and the rest follows.
+`+num_envs` (default 8) and the rest follows.
 """
 
 from __future__ import annotations
 
 import logging
 import sys
-import time
 from pathlib import Path
 
 import hydra
@@ -319,14 +318,13 @@ def train_vec(cfg: DictConfig):
             # envs are particularly prone to PPO instability post-peak).
             save_checkpoint_atomic(
                 build_checkpoint(agent, global_step, best_eval=best_eval,
-                                 ret_rms=ret_rms, eval_mean_return=mean_ret),
+                                 ret_rms=ret_rms),
                 ckpt_dir / f"checkpoint_step{global_step}.pt")
             if mean_ret > best_eval:
                 best_eval = mean_ret
                 save_checkpoint_atomic(
                     build_checkpoint(agent, global_step, best_eval=best_eval,
-                                     ret_rms=ret_rms,
-                                     eval_mean_return=mean_ret),
+                                     ret_rms=ret_rms),
                     ckpt_dir / "best_model.pt")
                 logger.info(f"  -> new best at step {global_step}: {mean_ret:.2f}")
             next_eval += eval_freq

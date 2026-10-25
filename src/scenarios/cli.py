@@ -6,7 +6,9 @@ Subcommands:
   summary    — pretty-print a scenario + its natural-language and LaTeX
                predicate-logic renderings
   list       — list all known scenarios (relative paths)
-  coverage   — compute empirical match stats against a trajectories.pkl
+  collect    — roll out a policy and pickle the trajectories that
+               coverage, drift, mine and author --against read
+  coverage   — compute empirical match stats against those trajectories
 """
 from __future__ import annotations
 
@@ -114,11 +116,28 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     p_lst.add_argument("--root", default="configs/scenarios",
                        help="Scenario directory root.")
 
+    p_col = sub.add_parser(
+        "collect",
+        help="Roll out a policy and pickle the trajectories that coverage, "
+             "drift, mine and author --against read.")
+    p_col.add_argument("env_id", help="Environment id, e.g. CartPole-v1.")
+    p_col.add_argument("--out", required=True, metavar="TRAJ.pkl")
+    p_col.add_argument("--checkpoint", default=None,
+                       help="Policy checkpoint. Without it actions are random "
+                            "and rare behaviours may never appear.")
+    p_col.add_argument("--env-overrides", default=None,
+                       help="Comma-separated Hydra overrides the checkpoint "
+                            "was trained with (default: env=<the env config "
+                            "whose env_id matches>).")
+    p_col.add_argument("--episodes", type=int, default=50)
+    p_col.add_argument("--max-steps", type=int, default=500)
+    p_col.add_argument("--seed", type=int, default=0)
+
     p_cov = sub.add_parser("coverage",
                            help="Empirical match stats against trajectories.pkl.")
     p_cov.add_argument("scenario", help="Scenario file path or relative name.")
     p_cov.add_argument("--against", required=True,
-                       help="Path to trajectories.pkl produced by train.py.")
+                       help="Pickled trajectories, as written by `collect`.")
 
     args = parser.parse_args(argv)
 
@@ -330,6 +349,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
     if args.cmd == "list":
         return _cmd_list(args)
+    if args.cmd == "collect":
+        return _cmd_collect(args)
     if args.cmd == "coverage":
         return _cmd_coverage(args)
     parser.error(f"Unknown command: {args.cmd}")
@@ -471,6 +492,48 @@ def _cmd_list(args) -> int:
     for name in list_scenarios(args.root):
         print(name)
     return 0
+
+
+def _cmd_collect(args) -> int:
+    from .corpus import resolve_views
+    from .rollouts import build_policy_env, collect_trajectories, plain_env
+
+    # Features are extracted while the episode runs, because a view may read
+    # the environment object, which no longer matches an observation once
+    # the next step is taken.
+    view = resolve_views([args.env_id]).get(args.env_id)
+    if view is None:
+        print(f"No feature view resolves for {args.env_id}.", file=sys.stderr)
+        return 2
+    if args.checkpoint:
+        config_dir = Path(__file__).resolve().parent.parent.parent / "configs"
+        overrides = args.env_overrides or _env_override_for(args.env_id, config_dir)
+        if overrides is None:
+            print(f"No config in {config_dir / 'env'} has env_id {args.env_id}; "
+                  "pass --env-overrides.", file=sys.stderr)
+            return 2
+        env, policy = build_policy_env(overrides, args.checkpoint,
+                                       config_dir=str(config_dir))
+    else:
+        env, policy = plain_env(args.env_id), None
+    trajectories = collect_trajectories(
+        env, view, n_episodes=args.episodes, max_steps=args.max_steps,
+        seed=args.seed, policy=policy)
+    with open(args.out, "wb") as f:
+        pickle.dump(trajectories, f)
+    steps = sum(len(t["actions"]) for t in trajectories)
+    print(f"Wrote {len(trajectories)} episodes ({steps} steps) to {args.out}")
+    return 0
+
+
+def _env_override_for(env_id: str, config_dir: Path) -> Optional[str]:
+    """The `env=` override whose config declares this env_id, if any."""
+    import yaml
+
+    for f in sorted((config_dir / "env").glob("*.yaml")):
+        if (yaml.safe_load(f.read_text()) or {}).get("env_id") == env_id:
+            return f"env={f.stem}"
+    return None
 
 
 def _cmd_coverage(args) -> int:

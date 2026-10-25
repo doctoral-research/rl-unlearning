@@ -27,14 +27,12 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from drift_policy_divergence import SEEDS, build, load_cfg      # noqa: E402
 from online_unlearn import transitions_in_forget_region        # noqa: E402
 from scenarios import ForgetScenario, view_from_cfg            # noqa: E402
-from utils.checkpointing import load_checkpoint                # noqa: E402
+from utils.checkpointing import baseline_checkpoint, load_checkpoint  # noqa: E402
 from utils.env_wrappers import make_env                        # noqa: E402
 
 DOMAINS = {
-    "FourRooms": ("env=fourrooms", "fourrooms/avoid_bottom_right",
-                  "experiments/checkpoints/fourrooms_ppo_seed{seed}/final_model.pt"),
-    "CartPole": ("env=cartpole", "cartpole/avoid_outer_third",
-                 "experiments/checkpoints/cartpole_ppo_seed{seed}/final_model.pt"),
+    "FourRooms": ("env=fourrooms", "fourrooms/avoid_bottom_right"),
+    "CartPole": ("env=cartpole", "cartpole/avoid_outer_third"),
 }
 
 
@@ -59,7 +57,7 @@ def main():
     ap.add_argument("--json", default="paper/data/drift_label_disagreement.json")
     args = ap.parse_args()
     out = {}
-    for dom, (env_ov, scen, ck) in DOMAINS.items():
+    for dom, (env_ov, scen) in DOMAINS.items():
         cfg_ms = load_cfg(f"{env_ov},scenario={scen}")
         cfg_wt = load_cfg(f"{env_ov},scenario={scen}_wholetraj")
         env = make_env(cfg_ms.env_id, seed=0,
@@ -73,7 +71,8 @@ def main():
         for seed in SEEDS:
             agent = build(cfg_ms)
             agent.network.load_state_dict(
-                load_checkpoint(Path(ck.format(seed=seed)), map_location="cpu")["network"])
+                load_checkpoint(baseline_checkpoint(cfg_ms.env_name, seed),
+                                map_location="cpu")["network"])
             f, d = rollout(agent, env, s_ms, args.steps, seed)
             m_ms = transitions_in_forget_region(f, s_ms, d)
             m_wt = transitions_in_forget_region(f, s_wt, d)

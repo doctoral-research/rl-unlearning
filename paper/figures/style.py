@@ -98,6 +98,8 @@ def band(ax, x, runs, color, label=None, ls="-", w=5):
 
 
 def save(fig, path):
-    fig.savefig(path)
+    # No creation date, so an unchanged figure rebuilds byte for byte and
+    # does not show up as modified in git.
+    fig.savefig(path, metadata={"CreationDate": None})
     plt.close(fig)
     print(f"  wrote {path}")

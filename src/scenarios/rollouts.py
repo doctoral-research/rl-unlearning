@@ -23,28 +23,19 @@ def collect_trajectories(
     max_steps: int = 60,
     seed: int = 0,
     policy: Optional[Policy] = None,
-    view_policy: Any = None,
 ) -> List[Dict[str, Any]]:
     """Roll out episodes, recording per-step features, actions and dones.
 
     `dones` is included because trajectory-level match modes are decided
     per episode; without it a caller that concatenates episodes silently
     evaluates the threshold across all of them.
-
-    `view_policy` is the agent handed to views that describe the policy
-    (entropy, margin, value). It is separate from `policy`, which chooses
-    the actions, because a view may need to interrogate a policy that is
-    not the one being rolled out.
     """
     out = []
     for i in range(n_episodes):
         obs, info = env.reset(seed=seed + i)
         feats, acts, dones = [], [], []
         for _t in range(max_steps):
-            feats.append(list(
-                view.extract(obs=obs, info=info, env=env, policy=view_policy)
-                if "policy" in getattr(view, "requires", ())
-                else view.extract(obs=obs, info=info, env=env)))
+            feats.append(list(view.extract(obs=obs, info=info, env=env)))
             action = (env.action_space.sample() if policy is None
                       else policy(obs))
             acts.append(action)

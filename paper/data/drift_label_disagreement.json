@@ -3,9 +3,9 @@
     "per_seed": [
       {
         "seed": 42,
-        "rate_ms": 0.1533203125,
-        "rate_wt": 0.21875,
-        "disagreement": 0.109375
+        "rate_ms": 0.23828125,
+        "rate_wt": 0.4423828125,
+        "disagreement": 0.2119140625
       },
       {
         "seed": 43,
@@ -92,11 +92,11 @@
         "disagreement": 0.34423828125
       }
     ],
-    "mean_disagreement": 0.1935546875,
-    "min": 0.109375,
+    "mean_disagreement": 0.200390625,
+    "min": 0.1123046875,
     "max": 0.34423828125,
-    "mean_rate_ms": 0.24759114583333333,
-    "mean_rate_wt": 0.4192708333333333
+    "mean_rate_ms": 0.2532552083333333,
+    "mean_rate_wt": 0.4341796875
   },
   "CartPole": {
     "per_seed": [

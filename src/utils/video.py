@@ -4,8 +4,6 @@ Video recording utility for visualizing agent behavior.
 Records short MP4 clips of the agent acting in the environment.
 Works headlessly (no display needed) via gymnasium's rgb_array rendering.
 """
-import numpy as np
-import gymnasium as gym
 from pathlib import Path
 from typing import Optional, List
 import logging
@@ -47,7 +45,7 @@ def record_videos(
         env_id: Gymnasium environment ID (e.g. "CartPole-v1").
         output_dir: Directory to save videos in.
         label: Prefix for filenames
-            (e.g. "baseline", "after_trajectory_selective").
+            (e.g. "baseline", "after_unlearning").
         num_videos: Number of episodes to record.
         max_steps: Maximum steps per episode (keeps videos short).
         fps: Frames per second in the output MP4.

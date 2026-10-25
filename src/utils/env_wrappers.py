@@ -12,7 +12,6 @@ terms of grid coordinates (`dim: 0` = x, `dim: 1` = y) while the policy
 still sees the local view it would normally consume.
 """
 
-from typing import Tuple
 
 import gymnasium as gym
 import numpy as np
@@ -298,9 +297,9 @@ class ForgetMaskWrapper(gym.Wrapper):
 
 
 class TaxiDecode(gym.ObservationWrapper):
-    """Expose Taxi-v3's `Discrete(500)` state as `[row, col, pass_loc, dest]`.
+    """Expose Taxi's `Discrete(500)` state as `[row, col, pass_loc, dest]`.
 
-    Taxi-v3 encodes the state as
+    Taxi encodes the state as
         s = ((taxi_row * 5 + taxi_col) * 5 + pass_loc) * 4 + dest_idx.
     Returning the 4-tuple as the observation lets the PPO MLP learn a
     Q function over a tractable input AND lets dim-based ForgetScenarios

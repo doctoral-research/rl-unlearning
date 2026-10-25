@@ -32,12 +32,20 @@ histories, redraws the figures, regenerates `generated/`, compiles, and
 deletes the LaTeX build leftovers. It stops if a reference is undefined and
 lists any overfull box.
 
-The policy-divergence files in `data/divergence_*.json` and
-`data/drift_label_disagreement.json` take minutes to produce, so they are
-inputs to the build rather than part of it. They come from
-`scripts/drift_policy_divergence.py` (arms `ab_ms` against `ab_wt`,
-`ab_n1`, `ab_n10` in FourRooms and `cp_ms` against `cp_wt`, `cp_n1` in
-CartPole) and `scripts/drift_label_disagreement.py`.
+Three kinds of file take minutes or a local model to produce, so they are
+inputs to the build rather than part of it:
+
+- `data/divergence_*.json` and `data/drift_label_disagreement.json` come
+  from `scripts/drift_policy_divergence.py` (arms `ab_ms` against `ab_wt`,
+  `ab_n1`, `ab_n10` in FourRooms and `cp_ms` against `cp_wt`, `cp_n1` in
+  CartPole) and `scripts/drift_label_disagreement.py`.
+- `data/authoring_eval.json` holds the validator stress test, run with
+  `scripts/run_authoring_eval.py` against two Qwen2.5-Coder models served by
+  ollama. The file records the commands.
+
+Every experiment starts from the baseline that
+`utils.checkpointing.baseline_checkpoint` names: each seed's final
+checkpoint, except FourRooms seed 42, which uses its best.
 
 ## Where the numbers come from
 
@@ -49,7 +57,7 @@ Nothing in the text, the figures or the appendix is typed by hand.
 | `data/make_reader_tables.py` | reader agreement, the polarity table | the label files and the raw reader labels in `benchmark/labels/` |
 | `data/make_drift_data.py` | label-scope experiment and its noise controls | `data/divergence_*.json`, training histories |
 | `data/make_examples.py` | `generated/examples.tex`, `generated/appendix_language.tex` | corpus scenarios, resolved views, the validator |
-| `data/make_appendix.py` | `generated/appendix.tex`, `generated/appendix_rl.tex` | all of the above, `benchmark/labels/prompts/` |
+| `data/make_appendix.py` | `generated/appendix.tex`, `generated/appendix_rl.tex` | all of the above, `benchmark/labels/prompts/`, `data/authoring_eval.json` |
 | `figures/fig_*.py` | `figures/fig_*.pdf` | `data/measurements.json`, `data/probe_predictions.json`, training histories |
 
 ## Syncing with Overleaf

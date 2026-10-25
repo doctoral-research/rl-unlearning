@@ -88,6 +88,21 @@ def load_checkpoint(path: Path | str, map_location: str = "cpu") -> Dict[str, An
     return torch.load(str(path), map_location=map_location, weights_only=False)
 
 
+# Experiments start from a run's final checkpoint, except where that
+# checkpoint is known to be unusable. FourRooms seed 42 collapsed in its last
+# 400k steps: evaluation return fell from about 0.3 to 0, and the final
+# policy reaches the goal in 2% of episodes against 66% for the run's best
+# checkpoint.
+BASELINE_EXCEPTIONS = {("fourrooms", 42): "best_model.pt"}
+
+
+def baseline_checkpoint(env_name: str, seed: int,
+                        root: Path | str = "experiments/checkpoints") -> Path:
+    """The trained policy that experiments on `env_name` with `seed` start from."""
+    name = BASELINE_EXCEPTIONS.get((env_name, int(seed)), "final_model.pt")
+    return Path(root) / f"{env_name}_ppo_seed{seed}" / name
+
+
 def _rms_state(rms: Any) -> Optional[Dict[str, Any]]:
     if rms is None:
         return None
@@ -145,7 +160,6 @@ def build_checkpoint(
     best_eval: float = -float("inf"),
     ret_rms: Any = None,
     obs_rms: Any = None,
-    eval_mean_return: Optional[float] = None,
     extra: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Assemble a fully resumable checkpoint payload."""
@@ -160,10 +174,6 @@ def build_checkpoint(
         "rng": _rng_state(),
         "sde_step": int(getattr(agent, "_sde_step_counter", 0)),
         "env_state_restored": False,
-        # Kept for the format-1 readers (evaluate.py, the plotting scripts).
-        "eval_step": int(global_step),
-        "eval_mean_return": (float(eval_mean_return)
-                             if eval_mean_return is not None else None),
     }
     if extra:
         payload.update(extra)

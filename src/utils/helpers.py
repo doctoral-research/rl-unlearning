@@ -69,32 +69,6 @@ def setup_logger(name: str, log_file: Optional[str] = None, level=logging.INFO) 
     return logger
 
 
-def save_checkpoint(
-    agent,
-    optimizer: torch.optim.Optimizer,
-    timestep: int,
-    metrics: Dict[str, float],
-    path: str,
-) -> None:
-    """Save training checkpoint."""
-    checkpoint = {
-        "timestep": timestep,
-        "agent_state_dict": agent.state_dict(),
-        "optimizer_state_dict": optimizer.state_dict(),
-        "metrics": metrics,
-    }
-    torch.save(checkpoint, path)
-
-
-def load_checkpoint(path: str, agent, optimizer: Optional[torch.optim.Optimizer] = None):
-    """Load training checkpoint."""
-    checkpoint = torch.load(path, weights_only=False)
-    agent.load_state_dict(checkpoint["agent_state_dict"])
-    if optimizer is not None:
-        optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-    return checkpoint["timestep"], checkpoint["metrics"]
-
-
 class RunningMeanStd:
     """Running mean and standard deviation tracker."""
     

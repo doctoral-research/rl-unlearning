@@ -1,0 +1,5 @@
+# @package _global_
+# Text logs only, under experiments/logs/<experiment_name>/.
+# logging=wandb also sends the training curves to Weights & Biases.
+backend: local
+log_frequency: 100  # Steps between logs

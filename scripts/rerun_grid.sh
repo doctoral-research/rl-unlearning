@@ -33,7 +33,8 @@ METHODS=(
 mkdir -p experiments/logs/rerun
 run() {  # label overrides seed
   local label="$1" ov="$2" s="$3"
-  local ck="experiments/checkpoints/${ENV_NAME}_ppo_seed${s}/final_model.pt"
+  local ck
+  ck=$(PYTHONPATH=src python -c "from utils.checkpointing import baseline_checkpoint; print(baseline_checkpoint('${ENV_NAME}', ${s}))")
   [ -f "$ck" ] || { echo "SKIP seed $s: no baseline"; return 1; }
   # Skip work already on disk, so an interrupted grid resumes.
   # Hydra names the dir <env>_seed<s>_<method>_<label>, so glob the method

@@ -12,7 +12,7 @@ selects.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Sequence
 
 import numpy as np
 
@@ -350,7 +350,7 @@ def _predicate_temporal(
 
 
 def _latex_var(name: str) -> str:
-    """Render a free-form dim name as a LaTeX-friendly symbol. Replaces
+    r"""Render a free-form dim name as a LaTeX-friendly symbol. Replaces
     underscores with `\_` only inside `\mathrm{}` (so subscripts stay
     intact), wraps multi-char names in `\mathrm{}`."""
     if all(c.isalpha() for c in name) and len(name) <= 2:

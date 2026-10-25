@@ -1,15 +1,5 @@
 {
   "_provenance": "Values measured during development; each entry records the command that produced it.",
-  "label_scope": {
-    "_source": "paper/data/make_scope_data.py (seeded); FourRooms seed-42 policy, one 2048-step buffer",
-    "matching_steps": 0.1533,
-    "whole_trajectory_episode": 0.2188,
-    "whole_trajectory_buffer": 1.0,
-    "disagreement_vs_episode": 0.1094,
-    "disagreement_vs_buffer": 0.8467,
-    "n_episodes": 20,
-    "n_steps": 2048
-  },
   "learned_views": {
     "_source": "scripts/demo_learned_view.py, 4769 samples, ridge probe, held-out split",
     "gate": 0.9,
@@ -249,8 +239,6 @@
     "fidelity_measured": 15,
     "fidelity_blocked": {
       "halfcheetah.no_front_flip": "no somersault occurs under random actuation",
-      "halfcheetah.no_sprint": "behaviour absent and not a compute limit: retrained to 6M steps (4x), peak v_rootx 4.31 against a threshold of 5.0, versus 4.48 at 1.5M. More training did not make this policy sprint.",
-      "doorkey.avoid_pre_goal_corner": "region never reached and not a compute limit: retrained to 10M steps (5x), mean reward still 0.00 and 0 of 12 episodes reach x>=5 while the target corner is at x in {5,6}. This PPO implementation does not solve DoorKey-8x8 exploration.",
       "doorkey.no_key_hoarding": "annotator had already read this scenario file, so could not label it independently"
     },
     "fidelity_ceiling": {
@@ -258,20 +246,6 @@
       "labelled": 15,
       "note": "The 4 inexpressible entries have no formalisation, so fidelity is undefined rather than missing. Of the 17 scoreable entries, 15 are labelled; the 2 remaining are blocked because the behaviour does not occur under any policy we could train, which 4-5x more compute did not change."
     }
-  },
-  "authoring": {
-    "_source": "scripts/run_authoring_eval.py, ollama qwen2.5-coder, FourRooms subset with rollouts",
-    "gate_only": {
-      "7b": 0.8,
-      "32b": 0.467,
-      "n": 15
-    },
-    "with_rollouts": {
-      "7b": 0.0,
-      "32b": 0.25,
-      "n": 4
-    },
-    "best_accepted_jaccard": 0.0
   },
   "readers": {
     "entries": [
@@ -1184,7 +1158,7 @@
       "n_states": 4000,
       "n_actions": 7,
       "baseline_agreement": [
-        0.4102500081062317,
+        0.5507500171661377,
         0.5044999718666077,
         0.43799999356269836,
         0.5709999799728394,
@@ -1201,7 +1175,7 @@
         0.5932499766349792
       ],
       "reference_return": [
-        0.31037499999999996,
+        0.4635,
         0.419,
         0.36887499999999995,
         0.40275,
@@ -1218,18 +1192,18 @@
         0.3053125
       ],
       "label_disagreement": {
-        "mean_disagreement": 0.1935546875,
-        "min": 0.109375,
+        "mean_disagreement": 0.200390625,
+        "min": 0.1123046875,
         "max": 0.34423828125,
-        "mean_rate_ms": 0.24759114583333333,
-        "mean_rate_wt": 0.4192708333333333
+        "mean_rate_ms": 0.2532552083333333,
+        "mean_rate_wt": 0.4341796875
       },
       "arms": {
         "wt": {
           "suffix": "ab_wt",
           "label_noise": null,
           "agreement": [
-            0.5357499718666077,
+            0.4584999978542328,
             0.36274999380111694,
             0.6322500109672546,
             0.6067500114440918,
@@ -1246,7 +1220,7 @@
             0.5492500066757202
           ],
           "occupancy_shift": [
-            0.09350011056660035,
+            0.033704543214743254,
             0.09126351261177099,
             0.1584479101132121,
             -0.059893976132743804,
@@ -1263,7 +1237,7 @@
             0.030324650450105323
           ],
           "return": [
-            0.2371875,
+            0.312,
             0.210625,
             0.22862499999999997,
             0.366625,
@@ -1279,13 +1253,13 @@
             0.4640625,
             0.4325
           ],
-          "p_occupancy_shift": 0.02162007808876057
+          "p_occupancy_shift": 0.030448374494834247
         },
         "n1": {
           "suffix": "ab_n1",
           "label_noise": 0.01,
           "agreement": [
-            0.5839999914169312,
+            0.5362499952316284,
             0.5632500052452087,
             0.7072499990463257,
             0.7005000114440918,
@@ -1302,7 +1276,7 @@
             0.6315000057220459
           ],
           "occupancy_shift": [
-            -0.013462624092968167,
+            0.0313964176741692,
             0.006871191561267864,
             0.013936102376921222,
             -0.112100341210666,
@@ -1319,7 +1293,7 @@
             -0.02521104033215238
           ],
           "return": [
-            0.36324999999999996,
+            0.3401875,
             0.3914375,
             0.45562499999999995,
             0.4134375,
@@ -1335,16 +1309,16 @@
             0.5085625,
             0.39256250000000004
           ],
-          "p_occupancy_shift": 0.3446763718192264,
-          "p_agreement_vs_spec": 0.003915638298959059,
-          "p_agreement_vs_spec_wilcoxon": 0.0042724609375,
+          "p_occupancy_shift": 0.26312346585848284,
+          "p_agreement_vs_spec": 0.003151623173275301,
+          "p_agreement_vs_spec_wilcoxon": 0.00335693359375,
           "seeds_spec_lower": 11
         },
         "n10": {
           "suffix": "ab_n10",
           "label_noise": 0.1,
           "agreement": [
-            0.6222500205039978,
+            0.5435000061988831,
             0.5379999876022339,
             0.7607499957084656,
             0.609749972820282,
@@ -1361,7 +1335,7 @@
             0.5602499842643738
           ],
           "occupancy_shift": [
-            0.032790605881192036,
+            -0.05776702280872158,
             0.04400055820562265,
             -0.07157797277107926,
             -0.06262676166207293,
@@ -1378,7 +1352,7 @@
             -0.056000184514611265
           ],
           "return": [
-            0.33,
+            0.5023749999999999,
             0.4865625,
             0.43937499999999996,
             0.422375,
@@ -1394,8 +1368,8 @@
             0.44775,
             0.4190625
           ],
-          "p_occupancy_shift": 0.6930371561385718,
-          "p_agreement_vs_spec": 0.008199386232408741,
+          "p_occupancy_shift": 0.9843890967017643,
+          "p_agreement_vs_spec": 0.008255858886978587,
           "p_agreement_vs_spec_wilcoxon": 0.01507568359375,
           "seeds_spec_lower": 11
         }

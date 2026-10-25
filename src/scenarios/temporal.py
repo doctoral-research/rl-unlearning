@@ -37,7 +37,7 @@ inside a temporal formula without restatement.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Callable, Dict, List, Sequence
+from typing import Any, Callable, Dict
 
 # Keys that mark a node as a temporal operator rather than a state
 # predicate. A dict carrying exactly one of these is a formula; anything

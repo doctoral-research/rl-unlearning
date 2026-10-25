@@ -286,14 +286,15 @@ last witness rather than the witness itself.
 These checks establish that a specification is well formed and not
 vacuous. They do not establish that it means what its description says. We
 stress-tested them with two open code models, Qwen2.5-Coder 7B and 32B,
-writing scenarios from behaviour descriptions
-(Appendix~\ref{app:authoring}). Without rollouts the validator accepted
-80\% and 47\% of their scenarios. With the empirical stage enabled on the
-FourRooms entries acceptance fell to 0\% and 25\%, and the one accepted
-scenario shared no labelled step with the reference while agreeing with
-it on 92.6\% of steps, because both label few steps. We therefore make no
-claim that models can author scenarios, and we measure fidelity
-separately (Section~\ref{sec:eval}).
+writing scenarios from the thirteen descriptions the grammar states exactly
+(Appendix~\ref{app:authoring}). The validator accepted 85\% and 77\% of
+their scenarios. On the four FourRooms entries, where it also ran the
+empirical stage, each model had two scenarios accepted and none was
+vacuous. Yet all four labelled different steps from our formalisations,
+with a Jaccard similarity between 0.00 and 0.18. Passing every check is
+easy and says little about meaning. We therefore make no claim that models
+can author scenarios, and we measure fidelity separately
+(Section~\ref{sec:eval}).
 
 One further check reads the description rather than the specification. A
 behaviour description must name the behaviour to remove, and a lint run
@@ -503,7 +504,7 @@ baseline checkpoints in FourRooms and CartPole, fifteen seeds per arm,
 with a reward penalty of $\lambda=0.1$ on labelled steps
 (Appendix~\ref{app:methods}). The pipeline is deterministic given a
 configuration and a seed, so two runs on one seed differ only through
-their labels. On rollouts of the baselines, the two readings label 19\% of
+their labels. On rollouts of the baselines, the two readings label 20\% of
 steps differently in FourRooms and 33\% in CartPole.
 
 Training amplifies any change to the labels, so the size of a difference
@@ -534,14 +535,14 @@ Random flips alone move the policy about as far as unlearning moved it
 from its baseline (Figure~\ref{fig:drift}a). With 1\% of labels flipped,
 FourRooms policies agree with the unperturbed run on 60\% of states,
 against 54\% between that run and its baseline, and flipping 10\% of
-labels gives the same 60\%. Agreement between two runs is therefore no
+labels gives 59\%. Agreement between two runs is therefore no
 evidence by itself that a specification matters. Against this floor the
 two domains differ. In FourRooms the other reading moves the policy
-further than either noise level (agreement 0.54, $p\le0.008$, and lower on
+further than either noise level (agreement 0.54, $p<0.01$, and lower on
 11 of 15 seeds in each comparison), and it raises forget-region occupancy
-by 0.050 ($p=0.02$) where the noise runs shift it by 0.016 and 0.006
-(both $p>0.3$). Compared directly with the 10\% control, the occupancy
-shift is larger by 0.044 ($p=0.07$). In CartPole the other reading cannot
+by 0.046 ($p=0.03$) where the noise runs shift it by 0.019 and 0.000
+($p=0.26$ and $0.98$). Compared directly with the 10\% control, the
+occupancy shift is larger by 0.046 ($p=0.06$). In CartPole the other reading cannot
 be told apart from 1\% noise on either measure. On the baselines'
 rollouts the \texttt{whole\_trajectory} reading labels 91\% of CartPole
 steps, so the penalty it adds is close to a constant and carries little
@@ -735,8 +736,12 @@ value coefficient 0.5, entropy coefficient 0.01, gradient-norm clip 0.5,
 rollouts of 2048 steps, 10 epochs per update, minibatches of 64 and Adam
 with learning rate $3\times10^{-4}$ and $\epsilon=10^{-5}$. FourRooms
 agents observe a symbolic encoding of the grid with the goal fixed at cell
-$(13,3)$ and are trained for 5M steps. CartPole agents are trained for
-500k steps. Each seed has its own baseline.
+$(13,3)$ and are trained for 5M steps. Seeds 42 to 46 collected each
+rollout from eight parallel environments, 2048 steps in each, and scaled
+value targets by a running estimate of the return's standard deviation.
+For seed 42 we use the checkpoint with the highest evaluation return, at
+4.1M steps, because the final one no longer reached the goal. CartPole
+agents are trained for 500k steps. Each seed has its own baseline.
 
 \paragraph{Online unlearning.} Starting from a baseline, each of 200
 iterations collects a 2048-step on-policy rollout, labels it with the

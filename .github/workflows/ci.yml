@@ -21,10 +21,10 @@ jobs:
           cache-dependency-path: 'requirements.txt'
 
       - name: Install linting tools
-        run: pip install ruff
+        run: pip install ruff==0.16.1
 
       - name: Lint with ruff
-        run: ruff check src/ --ignore E501,F401,E402
+        run: ruff check src/
 
   test:
     name: Test

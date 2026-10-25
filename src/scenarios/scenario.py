@@ -3,7 +3,7 @@
 Loads YAML scenarios, normalises them into a canonical AST (resolving
 macros, desugaring region shorthands), and provides the matching
 predicates used by the unlearning pipeline (`identify_forget_trajectories`,
-`matches_state`, `get_forget_states_from_trajectories`, ...).
+`matches_state`, `step_labels`, ...).
 
 The class is wire-compatible with the legacy `from scenarios import
 ForgetScenario` import — all v1.0 constructs are additive. Scenarios that
@@ -790,44 +790,16 @@ class ForgetScenario:
         """
         return self._step_matches(features, action, reward)
 
-    def features(self, obs=None, info=None, env=None, policy=None) -> np.ndarray:
+    def features(self, obs=None, info=None, env=None) -> np.ndarray:
         """Extract the feature vector this scenario evaluates over.
 
         Exposed so callers can record features alongside observations at
         collection time (see `_feature_seq`), which is what lets
-        env-reading views be replayed offline. `policy` is forwarded to
-        views that describe the agent rather than the world, and is
-        ignored by every other view.
+        env-reading views be replayed offline.
         """
         if self.view is None:
             return obs
-        if "policy" in self.view.requires:
-            return self.view.extract(obs, info, env, policy)
         return self.view.extract(obs, info, env)
-
-    def get_forget_states_from_trajectories(
-        self, trajectories: List[Dict], forget_indices: List[int],
-    ) -> List[np.ndarray]:
-        """Extract per-step matching observations from forget trajectories.
-
-        Useful for strategy_inversion / TRIAD: gives on-distribution seed
-        states that lie in the forget region. For trajectory-level modes
-        (top_percentile / trajectory / temporal) returns all observations.
-        """
-        states: List[np.ndarray] = []
-        has_step_conditions = self.match_mode in ("any_step", "all_steps", "proportion")
-        for idx in forget_indices:
-            traj = trajectories[idx]
-            obs = _feature_seq(traj)
-            actions = traj.get("actions", [None] * len(obs))
-            for t in range(len(obs)):
-                if has_step_conditions:
-                    act = actions[t] if t < len(actions) else None
-                    if self._step_matches(obs[t], act):
-                        states.append(np.array(obs[t]))
-                else:
-                    states.append(np.array(obs[t]))
-        return states
 
     # ------------------------------------------------------------------
     # Internal: group matching

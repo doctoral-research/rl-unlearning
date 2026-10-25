@@ -6,8 +6,8 @@ file that:
 
 1. Identifies the trajectories whose behavior should be removed
    (`identify_forget_trajectories`),
-2. Identifies the specific states inside those trajectories
-   (`get_forget_states_from_trajectories`),
+2. Identifies the specific steps inside those trajectories
+   (`step_labels`),
 3. Is **machine-checkable** against a versioned JSON Schema +
    semantic validator,
 4. Renders to **natural-language prose** and **LaTeX predicate logic**
@@ -662,8 +662,8 @@ observation does not expose it. It is not a way to dodge writing an
 adapter: when the environment can be introspected, `auto:<domain>` is
 exact and free, while a probe is approximate and needs labelled data.
 Its real use is the case where no exact source exists at all, such as a
-perceptual property that only a human can label. The recorded gap for
-`halfcheetah.no_unnatural_gait` in the corpus is exactly that shape.
+perceptual property that only a human can label, such as whether a gait
+looks natural.
 
 ---
 
@@ -896,11 +896,16 @@ produced it.
 ### Empirical coverage
 
 ```bash
-python -m scenarios coverage cartpole/left_only \
-    --against experiments/outputs/cartpole_ppo_seed42/trajectories.pkl
+python -m scenarios collect CartPole-v1 --out rollouts.pkl \
+    --checkpoint experiments/checkpoints/cartpole_ppo_seed42/final_model.pt
+python -m scenarios coverage cartpole/left_only --against rollouts.pkl
 ```
 
-Reports the matching-trajectory fraction, matching-step fraction, and
+`collect` records each step's features while the episode runs, which is
+what lets views that read the environment object be evaluated offline.
+The same file feeds `drift`, `mine` and `author --against`.
+
+`coverage` reports the matching-trajectory fraction, matching-step fraction, and
 per-episode match-rate distribution. Use it in a paper sanity-check
 ("scenario X matches 12% of baseline rollouts") and as a quick test that
 a hand-written scenario isn't trivially empty.

@@ -90,12 +90,11 @@ class TestMaskedNormalisation:
         assert float(out.mean()) == pytest.approx(0.0, abs=1e-5)
         assert float(out.std()) == pytest.approx(1.0, abs=1e-3)
 
-    def test_all_forget_falls_back_to_global_stats(self):
+    def test_all_forget_mask_leaves_no_policy_gradient(self):
         roll, _ = _rollout()
-        mask = np.ones(len(roll["advantages"]), dtype=bool)
-        t = torch.as_tensor(roll["advantages"], dtype=torch.float32)
-        out = (t - t.mean()) / (t.std() + 1e-8)
-        assert torch.isfinite(out).all()
+        roll["forget_mask"] = np.ones(len(roll["advantages"]), dtype=bool)
+        metrics = _agent().update(roll)
+        assert metrics["policy_loss"] == pytest.approx(0.0, abs=1e-6)
 
 
 class TestAgentIntegration:

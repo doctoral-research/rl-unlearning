@@ -32,7 +32,6 @@ for ENV in "${ENVS[@]}"; do
 
     echo ">>> Done: ${EXP_NAME}"
     echo "    Model: experiments/checkpoints/${EXP_NAME}/final_model.pt"
-    echo "    Trajectories: experiments/outputs/${EXP_NAME}/trajectories.pkl"
 done
 
 echo ""

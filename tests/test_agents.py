@@ -421,54 +421,5 @@ class TestPPOSaveLoad:
             assert torch.allclose(p1, p2)
 
 
-class TestMetaplasticityMask:
-    """Test the standalone MetaplasticityMask module."""
-
-    def test_init_masks_to_zeros(self):
-        """Masks init to zero (protect nothing) until importance is computed."""
-        from agents import MetaplasticityMask
-        net = ActorCritic(observation_dim=4, action_dim=2, hidden_dims=[16])
-        mm = MetaplasticityMask(net)
-        for name, mask in mm.masks.items():
-            assert torch.all(mask == 0.0)
-
-    def test_update_masks_creates_binary(self):
-        from agents import MetaplasticityMask
-        net = ActorCritic(observation_dim=4, action_dim=2, hidden_dims=[16])
-        mm = MetaplasticityMask(net)
-        importances = {n: torch.randn_like(p).abs()
-                       for n, p in net.named_parameters() if p.requires_grad}
-        mm.update_masks(importances, threshold=0.5)
-        for name, mask in mm.masks.items():
-            unique = mask.unique()
-            assert all(v in [0.0, 1.0] for v in unique.tolist())
-
-    def test_apply_masks_modifies_gradients(self):
-        """mask=1 means 'important, protect' → grad *= (1 - 1) = 0."""
-        from agents import MetaplasticityMask
-        net = ActorCritic(observation_dim=4, action_dim=2, hidden_dims=[16])
-        mm = MetaplasticityMask(net)
-        # Set masks to one for all params (protect everything → zero grads)
-        for name in mm.masks:
-            mm.masks[name] = torch.ones_like(mm.masks[name])
-
-        obs = torch.randn(4, 4)
-        logits, val = net(obs)
-        loss = logits.sum() + val.sum()
-        loss.backward()
-
-        # Before applying: grads exist
-        has_grad = any(p.grad is not None and p.grad.abs().sum() > 0
-                       for p in net.parameters())
-        assert has_grad
-
-        mm.apply_masks()
-
-        # After applying with mask=1 (protect): grads should be zero
-        for name, p in net.named_parameters():
-            if p.grad is not None and name in mm.masks:
-                assert torch.allclose(p.grad, torch.zeros_like(p.grad))
-
-
 if __name__ == "__main__":
     pytest.main([__file__, "-v"])

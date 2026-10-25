@@ -43,12 +43,12 @@ instead of asserted.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from typing import Any, Callable, Optional, Sequence
 
 import numpy as np
 
-from .constants import ENV_ACTION_DIMS, ENV_OBS_DIMS
+from .constants import ENV_OBS_DIMS
 
 # Feature types. Used by the validator to reject nonsense comparisons
 # (`>` on a categorical, `==` on a float) and by the renderer to choose
@@ -105,10 +105,10 @@ class FeatureView:
             raise ViewError(
                 f"ranges has {len(self.ranges)} entries, names has {len(names)}"
             )
-        bad_req = set(self.requires) - {"obs", "info", "env", "policy"}
+        bad_req = set(self.requires) - {"obs", "info", "env"}
         if bad_req:
             raise ViewError(
-                f"requires must be obs/info/env/policy; got {sorted(bad_req)}")
+                f"requires must be obs/info/env; got {sorted(bad_req)}")
 
     # -- introspection -------------------------------------------------
 
@@ -137,27 +137,18 @@ class FeatureView:
 
     # -- extraction ----------------------------------------------------
 
-    def extract(self, obs=None, info=None, env=None, policy=None) -> np.ndarray:
-        """Extract the feature vector.
-
-        `policy` is optional and is only passed to views that ask for it.
-        Some behaviours are properties of the POLICY at a state rather
-        than of the trajectory through it -- dithering is a near-uniform
-        action distribution, not a place the agent went -- and those are
-        unsayable while a view can only see the environment.
-        """
+    def extract(self, obs=None, info=None, env=None) -> np.ndarray:
+        """Extract the feature vector."""
         missing = [
             r for r in self.requires
-            if {"obs": obs, "info": info, "env": env, "policy": policy}[r] is None
+            if {"obs": obs, "info": info, "env": env}[r] is None
         ]
         if missing:
             raise ViewError(
                 f"view {self.provenance!r} requires {missing} but they were "
                 "not supplied"
             )
-        args = (obs, info, env, policy) if "policy" in self.requires \
-            else (obs, info, env)
-        vec = np.asarray(self.extract_fn(*args), dtype=np.float32).reshape(-1)
+        vec = np.asarray(self.extract_fn(obs, info, env), dtype=np.float32).reshape(-1)
         if vec.shape[0] != len(self.names):
             raise ViewError(
                 f"view {self.provenance!r} produced {vec.shape[0]} features, "
@@ -448,76 +439,6 @@ _PROVIDERS: list[tuple[str, Callable, int]] = [
 ]
 
 
-def policy_view(action_dim: int, env_id: Optional[str] = None) -> FeatureView:
-    """Features of the POLICY at a state, not of the state itself.
-
-    Everything else in the cascade describes where the agent is and what
-    it did. Some behaviours are not like that: "dithering at junctions
-    instead of committing to a route" is a claim about the action
-    distribution, and is invisible in a trajectory that merely records
-    which action was sampled. Two policies, one decisive and one
-    indifferent, can emit the same actions.
-
-    Exposed features:
-      action_entropy  Shannon entropy of pi(.|s), in nats; 0 when the
-                      policy is certain, log(action_dim) when uniform
-      action_margin   top probability minus the second, so 0 means two
-                      actions are tied and 1 means no contest
-      policy_value    the critic's estimate at this state
-
-    The view requires a `policy` and so cannot be resolved from an
-    environment alone; it is constructed explicitly and carries the
-    provenance `auto:policy` to record that its features describe the
-    agent rather than the world.
-    """
-    import math
-
-    max_entropy = math.log(action_dim) if action_dim > 1 else 1.0
-
-    def extract(obs, info, env, policy):
-        probs, value = policy_action_distribution(policy, obs)
-        p = np.clip(np.asarray(probs, dtype=np.float64), 1e-12, 1.0)
-        ent = float(-(p * np.log(p)).sum())
-        top = np.sort(p)[::-1]
-        margin = float(top[0] - top[1]) if len(top) > 1 else 1.0
-        return [ent, margin, float(value)]
-
-    return FeatureView(
-        names=("action_entropy", "action_margin", "policy_value"),
-        extract_fn=extract,
-        dtypes=(CONTINUOUS, CONTINUOUS, CONTINUOUS),
-        ranges=((0.0, max_entropy), (0.0, 1.0), None),
-        provenance="auto:policy",
-        requires=("obs", "policy"),
-        env_id=env_id,
-    )
-
-
-def policy_action_distribution(policy, obs):
-    """(probabilities, value) from an agent, a callable, or a torch module.
-
-    Kept deliberately permissive: the language should not care whether the
-    caller hands it a PPOAgent, a bare network, or a closure, only that a
-    distribution comes back.
-    """
-    if callable(policy) and not hasattr(policy, "network"):
-        out = policy(obs)
-        if isinstance(out, tuple):
-            return out[0], out[1] if len(out) > 1 else 0.0
-        return out, 0.0
-
-    import torch
-
-    net = getattr(policy, "network", policy)
-    with torch.no_grad():
-        x = torch.as_tensor(np.asarray(obs, dtype=np.float32)).unsqueeze(0)
-        out = net(x)
-    logits, value = (out[0], out[1]) if isinstance(out, tuple) else (out, None)
-    probs = torch.softmax(torch.as_tensor(logits).reshape(-1), dim=-1).numpy()
-    v = float(np.asarray(value).reshape(-1)[0]) if value is not None else 0.0
-    return probs, v
-
-
 def register_view_provider(
     name: str, provider: Callable, tier: int = TIER_ENV, first: bool = False
 ) -> None:
@@ -608,12 +529,6 @@ def build_view(
             "fallback"
         )
     return identity_view(n_dims, env_id)
-
-
-def action_dim_table(env_id: Optional[str]) -> dict[int, str]:
-    """Action-side names. Still table-driven; action spaces are small and
-    rarely introspectable for semantics."""
-    return dict(ENV_ACTION_DIMS.get(env_id or "", {}))
 
 
 def view_from_cfg(cfg, env=None) -> FeatureView:

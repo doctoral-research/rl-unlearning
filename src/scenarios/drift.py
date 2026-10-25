@@ -27,7 +27,7 @@ Drift has several ordinary causes, all of which this can quantify:
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Any, Dict, List, Optional, Sequence
+from typing import Any, Dict, List, Sequence
 
 import numpy as np
 
