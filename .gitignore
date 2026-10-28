@@ -96,3 +96,8 @@ paper/*.fls
 paper/*.fdb_latexmk
 paper/*.synctex.gz
 paper/main.pdf
+
+# Material with personal data, kept out of the repository: the human
+# annotator's original export (the released copy is anonymised in
+# benchmark/labels/human/).
+private/

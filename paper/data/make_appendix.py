@@ -108,20 +108,22 @@ L.append(
     "labels.\n")
 L.append(r"\begin{table}[h]\centering\small")
 L.append(r"\caption{Reader agreement and fidelity on the labelled entries. "
-         r"$\kappa_{rr}$: mean pairwise $\kappa$ between readers. $\kappa$, $J$, "
+         r"$\kappa_{rr}$: mean pairwise $\kappa$ between readers. $\kappa_p$: one "
+         r"person's labels against the reference. $\kappa$, $J$, "
          r"P, R: formalisation against the reference. Rates: fraction of steps "
          r"labelled by the reference and by the formalisation.}")
 L.append(r"\label{tab:fidelity}")
-L.append(r"\setlength{\tabcolsep}{4.2pt}")
-L.append(r"\begin{tabular}{@{}llrcccccc@{}}\toprule")
-L.append(r"Entry & Readers & Steps & $\kappa_{rr}$ & $\kappa$ & $J$ & P & R & "
+L.append(r"\setlength{\tabcolsep}{2.8pt}")
+L.append(r"\begin{tabular}{@{}llrccccccc@{}}\toprule")
+L.append(r"Entry & Readers & Steps & $\kappa_{rr}$ & $\kappa_p$ & $\kappa$ & $J$ & P & R & "
          r"Rates \\ \midrule")
 for eid in sorted(fid, key=lambda x: -fid[x]["kappa"]):
     r, q = fid[eid], readers[eid]
-    L.append(f"{tt(eid)} & {', '.join(q['readers'])} & {r['n_steps']} & "
-             f"{f2(q['mean_kappa'])} & {f2(r['kappa'])} & {r['jaccard']:.2f} & "
+    L.append(f"{tt(eid)} & {''.join(q['readers'])} & {r['n_steps']} & "
+             f"{f2(q['mean_kappa'])} & {f2(r['person']['kappa_reference'])} & "
+             f"{f2(r['kappa'])} & {r['jaccard']:.2f} & "
              f"{r['precision']:.2f} & {r['recall']:.2f} & "
-             f"{r['label_rate']:.2f} / {r['spec_rate']:.2f} \\\\")
+             f"{r['label_rate']:.2f}/{r['spec_rate']:.2f} \\\\")
 L.append(r"\bottomrule\end{tabular}\end{table}" + "\n")
 L.append(
     "Reader agreement is computed from the readers' raw labels where they "
@@ -130,7 +132,11 @@ L.append(
     "construction. On the doorway entry the three readers marked 12, 18 and "
     "29 steps with pairwise Jaccard similarity 12/18, 12/29 and 18/29, which "
     "forces the three sets to be nested, so their pairwise tables, and "
-    "$\\kappa$, follow from the counts.\n")
+    "$\\kappa$, follow from the counts. The person labelled every task in "
+    "the labelling tool released with the corpus, which shows a neutral task "
+    "code instead of the entry's name, and wrote down the rule they "
+    "followed for each entry. The labels and the rules are released with the "
+    "reference labels.\n")
 
 # ----------------------------------------------------------------- readers
 ROUNDS = [

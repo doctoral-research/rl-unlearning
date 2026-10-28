@@ -244,6 +244,8 @@ every step by hand. The reference labels are ours. Alongside them:
   the reader was given.
 - `labels/independent/` holds three independent readings of five
   behaviours and their agreement.
+- `labels/human/` holds one person's labels of every step, made by hand in
+  the labelling desk, with the rule they followed for each behaviour.
 
 | script | does |
 | --- | --- |

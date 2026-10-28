@@ -36,7 +36,13 @@
         "label_rate": 0.5483870967741935,
         "spec_rate": 0.5483870967741935,
         "annotator": "synthetic:fresh-context (N, O)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 1.0,
+          "kappa_formalisation": 1.0,
+          "identical_to_reference": true,
+          "rate": 0.5483870967741935
+        }
       },
       {
         "entry": "doorkey.no_key_hoarding",
@@ -50,7 +56,13 @@
         "label_rate": 0.10729166666666666,
         "spec_rate": 0.25,
         "annotator": "synthetic:fresh-context (L, M)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 0.9892165122156698,
+          "kappa_formalisation": 0.5384615384615384,
+          "identical_to_reference": false,
+          "rate": 0.109375
+        }
       },
       {
         "entry": "empty8x8.avoid_bottom_left",
@@ -64,7 +76,13 @@
         "label_rate": 0.13,
         "spec_rate": 0.13,
         "annotator": "synthetic:fresh-context (N, O)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 1.0,
+          "kappa_formalisation": 1.0,
+          "identical_to_reference": true,
+          "rate": 0.13
+        }
       },
       {
         "entry": "fourrooms.avoid_br_detour",
@@ -78,7 +96,13 @@
         "label_rate": 0.20666666666666667,
         "spec_rate": 0.20666666666666667,
         "annotator": "synthetic:fresh-context (N, O)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 1.0,
+          "kappa_formalisation": 1.0,
+          "identical_to_reference": true,
+          "rate": 0.20666666666666667
+        }
       },
       {
         "entry": "fourrooms.avoid_br_tr_door",
@@ -92,7 +116,13 @@
         "label_rate": 0.01125,
         "spec_rate": 0.0025,
         "annotator": "synthetic:fresh-context (P, Q, T; per-step majority)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 0.79818365287588,
+          "kappa_formalisation": -0.0037641154328756517,
+          "identical_to_reference": false,
+          "rate": 0.0075
+        }
       },
       {
         "entry": "fourrooms.no_backtracking",
@@ -106,7 +136,13 @@
         "label_rate": 0.05,
         "spec_rate": 0.65,
         "annotator": "synthetic:fresh-context (P, Q)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 1.0,
+          "kappa_formalisation": 0.05511811023622052,
+          "identical_to_reference": true,
+          "rate": 0.05
+        }
       },
       {
         "entry": "fourrooms.no_corner_turn_reflex",
@@ -120,7 +156,13 @@
         "label_rate": 0.004166666666666667,
         "spec_rate": 0.004166666666666667,
         "annotator": "synthetic:fresh-context (N, O)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 1.0,
+          "kappa_formalisation": 1.0,
+          "identical_to_reference": true,
+          "rate": 0.004166666666666667
+        }
       },
       {
         "entry": "fourrooms.no_pacing",
@@ -134,7 +176,13 @@
         "label_rate": 0.09305555555555556,
         "spec_rate": 0.8333333333333334,
         "annotator": "synthetic:fresh-context (R, S)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 0.952536860840713,
+          "kappa_formalisation": 0.04413542926239423,
+          "identical_to_reference": false,
+          "rate": 0.10138888888888889
+        }
       },
       {
         "entry": "halfcheetah.no_front_flip",
@@ -148,7 +196,13 @@
         "label_rate": 0.05625,
         "spec_rate": 0.5,
         "annotator": "synthetic:fresh-context (J, K)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 0.9156340627471662,
+          "kappa_formalisation": 0.09583333333333344,
+          "identical_to_reference": false,
+          "rate": 0.04791666666666667
+        }
       },
       {
         "entry": "lbf.no_crowding",
@@ -162,7 +216,13 @@
         "label_rate": 0.18,
         "spec_rate": 0.16,
         "annotator": "synthetic:fresh-context (A, B, C; per-step majority)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 0.7204472843450479,
+          "kappa_formalisation": 0.19080068143100576,
+          "identical_to_reference": false,
+          "rate": 0.11
+        }
       },
       {
         "entry": "lbf.no_freeloading",
@@ -176,7 +236,13 @@
         "label_rate": 0.26,
         "spec_rate": 0.5,
         "annotator": "synthetic:fresh-context (A, B, C; per-step majority)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": -0.03857566765578621,
+          "kappa_formalisation": 0.040000000000000036,
+          "identical_to_reference": false,
+          "rate": 0.02
+        }
       },
       {
         "entry": "lunarlander.no_near_miss",
@@ -190,7 +256,13 @@
         "label_rate": 0.14411247803163443,
         "spec_rate": 0.38137082601054484,
         "annotator": "synthetic:fresh-context (H, I)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 0.0,
+          "kappa_formalisation": 0.0,
+          "identical_to_reference": false,
+          "rate": 0.0
+        }
       },
       {
         "entry": "lunarlander.no_tilt",
@@ -204,7 +276,13 @@
         "label_rate": 0.11,
         "spec_rate": 0.11,
         "annotator": "synthetic:fresh-context (A, B, C; per-step majority)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 0.8259860788863106,
+          "kappa_formalisation": 0.8259860788863106,
+          "identical_to_reference": false,
+          "rate": 0.08
+        }
       },
       {
         "entry": "pendulum.avoid_left_swing",
@@ -218,7 +296,13 @@
         "label_rate": 0.5066666666666667,
         "spec_rate": 0.5066666666666667,
         "annotator": "synthetic:fresh-context (N, O)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 1.0,
+          "kappa_formalisation": 1.0,
+          "identical_to_reference": true,
+          "rate": 0.5066666666666667
+        }
       },
       {
         "entry": "walker2d.no_forward_fall",
@@ -232,7 +316,13 @@
         "label_rate": 0.2857142857142857,
         "spec_rate": 0.4155844155844156,
         "annotator": "synthetic:fresh-context (A, B, C; per-step majority)",
-        "independent": true
+        "independent": true,
+        "person": {
+          "kappa_reference": 0.7199999999999999,
+          "kappa_formalisation": 1.0,
+          "identical_to_reference": false,
+          "rate": 0.4155844155844156
+        }
       }
     ],
     "_fidelity_note": "Labels written from the description and feature values only; no scenario file was read before labelling it, and every threshold choice was recorded in the label file's annotator_note before scoring.",

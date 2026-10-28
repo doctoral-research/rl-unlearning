@@ -53,7 +53,7 @@ Nothing in the text, the figures or the appendix is typed by hand.
 
 | script | produces | from |
 | --- | --- | --- |
-| `data/make_fidelity_table.py` | fidelity per behaviour (kappa, Jaccard, precision, recall) | `benchmark/labels/*.yaml`, the corpus formalisations |
+| `data/make_fidelity_table.py` | fidelity per behaviour (kappa, Jaccard, precision, recall), and the person's agreement with the reference and the formalisations | `benchmark/labels/*.yaml`, `benchmark/labels/human/`, the corpus formalisations |
 | `data/make_reader_tables.py` | reader agreement, the polarity table | the label files and the raw reader labels in `benchmark/labels/` |
 | `data/make_drift_data.py` | label-scope experiment and its noise controls | `data/divergence_*.json`, training histories |
 | `data/make_examples.py` | `generated/examples.tex`, `generated/appendix_language.tex` | corpus scenarios, resolved views, the validator |
@@ -76,9 +76,11 @@ Project") and re-upload the files that change.
 
 ## Before submitting
 
-- **Human subset.** Being collected. Once in, report human against reader
-  and human against formalisation agreement, and replace the sentence in
-  the limitations that says it has not been collected.
+- **Human labels.** In: one person labelled every step
+  (`benchmark/labels/human/annotator_H1.json`). `data/make_fidelity_table.py`
+  scores them, and Section 4.3, the limitations, the abstract and the
+  fidelity figure and table report them. The numbers Section 4.3 quotes are
+  checked by asserts in that script.
 - **Release.** Confirmed: code, corpus, labels and prompts will be
   released. Add the repository link, or attach an anonymised copy as
   supplementary material, as the venue requires.

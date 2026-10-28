@@ -36,29 +36,29 @@ Partial behaviour & What the grammar lacks \\ \midrule
 Table~\ref{tab:fidelity} gives, for each labelled entry, the readers, the number of labelled steps, the mean pairwise $\kappa$ between readers, and the agreement between the formalisation and the reference labels as $\kappa$, Jaccard similarity, precision and recall (taking the reference as ground truth), with the fraction of steps each labels.
 
 \begin{table}[h]\centering\small
-\caption{Reader agreement and fidelity on the labelled entries. $\kappa_{rr}$: mean pairwise $\kappa$ between readers. $\kappa$, $J$, P, R: formalisation against the reference. Rates: fraction of steps labelled by the reference and by the formalisation.}
+\caption{Reader agreement and fidelity on the labelled entries. $\kappa_{rr}$: mean pairwise $\kappa$ between readers. $\kappa_p$: one person's labels against the reference. $\kappa$, $J$, P, R: formalisation against the reference. Rates: fraction of steps labelled by the reference and by the formalisation.}
 \label{tab:fidelity}
-\setlength{\tabcolsep}{4.2pt}
-\begin{tabular}{@{}llrcccccc@{}}\toprule
-Entry & Readers & Steps & $\kappa_{rr}$ & $\kappa$ & $J$ & P & R & Rates \\ \midrule
-\texttt{cartpole.left\_only} & N, O & 186 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.55 / 0.55 \\
-\texttt{empty8x8.avoid\_bottom\_left} & N, O & 600 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.13 / 0.13 \\
-\texttt{fourrooms.avoid\_br\_detour} & N, O & 150 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.21 / 0.21 \\
-\texttt{fourrooms.no\_corner\_turn\_reflex} & N, O & 240 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.00 / 0.00 \\
-\texttt{lunarlander.no\_tilt} & A, B, C & 100 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.11 / 0.11 \\
-\texttt{pendulum.avoid\_left\_swing} & N, O & 150 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.51 / 0.51 \\
-\texttt{walker2d.no\_forward\_fall} & A, B, C & 77 & 0.81 & 0.72 & 0.69 & 0.69 & 1.00 & 0.29 / 0.42 \\
-\texttt{doorkey.no\_key\_hoarding} & L, M & 960 & 1.00 & 0.53 & 0.43 & 0.43 & 1.00 & 0.11 / 0.25 \\
-\texttt{lbf.no\_crowding} & A, B, C & 100 & 0.44 & 0.36 & 0.31 & 0.50 & 0.44 & 0.18 / 0.16 \\
-\texttt{lunarlander.no\_near\_miss} & H, I & 569 & 1.00 & 0.27 & 0.27 & 0.29 & 0.77 & 0.14 / 0.38 \\
-\texttt{lbf.no\_freeloading} & A, B, C & 100 & 0.93 & 0.24 & 0.33 & 0.38 & 0.73 & 0.26 / 0.50 \\
-\texttt{halfcheetah.no\_front\_flip} & J, K & 480 & 1.00 & 0.11 & 0.11 & 0.11 & 1.00 & 0.06 / 0.50 \\
-\texttt{fourrooms.no\_backtracking} & P, Q & 240 & 1.00 & 0.06 & 0.08 & 0.08 & 1.00 & 0.05 / 0.65 \\
-\texttt{fourrooms.no\_pacing} & R, S & 720 & 1.00 & 0.04 & 0.11 & 0.11 & 1.00 & 0.09 / 0.83 \\
-\texttt{fourrooms.avoid\_br\_tr\_door} & P, Q, T & 1600 & 0.71 & 0.00 & 0.00 & 0.00 & 0.00 & 0.01 / 0.00 \\
+\setlength{\tabcolsep}{2.8pt}
+\begin{tabular}{@{}llrccccccc@{}}\toprule
+Entry & Readers & Steps & $\kappa_{rr}$ & $\kappa_p$ & $\kappa$ & $J$ & P & R & Rates \\ \midrule
+\texttt{cartpole.left\_only} & NO & 186 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.55/0.55 \\
+\texttt{empty8x8.avoid\_bottom\_left} & NO & 600 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.13/0.13 \\
+\texttt{fourrooms.avoid\_br\_detour} & NO & 150 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.21/0.21 \\
+\texttt{fourrooms.no\_corner\_turn\_reflex} & NO & 240 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.00/0.00 \\
+\texttt{lunarlander.no\_tilt} & ABC & 100 & 1.00 & 0.83 & 1.00 & 1.00 & 1.00 & 1.00 & 0.11/0.11 \\
+\texttt{pendulum.avoid\_left\_swing} & NO & 150 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 1.00 & 0.51/0.51 \\
+\texttt{walker2d.no\_forward\_fall} & ABC & 77 & 0.81 & 0.72 & 0.72 & 0.69 & 0.69 & 1.00 & 0.29/0.42 \\
+\texttt{doorkey.no\_key\_hoarding} & LM & 960 & 1.00 & 0.99 & 0.53 & 0.43 & 0.43 & 1.00 & 0.11/0.25 \\
+\texttt{lbf.no\_crowding} & ABC & 100 & 0.44 & 0.72 & 0.36 & 0.31 & 0.50 & 0.44 & 0.18/0.16 \\
+\texttt{lunarlander.no\_near\_miss} & HI & 569 & 1.00 & 0.00 & 0.27 & 0.27 & 0.29 & 0.77 & 0.14/0.38 \\
+\texttt{lbf.no\_freeloading} & ABC & 100 & 0.93 & $-$0.04 & 0.24 & 0.33 & 0.38 & 0.73 & 0.26/0.50 \\
+\texttt{halfcheetah.no\_front\_flip} & JK & 480 & 1.00 & 0.92 & 0.11 & 0.11 & 0.11 & 1.00 & 0.06/0.50 \\
+\texttt{fourrooms.no\_backtracking} & PQ & 240 & 1.00 & 1.00 & 0.06 & 0.08 & 0.08 & 1.00 & 0.05/0.65 \\
+\texttt{fourrooms.no\_pacing} & RS & 720 & 1.00 & 0.95 & 0.04 & 0.11 & 0.11 & 1.00 & 0.09/0.83 \\
+\texttt{fourrooms.avoid\_br\_tr\_door} & PQT & 1600 & 0.71 & 0.80 & 0.00 & 0.00 & 0.00 & 0.00 & 0.01/0.00 \\
 \bottomrule\end{tabular}\end{table}
 
-Reader agreement is computed from the readers' raw labels where they were kept (readers A, B and C). Where two readers produced identical labels the label file stores that one set, and $\kappa_{rr}=1$ by construction. On the doorway entry the three readers marked 12, 18 and 29 steps with pairwise Jaccard similarity 12/18, 12/29 and 18/29, which forces the three sets to be nested, so their pairwise tables, and $\kappa$, follow from the counts.
+Reader agreement is computed from the readers' raw labels where they were kept (readers A, B and C). Where two readers produced identical labels the label file stores that one set, and $\kappa_{rr}=1$ by construction. On the doorway entry the three readers marked 12, 18 and 29 steps with pairwise Jaccard similarity 12/18, 12/29 and 18/29, which forces the three sets to be nested, so their pairwise tables, and $\kappa$, follow from the counts. The person labelled every task in the labelling tool released with the corpus, which shows a neutral task code instead of the entry's name, and wrote down the rule they followed for each entry. The labels and the rules are released with the reference labels.
 
 \section{Readers}
 \label{app:readers}

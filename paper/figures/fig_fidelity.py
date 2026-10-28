@@ -5,7 +5,8 @@ description agree with each other, and how far their labels agree with the
 formalisation. Reading the two together says which side a disagreement
 belongs to. Readers who agree with one another but not with the
 formalisation point at the formalisation; readers who disagree with one
-another point at the sentence.
+another point at the sentence. A cross adds one person's labels, made by
+hand, against the same reference.
 """
 from __future__ import annotations
 import json, sys
@@ -57,6 +58,8 @@ for g, es in enumerate(rows):
         ax.scatter([rr], [y], s=44, facecolor="white", edgecolor=style.INK,
                    lw=1.0, zorder=3)
         ax.scatter([rs], [y], s=17, color=COLS[g], edgecolor="none", zorder=4)
+        ax.scatter([spec[e]["person"]["kappa_reference"]], [y], s=26, marker="x",
+                   color=style.INK, lw=1.0, zorder=5)
         yt.append(y)
         ylab.append(e + (r"$^{\dagger}$" if e in partial else ""))
         y -= 1.0
@@ -80,8 +83,10 @@ ax.set_axisbelow(True)
 handles = [Line2D([], [], ls="none", marker="o", ms=6, mfc="white", mec=style.INK,
                   label="reader vs. reader"),
            Line2D([], [], ls="none", marker="o", ms=4, mfc="#555555", mec="none",
-                  label="formalisation vs. readers")]
-ax.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.42, 1.0), ncol=2,
+                  label="formalisation vs. readers"),
+           Line2D([], [], ls="none", marker="x", ms=5, mec=style.INK, mew=1.0,
+                  label="person vs. readers")]
+ax.legend(handles=handles, loc="lower center", bbox_to_anchor=(0.42, 1.0), ncol=3,
           fontsize=7.5, handletextpad=0.3, columnspacing=1.6, borderpad=0.2)
 
 style.save(fig, Path(__file__).parent / "fig_fidelity.pdf")

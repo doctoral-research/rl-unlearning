@@ -56,7 +56,10 @@ evaluate it on fifteen behaviours, comparing each formalisation, step by step, w
 description alone and that we checked by hand. Six reproduce them
 exactly. Agreement among the
 readers locates each
-remaining disagreement in the sentence or in the formalisation, and a
+remaining disagreement in the sentence or in the formalisation. A person
+outside the author team labelled every step by hand, and these labels
+agree with the reference at a median $\kappa$ of 0.95 and confirm four of
+the five errors attributed to formalisations. A
 controlled comparison shows that a description phrased as a goal is read
 as its complement under every instruction we tried. Finally, choosing
 which steps of an episode carry the label shifts the unlearned policy
@@ -432,13 +435,35 @@ environment moves the doorways at every reset, so it labels four steps
 that no reader chose ($\kappa=0.00$). The validator accepts it, since it
 is well typed and labels some steps but not all.
 
+Every reader is a language model, and readers of one family can agree on a
+reading that a person would not take. A person outside the author team
+therefore labelled all
+6272 steps by hand, in a tool that shows the description, the features
+and the actions but no labels or formalisations. These labels agree with
+the reference at a median $\kappa$ of 0.95, mean 0.79, and match it
+exactly on six entries (crosses in Figure~\ref{fig:fidelity}). On the four
+entries whose formalisations label whole episodes the person sides with
+the readers, at $\kappa$ from 0.92 to 1.00 against the reference and at
+most 0.54 against the formalisation. Where the readers disagree, the
+person makes one more choice, and for the forward fall it is the
+formalisation's threshold ($\kappa=1.00$ against it). Two departures fall
+where the readers were unanimous. The person put a steep tilt at 15
+degrees, where every reader chose 0.2~rad ($\kappa=0.83$). For the near
+miss, the readers marked the last 12 to 19 steps before each impact. Every
+recorded episode, however, ends with the lander striking the ground or
+leaving the screen, so no landing narrowly avoided a crash, and the person
+labelled no step. Unanimity among readers of one family, and our check of
+their labels, did not settle these two readings.
+
 \begin{figure}[t]
 \centering
 \includegraphics[width=\textwidth]{figures/fig_fidelity.pdf}
 \caption{Agreement on the fifteen labelled entries. Open circles:
 agreement between readers of the same description (mean pairwise
 $\kappa$). Dots: agreement between the formalisation and the reference
-labels. Entries are grouped by where the disagreement lies. Where the
+labels. Crosses: agreement between one person's labels, made by hand,
+and the reference labels. Entries are grouped by where the disagreement
+lies. Where the
 readers agree with each other, a low dot points at the formalisation.
 Where they do not, the sentence leaves the labels open. $^{\dagger}$Partial
 entries, formalised approximately.}
@@ -557,17 +582,14 @@ and two of Claude Opus~5.5 in the polarity experiment. They are not
 independent in
 the way a panel of people is. Models of one family share priors and
 favour their own outputs \citep{panickssery2024llm}, so unanimity among
-them can reflect a shared bias, and agreement between readers is best
-read as an upper bound on what people would show. The exact agreement on
-a ``steep tilt'', where every reader chose 0.2~rad, may be such a shared
-prior. The diagnostic of
-Section~\ref{sec:fidelity} relies on that agreement, and its attribution
-of an error to the formalisation is only as good as the readers'
-independence. Our check of every label by hand guards against a
-reader's mistake but not against our own reading, since we also wrote
-the formalisations. The polarity effect held in every pair, but it too
-was measured within one family. Labels from annotators outside the
-author team, on a subset of the entries, would remove both dependences. The
+them can reflect a shared bias. One person's labels show this on two
+entries, the steep tilt and the near miss, while supporting the
+attributions of Section~\ref{sec:fidelity} on the others. Our check of
+every label by hand guards against a reader's mistake but not against a
+reading we share with the readers, as the near miss shows. An independent
+annotator removes the dependence on one model family for the fidelity
+diagnosis, but one person is not a panel, and the polarity effect was
+measured with models only. The
 instructions also differed between rounds. Later rounds named the choice
 of span for behaviours that extend in time, which may have influenced the
 spans readers chose (Appendix~\ref{app:readers}).
@@ -591,8 +613,9 @@ specification should be built like any other component of the method:
 typed, checked, connected to the domain through an explicit interface,
 and evaluated for what it can and cannot say. Measured that way, the
 specifications in our corpus fail in identifiable places. Several
-formalisations label whole episodes where readers label only the act, and
-the language cannot yet state the narrower reading. Some
+formalisations label whole episodes where readers, and a person labelling
+by hand, label only the act, and the language cannot yet state the
+narrower reading. Some
 descriptions do not determine a set of steps at all, and a description in
 the wrong voice is read as its own complement. The first is a measured
 limit of the grammar, the second a property of the English that no
@@ -607,7 +630,8 @@ deterministic given a configuration and a seed.
 Appendix~\ref{app:methods} lists the training and unlearning settings and
 Appendix~\ref{app:readers} the reader prompts. We will release the
 language, the validator, the corpus with its formalisations, the reference
-labels with every reader prompt, and the scripts that produce each number
+labels with every reader prompt, one person's labels of every step, and
+the scripts that produce each number
 and figure in the paper.
 
 \bibliography{references}
