@@ -101,3 +101,6 @@ paper/main.pdf
 # annotator's original export (the released copy is anonymised in
 # benchmark/labels/human/).
 private/
+
+# Rebuilt by paper/build.sh for upload to Overleaf.
+paper/overleaf-kit.zip

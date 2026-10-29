@@ -30,7 +30,10 @@ build.sh              regenerate everything and compile
 It recomputes the numbers from the label files, the corpus and the training
 histories, redraws the figures, regenerates `generated/`, compiles, and
 deletes the LaTeX build leftovers. It stops if a reference is undefined and
-lists any overfull box.
+lists any overfull box. It also writes `overleaf-kit.zip`: the 14 files the
+compile reads (`main.tex`, the bibliography and style files, `figures/*.pdf`,
+`generated/*.tex`) and nothing else, after checking that they compile on
+their own.
 
 Three kinds of file take minutes or a local model to produce, so they are
 inputs to the build rather than part of it:
@@ -71,8 +74,9 @@ git subtree push --prefix paper overleaf master
 git subtree pull --prefix paper overleaf master --squash
 ```
 
-Without it, upload the folder as a zip ("New Project", then "Upload
-Project") and re-upload the files that change.
+Without it, upload `overleaf-kit.zip` ("New Project", then "Upload
+Project"). After a later build, upload the files that changed, or start
+from a fresh kit.
 
 ## Before submitting
 
